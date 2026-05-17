@@ -1,0 +1,32 @@
+# Credentials & secrets
+.credentials.json
+# history.json 
+history.jsonl
+# MCP needs auth cache
+mcp-needs-auth-cache.json
+bash.exe.stackdump
+.caveman-active
+.last-cleanup
+policy-limits.json
+remote-settings.json
+
+# Runtime & session data
+backups/
+paste-cache/
+cache/
+sessions/
+session-env/
+shell-snapshots/
+ide/
+telemetry/
+downloads/
+file-history/
+plans/
+tasks/
+image-cache/
+
+# Project-specific session logs & tool results
+projects/
+
+# Plugins (install per machine)
+plugins/

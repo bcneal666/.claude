@@ -1,0 +1,61 @@
+{
+  "skillListingBudgetFraction": 0.02,
+  "env": {
+    "CLAUDE_CODE_NO_FLICKER": "0",
+    "CLAUDE_CODE_ENABLE_AWAY_SUMMARY": "1",
+    "CLAUDE_CODE_SIMPLE_SYSTEM_PROMPT": "1"
+  },
+  "permissions": {
+    "allow": [
+      "WebSearch",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git push *)",
+      "Edit(~/.claude/hooks/**)",
+      "Write(~/.claude/hooks/**)"
+    ],
+    "defaultMode": "auto",
+    "additionalDirectories": []
+  },
+  "model": "sonnet",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$HOME/.claude/hooks/protect-files.js\""
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$HOME/.claude/hooks/now-push.js\""
+          }
+        ]
+      }
+    ]
+  },
+  "statusLine": {
+    "type": "command",
+    "command": "bash ~/.claude/statusline-command.sh"
+  },
+  "enabledPlugins": {},
+  "extraKnownMarketplaces": {
+    "cloudflare": {
+      "source": {
+        "source": "github",
+        "repo": "cloudflare/skills"
+      }
+    }
+  },
+  "effortLevel": "xhigh",
+  "advisorModel": "opus",
+  "theme": "dark",
+  "skipAutoPermissionPrompt": true
+}
