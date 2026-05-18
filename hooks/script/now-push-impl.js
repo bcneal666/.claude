@@ -219,7 +219,7 @@ function generateMessage({ diff, recentLog, config, cwd }) {
     '5. 第一行後**必須**空一行，接著一段（1–3 行）說明此變更的背景或動機（為什麼要做、解決什麼問題）。若 diff 已經足夠自我解釋，可省略此段。',
     '6. 接著**必須**空一行，再以 `- ` 起首逐條列出 diff 中**所有實質改動**。規則：',
     '   - 每個邏輯變更一條 bullet（同檔案多個獨立修改應拆成多條；高度相關的小改動可合併）。',
-    '   - 條目數不設上限：diff 涵蓋幾項實質改動就列幾條，**禁止**為了簡潔而省略。',
+    '   - 條目數**沒有硬性上限**，但若實質改動超過約 20 項，請依「檔案／模組」彙整為摘要型 bullet（每個模組一條，內含該模組的主要重點），優先表達整體脈絡；**避免條列過長導致輸出被 token 上限截斷**。',
     '   - 每條格式建議：`- <動詞> <對象>（<檔案或位置>）：<具體做了什麼>`。例：`- 新增 resolveScope()（now-push-impl.js）：依 project marker 自動偵測 scope`。',
     '   - 純格式調整（rename、移動、空白、註解）也要列出，但可彙整成一條。',
     '   - **禁止**只寫「更新 X」「調整 Y」，必須說明調整的內容或方向。',
@@ -270,11 +270,14 @@ function sanitizeMessage(raw, trailer) {
   let msg = raw.trim();
   // 移除模型偶爾加上的 markdown code fence
   msg = msg.replace(/^```[a-zA-Z]*\s*\n?/, '').replace(/\n?```\s*$/, '').trim();
-  // 確保 trailer 存在
-  if (!msg.includes(trailer)) {
+  // 偵測 trailer 缺失：systemPrompt 已明確要求 trailer 為訊息最後一段，
+  // 若原始輸出沒有，最可能的原因是被 max_tokens 截斷（也可能是模型偶爾不遵守規則）。
+  // 仍補上 trailer 讓 commit 流程可繼續，但以旗標回報給上層警示使用者。
+  const trailerMissing = !msg.includes(trailer);
+  if (trailerMissing) {
     msg = `${msg}\n\n${trailer}`;
   }
-  return msg;
+  return { message: msg, trailerMissing };
 }
 
 function run({ cwd = process.cwd(), config = DEFAULT_CONFIG } = {}) {
@@ -358,7 +361,7 @@ function run({ cwd = process.cwd(), config = DEFAULT_CONFIG } = {}) {
     log('   已 stage 變更但未 commit。請手動 git commit 或 git reset 後重試。');
     return result(false);
   }
-  const message = sanitizeMessage(gen.stdout, buildTrailer(config.model));
+  const { message, trailerMissing } = sanitizeMessage(gen.stdout, buildTrailer(config.model));
 
   // 8. git commit（用 -F + pathspec，避免帶到 scope 外的 pre-staged 檔案）
   const tmpFile = path.join(os.tmpdir(), `now-push-${Date.now()}-${process.pid}.txt`);
@@ -399,6 +402,7 @@ function run({ cwd = process.cwd(), config = DEFAULT_CONFIG } = {}) {
   log(`   Commit : ${hash}`);
   log(`   Branch : ${branch}`);
   if (truncated) log('   備註   : diff 過長已截斷給 LLM，message 可能未涵蓋全部細節');
+  if (trailerMissing) log('   ⚠️ 警告 : LLM 原始輸出未包含 trailer，已自動補上；訊息可能被 max_tokens 截斷，請檢查 bullet 是否完整');
   log('');
   log('Message:');
   log('─────────────────────');

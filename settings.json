@@ -19,6 +19,16 @@
     "defaultMode": "auto",
     "additionalDirectories": []
   },
+  "autoMode": {
+    "allow": [
+      "$defaults",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git push *)",
+      "Edit(~/.claude/hooks/**)",
+      "Write(~/.claude/hooks/**)"
+    ]
+  },
   "hooks": {
     "PreToolUse": [
       {
