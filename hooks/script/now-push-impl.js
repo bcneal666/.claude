@@ -47,7 +47,9 @@ function resolveDefaultModel() {
     if (typeof settings.model === 'string' && settings.model.trim()) {
       return settings.model.trim();
     }
-  } catch { /* ignore — 用 fallback */ }
+  } catch {
+    /* ignore — 用 fallback */
+  }
   return 'sonnet';
 }
 
@@ -112,7 +114,9 @@ function claudeBin() {
  * 路徑為 repo-root 相對、使用 forward slash。
  */
 function listChangedFiles(repoRoot) {
-  const r = sh(['git', '-C', repoRoot, 'status', '--porcelain=v1', '-z'], { cwd: repoRoot });
+  const r = sh(['git', '-C', repoRoot, 'status', '--porcelain=v1', '-z'], {
+    cwd: repoRoot,
+  });
   if (!r.ok) return [];
   const parts = r.stdout.split('\0').filter(Boolean);
   const files = [];
@@ -124,7 +128,12 @@ function listChangedFiles(repoRoot) {
     const filename = entry.slice(3);
     files.push(filename.replace(/\\/g, '/'));
     // Rename / Copy 緊接著一個原始檔名 part
-    if (status[0] === 'R' || status[0] === 'C' || status[1] === 'R' || status[1] === 'C') {
+    if (
+      status[0] === 'R' ||
+      status[0] === 'C' ||
+      status[1] === 'R' ||
+      status[1] === 'C'
+    ) {
       i += 2;
     } else {
       i += 1;
@@ -148,7 +157,9 @@ function findSubprojectRoot(repoRoot, fileRelPath, markers) {
         if (fs.existsSync(path.join(abs, marker))) {
           return dir;
         }
-      } catch { /* ignore */ }
+      } catch {
+        /* ignore */
+      }
     }
   }
   return '';
@@ -161,7 +172,10 @@ function findSubprojectRoot(repoRoot, fileRelPath, markers) {
 function resolveScope({ cwd, repoRoot, changedFiles, config }) {
   // 0. 環境變數 override
   if (process.env.NOW_PUSH_NO_SCOPE === '1') {
-    return { scope: '', reason: '已設定 NOW_PUSH_NO_SCOPE=1，跳過 scope 偵測（commit 整個 repo）' };
+    return {
+      scope: '',
+      reason: '已設定 NOW_PUSH_NO_SCOPE=1，跳過 scope 偵測（commit 整個 repo）',
+    };
   }
 
   // 1. cwd 是 repo 的子目錄 → 直接用 cwd
@@ -202,9 +216,13 @@ function resolveScope({ cwd, repoRoot, changedFiles, config }) {
   }
   lines.push('');
   lines.push('處理方式（擇一）：');
-  lines.push('   1. cd 到想 commit 的子專案目錄（或從那邊啟動 Claude Code）後再執行 `now push`');
+  lines.push(
+    '   1. cd 到想 commit 的子專案目錄（或從那邊啟動 Claude Code）後再執行 `now push`'
+  );
   lines.push('   2. 手動處理其他子專案的變更（git stash / commit）後重試');
-  lines.push('   3. 確認要一次 commit 全部：設定環境變數 NOW_PUSH_NO_SCOPE=1 再執行');
+  lines.push(
+    '   3. 確認要一次 commit 全部：設定環境變數 NOW_PUSH_NO_SCOPE=1 再執行'
+  );
   return { scope: null, reason: '', error: lines.join('\n') };
 }
 
@@ -246,9 +264,12 @@ function generateMessage({ diff, recentLog, config, cwd }) {
     claudeBin(),
     [
       '-p',
-      '--model', config.model,
-      '--output-format', 'text',
-      '--append-system-prompt', systemPrompt,
+      '--model',
+      config.model,
+      '--output-format',
+      'text',
+      '--append-system-prompt',
+      systemPrompt,
       userPrompt,
     ],
     {
@@ -269,7 +290,10 @@ function generateMessage({ diff, recentLog, config, cwd }) {
 function sanitizeMessage(raw, trailer) {
   let msg = raw.trim();
   // 移除模型偶爾加上的 markdown code fence
-  msg = msg.replace(/^```[a-zA-Z]*\s*\n?/, '').replace(/\n?```\s*$/, '').trim();
+  msg = msg
+    .replace(/^```[a-zA-Z]*\s*\n?/, '')
+    .replace(/\n?```\s*$/, '')
+    .trim();
   // 偵測 trailer 缺失：systemPrompt 已明確要求 trailer 為訊息最後一段，
   // 若原始輸出沒有，最可能的原因是被 max_tokens 截斷（也可能是模型偶爾不遵守規則）。
   // 仍補上 trailer 讓 commit 流程可繼續，但以旗標回報給上層警示使用者。
@@ -291,7 +315,9 @@ function run({ cwd = process.cwd(), config = DEFAULT_CONFIG } = {}) {
     log('❌ 目前目錄不是 git repo。');
     return result(false);
   }
-  const repoRoot = sh(['git', 'rev-parse', '--show-toplevel'], { cwd }).stdout.trim();
+  const repoRoot = sh(['git', 'rev-parse', '--show-toplevel'], {
+    cwd,
+  }).stdout.trim();
   if (!repoRoot) {
     log('❌ 無法取得 git repo 根目錄。');
     return result(false);
@@ -327,20 +353,26 @@ function run({ cwd = process.cwd(), config = DEFAULT_CONFIG } = {}) {
     log('❌ 偵測到可能的敏感檔案，已中止：');
     flagged.forEach((f) => log(`   - ${f}`));
     log('');
-    log('如確認要提交，請手動 git add / commit 或編輯 hooks/script/now-push-impl.js 的 sensitivePatterns。');
+    log(
+      '如確認要提交，請手動 git add / commit 或編輯 hooks/script/now-push-impl.js 的 sensitivePatterns。'
+    );
     return result(false);
   }
 
   // 5. git add <scope>（從 repo root 跑，並用 pathspec 限縮）
   const addPath = scope || '.';
-  const add = sh(['git', '-C', repoRoot, 'add', '--', addPath], { cwd: repoRoot });
+  const add = sh(['git', '-C', repoRoot, 'add', '--', addPath], {
+    cwd: repoRoot,
+  });
   if (!add.ok) {
     log(`❌ git add 失敗：${(add.stderr || add.stdout).trim()}`);
     return result(false);
   }
 
   // 6. 取得 scope 內的 staged diff
-  let diff = sh(['git', '-C', repoRoot, 'diff', '--staged', '--', addPath], { cwd: repoRoot }).stdout;
+  let diff = sh(['git', '-C', repoRoot, 'diff', '--staged', '--', addPath], {
+    cwd: repoRoot,
+  }).stdout;
   if (!diff.trim()) {
     log('❌ git add 後 scope 內沒有 staged 變更（可能全被 .gitignore 排除）。');
     return result(false);
@@ -348,10 +380,13 @@ function run({ cwd = process.cwd(), config = DEFAULT_CONFIG } = {}) {
   const originalDiffLen = diff.length;
   const truncated = diff.length > config.maxDiffChars;
   if (truncated) {
-    diff = diff.slice(0, config.maxDiffChars) +
+    diff =
+      diff.slice(0, config.maxDiffChars) +
       `\n\n... (diff 過長，已截斷至前 ${config.maxDiffChars} 字元，原長度 ${originalDiffLen})`;
   }
-  const recentLog = sh(['git', '-C', repoRoot, 'log', '-5', '--oneline'], { cwd: repoRoot }).stdout.trim();
+  const recentLog = sh(['git', '-C', repoRoot, 'log', '-5', '--oneline'], {
+    cwd: repoRoot,
+  }).stdout.trim();
 
   // 7. 呼叫 claude -p 產生 commit message
   const gen = generateMessage({ diff, recentLog, config, cwd: repoRoot });
@@ -361,16 +396,29 @@ function run({ cwd = process.cwd(), config = DEFAULT_CONFIG } = {}) {
     log('   已 stage 變更但未 commit。請手動 git commit 或 git reset 後重試。');
     return result(false);
   }
-  const { message, trailerMissing } = sanitizeMessage(gen.stdout, buildTrailer(config.model));
+  const { message, trailerMissing } = sanitizeMessage(
+    gen.stdout,
+    buildTrailer(config.model)
+  );
 
   // 8. git commit（用 -F + pathspec，避免帶到 scope 外的 pre-staged 檔案）
-  const tmpFile = path.join(os.tmpdir(), `now-push-${Date.now()}-${process.pid}.txt`);
+  const tmpFile = path.join(
+    os.tmpdir(),
+    `now-push-${Date.now()}-${process.pid}.txt`
+  );
   fs.writeFileSync(tmpFile, message, { encoding: 'utf8' });
   let commit;
   try {
-    commit = sh(['git', '-C', repoRoot, 'commit', '-F', tmpFile, '--', addPath], { cwd: repoRoot });
+    commit = sh(
+      ['git', '-C', repoRoot, 'commit', '-F', tmpFile, '--', addPath],
+      { cwd: repoRoot }
+    );
   } finally {
-    try { fs.unlinkSync(tmpFile); } catch { /* ignore */ }
+    try {
+      fs.unlinkSync(tmpFile);
+    } catch {
+      /* ignore */
+    }
   }
 
   if (!commit.ok) {
@@ -382,8 +430,13 @@ function run({ cwd = process.cwd(), config = DEFAULT_CONFIG } = {}) {
     return result(false);
   }
 
-  const hash = sh(['git', '-C', repoRoot, 'rev-parse', '--short', 'HEAD'], { cwd: repoRoot }).stdout.trim();
-  const branch = sh(['git', '-C', repoRoot, 'rev-parse', '--abbrev-ref', 'HEAD'], { cwd: repoRoot }).stdout.trim();
+  const hash = sh(['git', '-C', repoRoot, 'rev-parse', '--short', 'HEAD'], {
+    cwd: repoRoot,
+  }).stdout.trim();
+  const branch = sh(
+    ['git', '-C', repoRoot, 'rev-parse', '--abbrev-ref', 'HEAD'],
+    { cwd: repoRoot }
+  ).stdout.trim();
 
   // 9. git push
   const push = sh(['git', '-C', repoRoot, 'push'], { cwd: repoRoot });
@@ -401,8 +454,12 @@ function run({ cwd = process.cwd(), config = DEFAULT_CONFIG } = {}) {
   log(`   Scope  : ${scope || '(整個 repo)'}  — ${sc.reason}`);
   log(`   Commit : ${hash}`);
   log(`   Branch : ${branch}`);
-  if (truncated) log('   備註   : diff 過長已截斷給 LLM，message 可能未涵蓋全部細節');
-  if (trailerMissing) log('   ⚠️ 警告 : LLM 原始輸出未包含 trailer，已自動補上；訊息可能被 max_tokens 截斷，請檢查 bullet 是否完整');
+  if (truncated)
+    log('   備註   : diff 過長已截斷給 LLM，message 可能未涵蓋全部細節');
+  if (trailerMissing)
+    log(
+      '   ⚠️ 警告 : LLM 原始輸出未包含 trailer，已自動補上；訊息可能被 max_tokens 截斷，請檢查 bullet 是否完整'
+    );
   log('');
   log('Message:');
   log('─────────────────────');
@@ -412,7 +469,13 @@ function run({ cwd = process.cwd(), config = DEFAULT_CONFIG } = {}) {
   return result(true);
 }
 
-module.exports = { run, DEFAULT_CONFIG, findSubprojectRoot, resolveScope, listChangedFiles };
+module.exports = {
+  run,
+  DEFAULT_CONFIG,
+  findSubprojectRoot,
+  resolveScope,
+  listChangedFiles,
+};
 
 // CLI 模式：可直接 `node now-push-impl.js` 在當前 repo 執行
 if (require.main === module) {
