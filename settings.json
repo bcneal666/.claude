@@ -19,7 +19,6 @@
     "defaultMode": "auto",
     "additionalDirectories": []
   },
-  "model": "sonnet",
   "hooks": {
     "PreToolUse": [
       {

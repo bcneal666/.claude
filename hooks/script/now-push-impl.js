@@ -1,5 +1,5 @@
 /**
- * now-push 自動化實作。
+ * now-push 自動化。
  *
  * 設計目標：所有「機械性」步驟（檢查、stage、commit、push）由腳本完成，
  * AI 只透過 `claude -p` headless 模式產生 commit message。
