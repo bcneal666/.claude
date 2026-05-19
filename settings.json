@@ -66,8 +66,7 @@
     }
   },
   "model": "opus",
-  "effortLevel": "xhigh",
-  "advisorModel": "opus",
+  "effortLevel": "high",
   "theme": "dark",
   "skipAutoPermissionPrompt": true
 }

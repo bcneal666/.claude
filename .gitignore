@@ -1,5 +1,7 @@
 # Credentials & secrets
 .credentials.json
+# daemon runtime keys (pipe.key 等 socket 認證金鑰)
+daemon/
 # history.json 
 history.jsonl
 # MCP needs auth cache

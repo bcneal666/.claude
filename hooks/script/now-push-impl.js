@@ -125,8 +125,40 @@ function listChangedFiles(repoRoot) {
     const entry = parts[i];
     // 格式："XY filename"，XY 各一字元 + 空白
     const status = entry.slice(0, 2);
-    const filename = entry.slice(3);
-    files.push(filename.replace(/\\/g, '/'));
+    const filename = entry.slice(3).replace(/\\/g, '/');
+    // git status 對「整個目錄都未追蹤」只會回報 `?? dir/`（含尾斜線），
+    // 不會展開目錄內檔案。若不展開，sensitive 掃描就只看到 `dir/`，
+    // 像 `daemon/pipe.key` 這種敏感檔會被完全繞過。這裡用
+    // `git ls-files --others --exclude-standard` 列出實際檔案，確保
+    // 後續 sensitivePatterns 能比對到真實路徑。
+    if (status === '??' && filename.endsWith('/')) {
+      const expanded = sh(
+        [
+          'git',
+          '-C',
+          repoRoot,
+          'ls-files',
+          '--others',
+          '--exclude-standard',
+          '-z',
+          '--',
+          filename,
+        ],
+        { cwd: repoRoot }
+      );
+      const inner = expanded.ok
+        ? expanded.stdout.split('\0').filter(Boolean)
+        : [];
+      if (inner.length) {
+        inner.forEach((f) => files.push(f.replace(/\\/g, '/')));
+      } else {
+        // 理論上 git status 既然回報了該目錄，ls-files 至少要回一筆；
+        // 萬一拿不到，保留原本的目錄項，至少不漏報給上層。
+        files.push(filename);
+      }
+    } else {
+      files.push(filename);
+    }
     // Rename / Copy 緊接著一個原始檔名 part
     if (
       status[0] === 'R' ||
@@ -260,6 +292,12 @@ function generateMessage({ diff, recentLog, config, cwd }) {
     '請依規則產生一則 commit message。',
   ].join('\n');
 
+  // userPrompt 走 stdin 而非 argv：
+  //   Windows 的 CreateProcessW 命令列上限約 32,767 個 UTF-16 字元，
+  //   而 userPrompt 內含的 diff 最大可達 config.maxDiffChars（預設 40000），
+  //   再加上 systemPrompt 與包裝文字後極易超限。把 userPrompt 改走 stdin
+  //   就完全繞過此限制，Linux 也一併受惠（更乾淨的 argv，較不易踩到極端
+  //   shell 行為）。
   const r = spawnSync(
     claudeBin(),
     [
@@ -270,20 +308,28 @@ function generateMessage({ diff, recentLog, config, cwd }) {
       'text',
       '--append-system-prompt',
       systemPrompt,
-      userPrompt,
     ],
     {
       encoding: 'utf8',
       cwd,
       shell: false,
+      input: userPrompt,
       maxBuffer: 8 * 1024 * 1024,
     }
   );
 
+  const stdout = r.stdout || '';
+  const stderr = r.stderr || '';
   return {
-    ok: r.status === 0 && (r.stdout || '').trim().length > 0,
-    stdout: r.stdout || '',
-    stderr: r.stderr || '',
+    ok: r.status === 0 && stdout.trim().length > 0,
+    stdout,
+    stderr,
+    // 額外回傳 spawn 結果原始欄位，讓上層在失敗時能列印完整診斷
+    // （特別是 API safety filter 退回空字串、spawn 失敗、timeout 這類
+    //  stderr 為空但 ok=false 的情境）。
+    status: r.status,
+    signal: r.signal,
+    error: r.error ? r.error.message : null,
   };
 }
 
@@ -392,7 +438,21 @@ function run({ cwd = process.cwd(), config = DEFAULT_CONFIG } = {}) {
   const gen = generateMessage({ diff, recentLog, config, cwd: repoRoot });
   if (!gen.ok) {
     log('❌ 呼叫 `claude -p` 產生 commit message 失敗。');
+    log(`   status=${gen.status} signal=${gen.signal ?? 'null'}`);
+    if (gen.error) log(`   error : ${gen.error}`);
     if (gen.stderr.trim()) log(`   stderr: ${gen.stderr.trim()}`);
+    const stdoutTrimmed = gen.stdout.trim();
+    if (stdoutTrimmed) {
+      const preview =
+        stdoutTrimmed.length > 500
+          ? `${stdoutTrimmed.slice(0, 500)} …(截斷，原長度 ${stdoutTrimmed.length})`
+          : stdoutTrimmed;
+      log(`   stdout: ${preview}`);
+    } else {
+      log(
+        '   stdout: (空白) — 可能是 API safety filter 退回空字串，請確認 diff 是否含敏感內容（key、token、credential 等）'
+      );
+    }
     log('   已 stage 變更但未 commit。請手動 git commit 或 git reset 後重試。');
     return result(false);
   }
