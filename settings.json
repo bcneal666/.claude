@@ -27,16 +27,17 @@
       "Bash(git push *)",
       "Edit(~/.claude/hooks/**)",
       "Write(~/.claude/hooks/**)"
-    ]
+    ],
+    "hard_deny": []
   },
+  "model": "sonnet",
   "hooks": {
-    "PreToolUse": [
+    "SessionStart": [
       {
-        "matcher": "Edit|Write",
         "hooks": [
           {
             "type": "command",
-            "command": "node \"$HOME/.claude/hooks/protect-files.js\""
+            "command": "echo '{\"hookSpecificOutput\":{\"hookEventName\":\"SessionStart\",\"additionalContext\":\"'$(git status --short | head -20 | jq -Rs .)'\"}}'"
           }
         ]
       }
@@ -55,8 +56,8 @@
       }
     }
   },
-  "model": "opus",
-  "effortLevel": "high",
+  "effortLevel": "xhigh",
+  "advisorModel": "opus",
   "theme": "dark",
   "skipAutoPermissionPrompt": true
 }
