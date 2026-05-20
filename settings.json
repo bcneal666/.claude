@@ -19,27 +19,15 @@
     "defaultMode": "auto",
     "additionalDirectories": []
   },
-  "model": "sonnet",
-  "hooks": {
-    "SessionStart": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "echo '{\"hookSpecificOutput\":{\"hookEventName\":\"SessionStart\",\"additionalContext\":\"'$(git status --short | head -20 | jq -Rs .)'\"}}'"
-          }
-        ]
-      }
-    ]
-  },
+  "model": "opus",
+  "hooks": {},
   "statusLine": {
     "type": "command",
     "command": "bash ~/.claude/statusline-command.sh"
   },
   "enabledPlugins": {},
   "extraKnownMarketplaces": {},
-  "effortLevel": "xhigh",
-  "advisorModel": "opus",
+  "effortLevel": "high",
   "fastMode": false,
   "theme": "dark",
   "skipAutoPermissionPrompt": true,
