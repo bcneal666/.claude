@@ -19,17 +19,6 @@
     "defaultMode": "auto",
     "additionalDirectories": []
   },
-  "autoMode": {
-    "allow": [
-      "$defaults",
-      "Bash(git add *)",
-      "Bash(git commit -m ' *)",
-      "Bash(git push *)",
-      "Edit(~/.claude/hooks/**)",
-      "Write(~/.claude/hooks/**)"
-    ],
-    "hard_deny": []
-  },
   "model": "sonnet",
   "hooks": {
     "SessionStart": [
@@ -48,16 +37,21 @@
     "command": "bash ~/.claude/statusline-command.sh"
   },
   "enabledPlugins": {},
-  "extraKnownMarketplaces": {
-    "cloudflare": {
-      "source": {
-        "source": "github",
-        "repo": "cloudflare/skills"
-      }
-    }
-  },
+  "extraKnownMarketplaces": {},
   "effortLevel": "xhigh",
   "advisorModel": "opus",
+  "fastMode": false,
   "theme": "dark",
-  "skipAutoPermissionPrompt": true
+  "skipAutoPermissionPrompt": true,
+  "autoMode": {
+    "allow": [
+      "$defaults",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git push *)",
+      "Edit(~/.claude/hooks/**)",
+      "Write(~/.claude/hooks/**)"
+    ],
+    "hard_deny": []
+  }
 }
