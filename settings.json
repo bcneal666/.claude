@@ -15,12 +15,34 @@
       "Bash(git push *)",
       "Edit(~/.claude/hooks/**)",
       "Write(~/.claude/hooks/**)"
-    ],
-    "defaultMode": "auto",
-    "additionalDirectories": []
+    ]
   },
-  "model": "opus",
-  "hooks": {},
+  "defaultMode": "auto",
+  "additionalDirectories": [],
+  "model": "sonnet",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "jq -r '.tool_input.file_path' | grep -E '\\.env$|secrets|credentials|production\\.ya?ml' && echo '{\"decision\":\"block\",\"reason\":\"Protected file\"}' || exit 0"
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo '{\"hookSpecificOutput\":{\"hookEventName\":\"SessionStart\",\"additionalContext\":\"'$(git status --short | head -20 | jq -Rs .)'\"}}'"
+          }
+        ]
+      }
+    ]
+  },
   "statusLine": {
     "type": "command",
     "command": "bash ~/.claude/statusline-command.sh"
@@ -41,5 +63,6 @@
       "Write(~/.claude/hooks/**)"
     ],
     "hard_deny": []
-  }
+  },
+  "advisorModel": "opus"
 }
