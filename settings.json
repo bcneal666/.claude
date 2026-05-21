@@ -8,6 +8,7 @@
     "DISABLE_EXTRA_USAGE_COMMAND": "1"
   },
   "permissions": {
+    "defaultMode": "auto",
     "allow": [
       "WebSearch",
       "Bash(git add *)",
@@ -17,7 +18,6 @@
       "Write(~/.claude/hooks/**)"
     ]
   },
-  "defaultMode": "auto",
   "additionalDirectories": [],
   "model": "sonnet",
   "hooks": {
