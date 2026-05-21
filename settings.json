@@ -18,21 +18,10 @@
       "Edit(~/.claude/commands/**)",
       "Write(~/.claude/commands/**)"
     ],
-    "defaultMode": "default"
+    "defaultMode": "auto"
   },
   "model": "sonnet",
   "hooks": {
-    "PreToolUse": [
-      {
-        "matcher": "Write|Edit",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "jq -r '.tool_input.file_path' | grep -E '\\.env$|secrets|credentials|production\\.ya?ml' && echo '{\"decision\":\"block\",\"reason\":\"Protected file\"}' || exit 0"
-          }
-        ]
-      }
-    ],
     "SessionStart": [
       {
         "hooks": [
