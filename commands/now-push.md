@@ -11,7 +11,7 @@ description: 自動執行 git add + commit + push，commit message 用固定格�
 3. `git log -5 --oneline` 看近期 commit 風格作為參考
 4. `git add .`
 5. 依下列**固定格式**生成 commit message
-6. `git commit -m "<header>" -m "<body>"`（多行用兩個 -m 傳）
+6. `git commit -m "<header>" -m "<body>" -m "Co-Authored-By: <當前模型全名> <noreply@anthropic.com>"`（固定三個 -m，trailer 不可省略；模型全名從本次 session 的系統資訊動態取得，格式如 `Claude Sonnet 4.6`、`Claude Opus 4.7`、`Claude Haiku 4.5`）
 7. `git push`
 
 任一步驟指令非零退出立即停止，回報 stderr 完整內容，**不嘗試修復**。
@@ -73,10 +73,11 @@ description: 自動執行 git add + commit + push，commit message 用固定格�
 - 每行上限 72 個中文字，過長就換行續寫
 - 條列點數量：1 到 6 點之間，過多代表 commit 太雜應拆分（若已執行至此就照實寫，**不要事後拆 commit**）
 
-**footer（選填）**
+**footer**
 
-- 關聯 issue：`Refs: #123` 或 `Closes: #123`
-- 破壞性變更：`BREAKING CHANGE: <說明影響與遷移方式>`
+- **必填 trailer**：`Co-Authored-By: <當前模型全名> <noreply@anthropic.com>`（每次 commit 都必須存在，透過第三個 `-m` 傳入，不可省略；模型全名從本次 session 系統資訊動態取得，例如 `Claude Sonnet 4.6`、`Claude Opus 4.7`、`Claude Haiku 4.5`）
+- 關聯 issue（選填）：`Refs: #123` 或 `Closes: #123`
+- 破壞性變更（選填）：`BREAKING CHANGE: <說明影響與遷移方式>`
 
 ## 範例
 
@@ -89,6 +90,8 @@ feat(auth): 加入 JWT token 過期自動續期機制
 - 加入 useAuth hook 提供前端統一的登入狀態
 
 Refs: #142
+
+Co-Authored-By: <當前模型全名> <noreply@anthropic.com>
 ​```
 
 ​```
@@ -97,6 +100,8 @@ refactor(db): 將 user 查詢統一改用 Prisma include 預載關聯
 - 移除散落各 service 的手動 N+1 查詢
 - 在 UserRepository 集中定義 include 規則確保一致性
 - 預期可減少 40% 的查詢次數
+
+Co-Authored-By: <當前模型全名> <noreply@anthropic.com>
   ​```
 
 ​```
@@ -104,6 +109,8 @@ fix(ui): 修正深色模式下表單錯誤訊息對比度不足
 
 - 將 error text 從 #ff0000 改為 #ff6b6b
 - 加入 dark: 變體確保兩種模式都符合 WCAG AA
+
+Co-Authored-By: <當前模型全名> <noreply@anthropic.com>
   ​```
 
 ## 禁止事項

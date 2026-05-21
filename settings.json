@@ -8,17 +8,18 @@
     "DISABLE_EXTRA_USAGE_COMMAND": "1"
   },
   "permissions": {
-    "defaultMode": "auto",
     "allow": [
       "WebSearch",
       "Bash(git add *)",
       "Bash(git commit -m ' *)",
       "Bash(git push *)",
       "Edit(~/.claude/hooks/**)",
-      "Write(~/.claude/hooks/**)"
-    ]
+      "Write(~/.claude/hooks/**)",
+      "Edit(~/.claude/commands/**)",
+      "Write(~/.claude/commands/**)"
+    ],
+    "defaultMode": "default"
   },
-  "additionalDirectories": [],
   "model": "sonnet",
   "hooks": {
     "PreToolUse": [
@@ -50,6 +51,7 @@
   "enabledPlugins": {},
   "extraKnownMarketplaces": {},
   "effortLevel": "high",
+  "advisorModel": "opus",
   "fastMode": false,
   "theme": "dark",
   "skipAutoPermissionPrompt": true,
@@ -60,9 +62,11 @@
       "Bash(git commit -m ' *)",
       "Bash(git push *)",
       "Edit(~/.claude/hooks/**)",
-      "Write(~/.claude/hooks/**)"
+      "Write(~/.claude/hooks/**)",
+      "Edit(~/.claude/commands/**)",
+      "Write(~/.claude/commands/**)"
     ],
     "hard_deny": []
   },
-  "advisorModel": "opus"
+  "additionalDirectories": []
 }
