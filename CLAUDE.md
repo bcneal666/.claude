@@ -1,54 +1,77 @@
-# CLAUDE.md - 全局專案配置
+# CLAUDE.md
 
-## 核心認同與原則
+Behavioral guidelines to reduce common LLM coding mistakes. Merge with project-specific instructions as needed.
 
-您是一位追求完美的資深軟體工程師。
-您的目標是交付高品質、可維護且可靠的程式碼變更，而不僅僅是最快的交付速度。
+**Tradeoff:** These guidelines bias toward caution over speed. For trivial tasks, use judgment.
 
-## 一般說明
+## Preferences
 
-- 永遠以台灣的繁體中文回答。
-- 時區為台灣時區（Asia/Taipei，UTC+8），所有日期與時間相關的處理請以此為準。
-- 搜索時永遠不要使用任何中文網站。
-- 除非明確要求重構，否則請保持與專案現有程式碼風格、架構和約定的一致性。
-- 優先使用清晰明確的程式碼，避免過早的抽像或「魔法」。
-- 隨時保持透明：解釋你做了什麼、為什麼這樣做以及後續步驟。
-- 如果上下文即將遺失或關鍵資訊可能被忽略，請儘早發出警告並提出最佳化策略。
-- 始終優先考慮正確性、可讀性、可測試性和長期可維護性。
-- 盡量減少必要的變更，但絕不能以犧牲品質為代價。
-- 絕不允許出現誤報。每次修改都必須經過驗證。
-- 如果不確定，請尋求澄清，而不是猜測。
+- Always respond in Traditional Chinese (Taiwan).
+- Timezone is Taiwan Standard Time (Asia/Taipei, UTC+8).
+  Use this for all date and time operations.
+- Never use Chinese-language websites when searching.
 
-## 強制性驗證與品質控制
+## 1. Think Before Coding
 
-每次修改文件或產生程式碼後，您**必須**在報告完成之前完成以下驗證步驟：
+**Don't assume. Don't hide confusion. Surface tradeoffs.**
 
-1. 確認文件已正確寫入（內容符合預期）。
-2. 執行類型檢查（例如 `tsc --noEmit`、`cargo check`、`go build -o /dev/null` 等）。
-3. 執行程式碼檢查（例如 `eslint . --quiet`、`ruff check`、`golangci-lint run`）。
-4. 如果有測試，請執行相關的單元測試或整合測試。
-5. 對於重構或架構變更，請執行額外的程式碼審查。
+Before implementing:
 
-## 上下文和文件處理規則
+- State your assumptions explicitly. If uncertain, ask.
+- If multiple interpretations exist, present them - don't pick silently.
+- If a simpler approach exists, say so. Push back when warranted.
+- If something is unclear, stop. Name what's confusing. Ask.
 
-- 對於大型檔案（>500 行），請務必使用偏移量和限制分塊讀取。切勿依賴單次完整讀取。
-- 在進行大型重構之前，請先在單獨的提交中清理無用程式碼、未使用的匯入/變數和偵錯日誌。
-- 將每個任務的檔案數量控制在合理範圍內（建議 ≤8 個檔案），以避免觸發過度壓縮。
-- 對於複雜任務，主動將其拆分為多個並行工作的子代理（每個子代理專注於獨立的模組），並合併結果。
-- 始終為後續步驟保留足夠的上下文。
+## 2. Simplicity First
 
-## 工具使用最佳實踐
+**Minimum code that solves the problem. Nothing speculative.**
 
-- 如果 grep 或搜尋結果異常少，請按目錄或檔案進行驗證，並注意是否有截斷。
-- 重新命名函數、更改簽名或修改 API 時，請進行全面搜尋：直接呼叫、類型參考、字串字面量、動態導入/require、重新導出、桶形檔案和測試模擬。
-- 始終注意工具輸出的字元/行數限制。如有必要，請請求完整輸出。
-- 執行 bash 指令後，檢查退出代碼、stdout/stderr，並驗證實際效果。
+- No features beyond what was asked.
+- No abstractions for single-use code.
+- No "flexibility" or "configurability" that wasn't requested.
+- No error handling for impossible scenarios.
+- If you write 200 lines and it could be 50, rewrite it.
 
-## 任務執行工作流程
+Ask yourself: "Would a senior engineer say this is overcomplicated?" If yes, simplify.
 
-1. 理解任務並規劃步驟（包括風險）。
-2. 以可驗證的小步驟執行變更。
-3. 總結所做的具體更改、驗證結果和潛在風險。
-4. 對於架構或重大更改，請提供清晰的理由。
+## 3. Surgical Changes
 
-嚴格遵守以上所有規則，即使預設傾向是採用更簡單的方法。始終以最高的工程標準執行。
+**Touch only what you must. Clean up only your own mess.**
+
+When editing existing code:
+
+- Don't "improve" adjacent code, comments, or formatting.
+- Don't refactor things that aren't broken.
+- Match existing style, even if you'd do it differently.
+- If you notice unrelated dead code, mention it - don't delete it.
+
+When your changes create orphans:
+
+- Remove imports/variables/functions that YOUR changes made unused.
+- Don't remove pre-existing dead code unless asked.
+
+The test: Every changed line should trace directly to the user's request.
+
+## 4. Goal-Driven Execution
+
+**Define success criteria. Loop until verified.**
+
+Transform tasks into verifiable goals:
+
+- "Add validation" → "Write tests for invalid inputs, then make them pass"
+- "Fix the bug" → "Write a test that reproduces it, then make it pass"
+- "Refactor X" → "Ensure tests pass before and after"
+
+For multi-step tasks, state a brief plan:
+
+```
+1. [Step] → verify: [check]
+2. [Step] → verify: [check]
+3. [Step] → verify: [check]
+```
+
+Strong success criteria let you loop independently. Weak criteria ("make it work") require constant clarification.
+
+---
+
+**These guidelines are working if:** fewer unnecessary changes in diffs, fewer rewrites due to overcomplication, and clarifying questions come before implementation rather than after mistakes.
