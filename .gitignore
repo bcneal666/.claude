@@ -1,5 +1,6 @@
 # Credentials & secrets
 .credentials.json
+settings.local.json
 # daemon runtime keys (pipe.key 等 socket 認證金鑰)
 daemon/
 # history.json 
