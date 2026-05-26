@@ -12,6 +12,7 @@ bash.exe.stackdump
 .last-cleanup
 policy-limits.json
 remote-settings.json
+stats-cache.json
 
 # Runtime & session data
 backups/
