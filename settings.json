@@ -27,7 +27,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "echo '{\"hookSpecificOutput\":{\"hookEventName\":\"SessionStart\",\"additionalContext\":\"'$(git status --short | head -20 | jq -Rs .)'\"}}'"
+            "command": "echo '{\"reloadSkills\":true,\"hookSpecificOutput\":{\"hookEventName\":\"SessionStart\",\"additionalContext\":\"'$(git status --short | head -20 | jq -Rs .)'\"}}'"
           }
         ]
       }
@@ -39,7 +39,7 @@
   },
   "enabledPlugins": {},
   "extraKnownMarketplaces": {},
-  "effortLevel": "high",
+  "effortLevel": "xhigh",
   "advisorModel": "opus",
   "fastMode": false,
   "theme": "dark",
