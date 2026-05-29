@@ -10,6 +10,7 @@ mcp-needs-auth-cache.json
 bash.exe.stackdump
 .caveman-active
 .last-cleanup
+.last-update-result.json
 policy-limits.json
 remote-settings.json
 stats-cache.json
