@@ -42,6 +42,7 @@
   "advisorModel": "opus",
   "fastMode": false,
   "theme": "dark",
+  "agentPushNotifEnabled": true,
   "skipAutoPermissionPrompt": true,
   "autoMode": {
     "allow": [
