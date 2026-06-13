@@ -1,7 +1,7 @@
 {
   "skillListingBudgetFraction": 0.02,
   "env": {
-    "CLAUDE_CODE_NO_FLICKER": "0",
+    "CLAUDE_CODE_NO_FLICKER": "1",
     "CLAUDE_CODE_ENABLE_AWAY_SUMMARY": "1",
     "CLAUDE_CODE_SIMPLE_SYSTEM_PROMPT": "1",
     "CLAUDE_CODE_DISABLE_TERMINAL_TITLE": "1",
