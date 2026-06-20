@@ -2,7 +2,8 @@
   "permissions": {
     "allow": [
       "Skill(update-config)",
-      "Bash(git commit -m 'feat\\(commands\\): 強制 Co-Authored-By trailer 並補全範例格式' -m '- 將 now-push 指令的第 6 步更新為固定三個 -m，強制附加 Co-Authored-By trailer *)"
+      "Bash(git commit -m 'feat\\(commands\\): 強制 Co-Authored-By trailer 並補全範例格式' -m '- 將 now-push 指令的第 6 步更新為固定三個 -m，強制附加 Co-Authored-By trailer *)",
+      "Bash(git *)"
     ]
   }
 }

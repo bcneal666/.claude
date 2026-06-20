@@ -40,7 +40,6 @@
   "enabledPlugins": {},
   "extraKnownMarketplaces": {},
   "effortLevel": "xhigh",
-  "advisorModel": "opus",
   "fastMode": false,
   "theme": "dark",
   "agentPushNotifEnabled": true,
