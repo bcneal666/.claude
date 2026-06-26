@@ -3,7 +3,10 @@ input=$(cat)
 
 MODEL=$(echo "$input" | jq -r '.model.display_name')
 CLAUDE_DIR="${CLAUDE_CONFIG_DIR:-$HOME/.claude}"
-EFFORT=$(jq -r '.effortLevel // "medium"' "$CLAUDE_DIR/settings.json" 2>/dev/null)
+# 優先讀 stdin 的 live session effort（會反映 /effort 的即時變更，例如 max）；
+# 模型不支援 effort 參數時此欄位會缺，才回退到 settings.json 的持久值
+EFFORT=$(echo "$input" | jq -r '.effort.level // empty')
+[ -z "$EFFORT" ] && EFFORT=$(jq -r '.effortLevel // "medium"' "$CLAUDE_DIR/settings.json" 2>/dev/null)
 DIR=$(echo "$input" | jq -r '.workspace.current_dir')
 COST=$(echo "$input" | jq -r '.cost.total_cost_usd // 0')
 PCT=$(echo "$input" | jq -r '.context_window.used_percentage // 0' | cut -d. -f1)
@@ -48,7 +51,7 @@ esac
 # Effort tier
 case "$EFFORT" in
   lite|low|min*) EFFORT_COLOR="$DIM$C_GOOD" ;;
-  high|max|ultra) EFFORT_COLOR="$BOLD$C_BAD" ;;
+  high|xhigh|max|ultra) EFFORT_COLOR="$BOLD$C_BAD" ;;
   *) EFFORT_COLOR="$C_WARN" ;;
 esac
 

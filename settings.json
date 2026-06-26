@@ -1,5 +1,4 @@
 {
-  "language": "traditional chinese",
   "skillListingBudgetFraction": 0.02,
   "env": {
     "CLAUDE_CODE_NO_FLICKER": "1",
@@ -39,8 +38,8 @@
   },
   "enabledPlugins": {},
   "extraKnownMarketplaces": {},
+  "language": "traditional chinese",
   "effortLevel": "xhigh",
-  "fastMode": false,
   "theme": "dark",
   "agentPushNotifEnabled": true,
   "skipAutoPermissionPrompt": true,
