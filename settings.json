@@ -39,6 +39,7 @@
   "enabledPlugins": {},
   "extraKnownMarketplaces": {},
   "language": "traditional chinese",
+  "model": "opusplan",
   "effortLevel": "xhigh",
   "theme": "dark",
   "agentPushNotifEnabled": true,
