@@ -55,6 +55,18 @@ case "$EFFORT" in
   *) EFFORT_COLOR="$C_WARN" ;;
 esac
 
+# opusplan 指示：settings.json 設為 opusplan 時，依「當前生效模型」標示所處階段
+# （Plan mode 用 Opus、執行時切 Sonnet），解釋模型名稱為何會跳動
+MODEL_CFG=$(jq -r '.model // empty' "$CLAUDE_DIR/settings.json" 2>/dev/null)
+OPUSPLAN_TAG=""
+if [ "$MODEL_CFG" = "opusplan" ]; then
+  case "$MODEL" in
+    *[Oo]pus*)   OPUSPLAN_TAG=" ${DIM}${C_WARN}📋 plan${RESET}" ;;
+    *[Ss]onnet*) OPUSPLAN_TAG=" ${DIM}${C_GOOD}⚡ run${RESET}" ;;
+    *)           OPUSPLAN_TAG=" ${DIM}⇄ opusplan${RESET}" ;;
+  esac
+fi
+
 # Duration tier
 MINS=$((DURATION_MS / 60000)); SECS=$(((DURATION_MS % 60000) / 1000))
 if [ "$MINS" -ge 15 ]; then DUR_COLOR="$C_BAD"
@@ -83,6 +95,6 @@ fi
 SEP="${C_SEP}|${RESET}"
 COST_FMT=$(printf '$%.2f' "$COST")
 
-echo -e "${C_MODEL}🤖 [$MODEL]${RESET} ${EFFORT_COLOR}🔥 ${EFFORT}${RESET}"
+echo -e "${C_MODEL}🤖 [$MODEL]${RESET}${OPUSPLAN_TAG} ${EFFORT_COLOR}🔥 ${EFFORT}${RESET}"
 echo -e "${C_DIR}📁 ${SHORT_DIR}${RESET}${BRANCH}"
 echo -e "🧠 ${BAR_COLOR}${BAR}${RESET} ${PCT}% ${SEP} ${COST_COLOR}💰 ${COST_FMT}${RESET} ${SEP} ${DUR_COLOR}⏱️ ${MINS}m ${SECS}s${RESET}"
