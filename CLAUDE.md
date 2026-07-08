@@ -1,4 +1,2 @@
 - Always respond in Traditional Chinese (Taiwan).
 - Use Taiwan Standard Time (Asia/Taipei, UTC+8) for all date and time operations.
-- Never use Chinese-language websites when searching.
-

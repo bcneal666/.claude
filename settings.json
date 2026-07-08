@@ -20,6 +20,8 @@
     ],
     "defaultMode": "auto"
   },
+  "model": "opusplan",
+  "advisorModel": "opus",
   "hooks": {
     "SessionStart": [
       {
@@ -39,7 +41,6 @@
   "enabledPlugins": {},
   "extraKnownMarketplaces": {},
   "language": "traditional chinese",
-  "model": "opusplan",
   "effortLevel": "xhigh",
   "theme": "dark",
   "agentPushNotifEnabled": true,
