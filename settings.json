@@ -21,7 +21,6 @@
     "defaultMode": "auto"
   },
   "model": "opusplan",
-  "advisorModel": "opus",
   "hooks": {
     "SessionStart": [
       {
