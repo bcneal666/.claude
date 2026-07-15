@@ -14,9 +14,7 @@
       "Bash(git commit -m ' *)",
       "Bash(git push *)",
       "Edit(~/.claude/hooks/**)",
-      "Write(~/.claude/hooks/**)",
-      "Edit(~/.claude/commands/**)",
-      "Write(~/.claude/commands/**)"
+      "Edit(~/.claude/commands/**)"
     ],
     "defaultMode": "plan"
   },
@@ -51,9 +49,7 @@
       "Bash(git commit -m ' *)",
       "Bash(git push *)",
       "Edit(~/.claude/hooks/**)",
-      "Write(~/.claude/hooks/**)",
-      "Edit(~/.claude/commands/**)",
-      "Write(~/.claude/commands/**)"
+      "Edit(~/.claude/commands/**)"
     ],
     "hard_deny": []
   },
