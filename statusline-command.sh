@@ -59,13 +59,15 @@ esac
 # （Plan mode 用 Opus、執行時切 Sonnet），解釋模型名稱為何會跳動
 MODEL_CFG=$(jq -r '.model // empty' "$CLAUDE_DIR/settings.json" 2>/dev/null)
 OPUSPLAN_TAG=""
-if [ "$MODEL_CFG" = "opusplan" ]; then
-  case "$MODEL" in
-    *[Oo]pus*)   OPUSPLAN_TAG=" ${DIM}${C_WARN}📋 plan${RESET}" ;;
-    *[Ss]onnet*) OPUSPLAN_TAG=" ${DIM}${C_GOOD}⚡ run${RESET}" ;;
-    *)           OPUSPLAN_TAG=" ${DIM}⇄ opusplan${RESET}" ;;
-  esac
-fi
+case "$MODEL_CFG" in
+  opusplan*)
+    case "$MODEL" in
+      *[Oo]pus*)   OPUSPLAN_TAG=" ${DIM}${C_WARN}📋 plan${RESET}" ;;
+      *[Ss]onnet*) OPUSPLAN_TAG=" ${DIM}${C_GOOD}⚡ run${RESET}" ;;
+      *)           OPUSPLAN_TAG=" ${DIM}⇄ opusplan${RESET}" ;;
+    esac
+    ;;
+esac
 
 # Duration tier
 MINS=$((DURATION_MS / 60000)); SECS=$(((DURATION_MS % 60000) / 1000))
