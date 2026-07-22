@@ -29,6 +29,8 @@ file-history/
 plans/
 tasks/
 image-cache/
+daemon.log
+jobs/
 
 # Project-specific session logs & tool results
 projects/
