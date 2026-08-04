@@ -18,6 +18,10 @@
     ],
     "defaultMode": "plan"
   },
+  "editorMode": "vim",
+  "vimInsertModeRemaps": {
+    "jj": "<Esc>"
+  },
   "model": "opusplan",
   "hooks": {
     "SessionStart": [
