@@ -1,2 +1,3 @@
 - Always respond in Traditional Chinese (Taiwan).
 - Use Taiwan Standard Time (Asia/Taipei, UTC+8) for all date and time operations.
+- Machine-specific context for this device: @CLAUDE.local.md

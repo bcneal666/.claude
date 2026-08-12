@@ -22,7 +22,7 @@
   "vimInsertModeRemaps": {
     "jj": "<Esc>"
   },
-  "model": "opusplan",
+  "model": "opus[1m]",
   "hooks": {
     "SessionStart": [
       {
