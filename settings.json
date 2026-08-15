@@ -18,11 +18,7 @@
     ],
     "defaultMode": "plan"
   },
-  "editorMode": "vim",
-  "vimInsertModeRemaps": {
-    "jj": "<Esc>"
-  },
-  "model": "opus[1m]",
+  "model": "opusplan",
   "hooks": {
     "SessionStart": [
       {
@@ -45,6 +41,10 @@
   "language": "traditional chinese",
   "effortLevel": "xhigh",
   "theme": "dark",
+  "editorMode": "vim",
+  "vimInsertModeRemaps": {
+    "jj": "<Esc>"
+  },
   "agentPushNotifEnabled": true,
   "skipAutoPermissionPrompt": true,
   "autoMode": {
