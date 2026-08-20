@@ -1,4 +1,5 @@
 {
+  "outputStyle": "Concise",
   "skillListingBudgetFraction": 0.02,
   "env": {
     "CLAUDE_CODE_NO_FLICKER": "1",
@@ -33,7 +34,7 @@
   },
   "statusLine": {
     "type": "command",
-    "command": "bash ~/.claude/statusline-command.sh",
+    "command": "node ~/.claude/statusline-command.mjs || bash ~/.claude/statusline-command.sh",
     "refreshInterval": 10
   },
   "enabledPlugins": {},

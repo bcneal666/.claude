@@ -14,6 +14,7 @@ bash.exe.stackdump
 policy-limits.json
 remote-settings.json
 stats-cache.json
+statusline-debug.log
 
 # 本機專屬記憶（每台設備自行 cp CLAUDE.local.example.md 產生）
 CLAUDE.local.md
