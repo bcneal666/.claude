@@ -26,7 +26,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "echo '{\"reloadSkills\":true,\"hookSpecificOutput\":{\"hookEventName\":\"SessionStart\",\"additionalContext\":\"'$(git status --short | head -20 | jq -Rs .)'\"}}'"
+            "command": "node ~/.claude/hooks/session-start.mjs"
           }
         ]
       }

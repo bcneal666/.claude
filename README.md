@@ -13,6 +13,7 @@
 ├── settings.local.json         # 本機專屬設定（不進版控）
 ├── statusline-command.mjs      # statusline 腳本（Node 單一程序版，取代 .sh）
 ├── statusline-command.sh       # statusline 腳本舊版（保留）
+├── hooks/                      # hook 腳本（SessionStart 注入 git status，跨平台 Node）
 ├── commands/                   # 自訂 slash commands
 ├── skills/                     # 自訂 / 第三方 skills
 └── notes/                      # 個人筆記（非設定，僅暫存）
@@ -45,6 +46,7 @@
 
 - `outputStyle`：`Concise`（精簡輸出）
 - 固定使用 Node 版 statusline（`statusline-command.mjs`）
+- SessionStart hook（`hooks/session-start.mjs`）開場注入 `git status --short` 前 20 行到 context
 - `permissions.allow` 內白名單常用唯讀 / 低風險指令（`git add`、`git commit -m`、`git push`、`WebSearch` 等）
 
 ## 維護慣例
