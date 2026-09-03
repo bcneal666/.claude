@@ -35,11 +35,9 @@
 | `agent-browser` | 瀏覽器自動化 CLI，操作網頁、填表、截圖、爬資料 |
 | `caveman` | 極致精簡溝通模式，降低 token 用量同時保留技術準確性 |
 | `design-md` | 分析 Stitch 專案，整理成 `DESIGN.md` 設計系統文件 |
-| `eli5` | 用五歲小孩能懂的方式解釋主題 |
 | `find-skills` | 協助發掘與安裝其他 agent skills |
 | `git-commit` | Conventional commit 訊息分析與智慧分批 staging |
 | `officecli` / `officecli-docx` / `officecli-pptx` / `officecli-xlsx` | 建立、分析、校對、修改 Office 文件（Word / Excel / PowerPoint） |
-| `seo-audit` | 網站 SEO 健檢與問題診斷 |
 | `skill-creator` | 建立、修改、優化 skills，並可跑 eval 測試效能 |
 
 ## Settings 重點
