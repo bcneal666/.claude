@@ -1,5 +1,4 @@
 {
-  "outputStyle": "Concise",
   "skillListingBudgetFraction": 0.02,
   "env": {
     "CLAUDE_CODE_NO_FLICKER": "1",
@@ -37,8 +36,18 @@
     "command": "node ~/.claude/statusline-command.mjs || bash ~/.claude/statusline-command.sh",
     "refreshInterval": 10
   },
-  "enabledPlugins": {},
-  "extraKnownMarketplaces": {},
+  "enabledPlugins": {
+    "watch@claude-video": true
+  },
+  "extraKnownMarketplaces": {
+    "claude-video": {
+      "source": {
+        "source": "github",
+        "repo": "bradautomates/claude-video"
+      }
+    }
+  },
+  "outputStyle": "Concise",
   "language": "traditional chinese",
   "effortLevel": "xhigh",
   "theme": "dark",
