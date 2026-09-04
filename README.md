@@ -26,7 +26,7 @@
 | Command | 說明 |
 |---|---|
 | `/now-push` | 依固定格式自動執行 `git add` + `commit`（繁中 commit message）+ `push`，全程不詢問確認 |
-| `/up-rules` | 精煉 `CLAUDE.md` / `.claude/rules/*.md` 的字句，壓縮冗詞但保留完整指令語意 |
+| `/up-rules` | 精煉 `CLAUDE.md` / `.claude/rules/*.md` / `.claude/commands/*.md` 的字句，壓縮冗詞但保留完整指令語意 |
 
 ## Skills
 

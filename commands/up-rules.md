@@ -1,5 +1,5 @@
 ---
-description: 以 caveman full 極限壓縮規則文件（CLAUDE.md / .claude/rules），只保 AI 可解析語意；同步檢查並維護專案根 README.md 供人類閱讀
+description: 以 caveman full 極限壓縮規則文件（CLAUDE.md / .claude/rules / .claude/commands），只保 AI 可解析語意；同步檢查並維護專案根 README.md 供人類閱讀
 ---
 
 精煉規則文件的唯一讀者是 AI——每次 session 全文載入，人類幾乎不看。因此壓縮強度直接拉滿到 `caveman` skill 的 **full** 等級，**不流失任何指令語意**，讓 AI 讀取更快更完整。
@@ -13,20 +13,23 @@ description: 以 caveman full 極限壓縮規則文件（CLAUDE.md / .claude/rul
 - `CLAUDE.md`（專案根目錄）
 - `./.claude/CLAUDE.md`
 - `./.claude/rules/*.md`
+- `./.claude/commands/**/*.md`（含子目錄的 namespaced commands；若專案根本身就是 `.claude` 目錄，如本倉庫，對應路徑為 `./commands/**/*.md`）
 
 存在哪個就處理哪個，缺的略過。透過 `@path` import 進來的檔案（如 `@CLAUDE.local.md`）**不主動壓縮**，除非它本身也落在上述清單內。
+
+⚠️ 不要用裸的 `commands/**/*.md` 通配任意專案——一般專案的 `commands/` 目錄可能是原始碼（如 CQRS command 模式），只有明確對應到 Claude Code 的 `.claude/commands/` 才算目標。
 
 ### 同步目標（人類可讀為準，不壓縮）
 
 - `./README.md`（專案根）——見「步驟 5」
 
-僅處理上述四種路徑。**不要**擴及 `skills/`、`commands/`、`settings.json` 或其他檔案。
+僅處理上述五種路徑。**不要**擴及 `skills/`、`settings.json` 或其他檔案。
 
 ## 執行流程
 
 ### 1. 蒐集脈絡
 
-- 用 glob 找出實際存在的壓縮目標檔案，完整讀取每一個；確認 `./README.md` 是否存在。
+- 用 glob 找出實際存在的壓縮目標檔案（含 `.claude/commands/**/*.md`），完整讀取每一個；確認 `./README.md` 是否存在。
 - `git log --oneline -15` 與 `git diff` 檢視近期改動與開發方向。**這一步有明確任務**：找出近期新增的規則是否與既有內容**重疊、重複或矛盾**——這正是最該合併或刪除的部分。把找到的重疊點餵進後續壓縮，而非只是看過。
 
 ### 2. 建立指令清單（壓縮前）
@@ -59,6 +62,9 @@ description: 以 caveman full 極限壓縮規則文件（CLAUDE.md / .claude/rul
 - 消歧義用的正反範例（✅ 正確 ／ ❌ 錯誤）
 - `@path` import 語法（如 `@CLAUDE.local.md`）——功能性語法，改寫即失效
 - frontmatter 的 key 名稱與值（`description:`、`name:` 等）
+- command 檔案的 frontmatter **整塊**逐字保留（`description`、`argument-hint`、`allowed-tools`、`model`、`disable-model-invocation`）——`description` 決定 slash command 觸發與清單顯示，壓縮即降準確度
+- command 內的參數佔位符 `$ARGUMENTS`、`$1`–`$9`
+- command 內 `!` 前綴的 bash 執行語法——功能性語法，改寫即失效
 
 只壓縮這些區塊**周圍的散文敘述**，區塊本身不動。
 
@@ -97,6 +103,13 @@ README **不套 caveman**。目標讀者是人類：完整句子、正常標點�
 - 每檔行數／字數前→後對照與壓縮比（**作為觀察值陳述，不是追求的目標**）。
 - 主要刪改點（合併了什麼、刪了什麼冗詞）。
 - README.md 的處置結果（新增 / 已更新 / 已同步未改動）。
+
+## 自我壓縮提醒
+
+`commands/up-rules.md`、`commands/now-push.md` 本身也落在壓縮範圍內：
+
+- `now-push.md` 幾乎整份是逐字保留內容（commit 格式模板、type 對照表、✅／❌ 正反範例、`Co-Authored-By` trailer），已被上方「逐字保留」與「不壓縮的場合」規則覆蓋——只能動模板周圍的散文，可壓縮空間很小，不要為壓縮比硬動模板。
+- 執行 `/up-rules` 時若壓縮到自己，改寫後仍須通過「步驟 4：驗證未流失」逐條核對。
 
 ## 禁止事項
 
