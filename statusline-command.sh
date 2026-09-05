@@ -97,6 +97,13 @@ case "$MODEL_CFG" in
     ;;
 esac
 
+# permission mode 圖示：與 node 版 permissionModeTag 同步（plan/auto/default 三分），
+# 目前 bash 版沒有讀 transcript_path 推導 permissionMode 的邏輯，此區塊暫不啟用，
+# 保留註解對照供未來若要補上時參考：
+#   plan    -> "${DIM}${C_WARN}📋 plan${RESET}"
+#   auto    -> "${DIM}${BOLD}${C_BAD}🚀 auto${RESET}"
+#   default -> "${DIM}${C_GOOD}✋ manual${RESET}"
+
 # Duration tier
 MINS=$((DURATION_MS / 60000)); SECS=$(((DURATION_MS % 60000) / 1000))
 if [ "$MINS" -ge 15 ]; then DUR_COLOR="$C_BAD"

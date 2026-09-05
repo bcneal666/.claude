@@ -163,13 +163,36 @@ function getPalette(theme) {
   }
 }
 
+// ---------- permission mode 圖示 ----------
+//
+// permissionMode 目前觀察到的值："plan"（規劃中）、"auto"（全自動免確認）、
+// "default"（逐步詢問）；未知值一律 fallback 顯示原字串，不吃掉資訊。
+// 回傳 { text, stage }：stage 只分 "plan" / "run"，供下面 opusplan 模型比對用
+// ——auto 與 default 對 opusplan 而言都停在 Sonnet（run 階段），差別只在
+// 「要不要跳確認」，所以圖示要分三種、但 stage 仍是二分。
+function permissionModeTag(permissionMode, { DIM, BOLD, C_WARN, C_GOOD, C_BAD, RESET }) {
+  switch (permissionMode) {
+    case "plan":
+      return { text: `${DIM}${C_WARN}📋 plan${RESET}`, stage: "plan" };
+    case "auto":
+      // auto 是免確認全自動模式，用粗體紅提醒「這個階段風險較高、看仔細」
+      return { text: `${DIM}${BOLD}${C_BAD}🚀 auto${RESET}`, stage: "run" };
+    case "default":
+      return { text: `${DIM}${C_GOOD}✋ manual${RESET}`, stage: "run" };
+    default:
+      return permissionMode
+        ? { text: `${DIM}${C_WARN}🔧 ${permissionMode}${RESET}`, stage: "run" }
+        : null;
+  }
+}
+
 // ---------- opusplan 階段標籤 ----------
 //
 // 優先用 permission mode（來自 transcript 尾端）推導階段，因為那才是「即時生效
 // 的判斷依據」；model 名稱只在 transcript 讀不到時當退路。若兩者都有但結論不同
 // （代表 harness 這一輪還沒把新 model 解析結果送進 stdin），用暗色 ≠ 標記出來，
 // 而不是靜默顯示其中一個——這樣使用者看得出「畫面正在追上」而非誤判成 bug。
-function computeOpusplanTag({ modelCfg, model, over200k, permissionMode, DIM, C_WARN, C_GOOD, C_BAD, RESET }) {
+function computeOpusplanTag({ modelCfg, model, over200k, permissionMode, DIM, BOLD, C_WARN, C_GOOD, C_BAD, RESET }) {
   if (!modelCfg.startsWith("opusplan")) return "";
 
   if (over200k) {
@@ -181,16 +204,14 @@ function computeOpusplanTag({ modelCfg, model, over200k, permissionMode, DIM, C_
   const hasSonnet = modelLower.includes("sonnet");
   const modelStage = hasOpus ? "plan" : hasSonnet ? "run" : null;
 
-  if (permissionMode !== null) {
-    const modeStage = permissionMode === "plan" ? "plan" : "run";
-    const tagText =
-      modeStage === "plan" ? `${DIM}${C_WARN}📋 plan${RESET}` : `${DIM}${C_GOOD}⚡ run${RESET}`;
+  const tag = permissionModeTag(permissionMode, { DIM, BOLD, C_WARN, C_GOOD, C_BAD, RESET });
+  if (tag !== null) {
     // modelStage 為 null（model 名稱既非 Opus 也非 Sonnet）時沒有東西可比對，
     // 不加 ≠ 標記，直接採用 mode 的結論
-    if (modelStage !== null && modelStage !== modeStage) {
-      return ` ${tagText} ${DIM}≠${RESET}`;
+    if (modelStage !== null && modelStage !== tag.stage) {
+      return ` ${tag.text} ${DIM}≠${RESET}`;
     }
-    return ` ${tagText}`;
+    return ` ${tag.text}`;
   }
 
   // transcript 讀不到：退回舊邏輯，純靠 model 名稱猜階段
@@ -285,7 +306,7 @@ function render(fields, permissionMode, theme) {
   else if (effort === "high" || effort === "xhigh" || effort === "max" || effort === "ultra") effortColor = BOLD + C_BAD;
   else effortColor = C_WARN;
 
-  const opusplanTag = computeOpusplanTag({ modelCfg, model, over200k, permissionMode, DIM, C_WARN, C_GOOD, C_BAD, RESET });
+  const opusplanTag = computeOpusplanTag({ modelCfg, model, over200k, permissionMode, DIM, BOLD, C_WARN, C_GOOD, C_BAD, RESET });
 
   const mins = Math.floor(durationMs / 60000);
   const secs = Math.floor((durationMs % 60000) / 1000);

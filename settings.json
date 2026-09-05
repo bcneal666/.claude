@@ -16,7 +16,7 @@
       "Edit(~/.claude/hooks/**)",
       "Edit(~/.claude/commands/**)"
     ],
-    "defaultMode": "plan"
+    "defaultMode": "auto"
   },
   "model": "opusplan",
   "hooks": {
