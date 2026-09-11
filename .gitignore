@@ -40,5 +40,8 @@ feedback/
 # Project-specific session logs & tool results
 projects/
 
+# Chrome native messaging host wrapper（Claude Code 產生，內含本機絕對路徑）
+chrome/
+
 # Plugins (install per machine)
 plugins/
