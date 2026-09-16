@@ -11,8 +11,11 @@
     "allow": [
       "WebSearch",
       "Bash(git add *)",
-      "Bash(git commit -m ' *)",
+      "Bash(git commit -m \"*)",
       "Bash(git push *)",
+      "PowerShell(git add *)",
+      "PowerShell(git commit -m \"*)",
+      "PowerShell(git push *)",
       "Edit(~/.claude/hooks/**)",
       "Edit(~/.claude/commands/**)",
       "Skill(update-config)"
@@ -21,19 +24,6 @@
   },
   "model": "opusplan",
   "hooks": {
-    "PreToolUse": [
-      {
-        "matcher": "Read|Edit|Write|Bash",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "node ~/.claude/hooks/guard-sensitive-files.mjs",
-            "timeout": 5,
-            "statusMessage": "檢查敏感檔案…"
-          }
-        ]
-      }
-    ],
     "UserPromptSubmit": [
       {
         "hooks": [
@@ -48,8 +38,9 @@
   },
   "statusLine": {
     "type": "command",
-    "command": "node ~/.claude/statusline-command.mjs || bash ~/.claude/statusline-command.sh",
-    "refreshInterval": 10
+    "command": "node ~/.claude/statusline-command.mjs",
+    "refreshInterval": 10,
+    "hideVimModeIndicator": true
   },
   "enabledPlugins": {
     "watch@claude-video": true
@@ -76,8 +67,11 @@
     "allow": [
       "$defaults",
       "Bash(git add *)",
-      "Bash(git commit -m ' *)",
+      "Bash(git commit -m \"*)",
       "Bash(git push *)",
+      "PowerShell(git add *)",
+      "PowerShell(git commit -m \"*)",
+      "PowerShell(git push *)",
       "Edit(~/.claude/hooks/**)",
       "Edit(~/.claude/commands/**)"
     ],
