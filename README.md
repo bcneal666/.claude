@@ -8,9 +8,10 @@
 .
 ├── CLAUDE.md                   # 全域指令（所有專案共用，進版控）
 ├── README.md                   # 本文件
-├── settings.json               # 全域 Claude Code 設定（permissions、env、statusLine…）
+├── settings.json               # 全域 Claude Code 設定（permissions、env、hooks、statusLine…）
 ├── statusline-command.mjs      # statusline 腳本（Node 單一程序版，主要使用）
 ├── statusline-command.sh       # statusline 腳本舊版（Node 版失敗時的 fallback）
+├── hooks/                      # hook 腳本（敏感檔案防護、時間注入，跨平台 Node）
 ├── commands/                   # 自訂 slash commands
 ├── skills/                     # 自訂 / 第三方 skills
 └── notes/                      # 個人筆記（非設定，僅暫存）
@@ -46,6 +47,8 @@
 - `permissions.defaultMode`：`plan`（預設進 plan 模式，先規劃再執行）
 - `permissions.allow` 白名單常用低風險指令（`git add`、`git commit -m`、`git push`、`WebSearch`、`Edit(~/.claude/hooks/**)`、`Edit(~/.claude/commands/**)`）
 - statusline 固定使用 Node 版（`statusline-command.mjs`），失敗時 fallback 到 `statusline-command.sh`
+- PreToolUse hook（`hooks/guard-sensitive-files.mjs`）攔截 `Read`/`Edit`/`Write`/`Bash` 碰到 `.env`、`~/.ssh/*`、`*.pem`：`Read` 一律 `deny`（讀取內容會不可逆地帶進 context），`Edit`/`Write`/`Bash` 一律 `ask`（留確認提示，不硬擋合法編輯）
+- UserPromptSubmit hook（`hooks/inject-datetime.mjs`）每則 prompt 注入當前完整時間戳（`Asia/Taipei`，含時刻與星期），彌補內建 system prompt 只給開場日期快照的不足
 
 ## 維護慣例
 

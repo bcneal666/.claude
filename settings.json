@@ -20,6 +20,32 @@
     "defaultMode": "plan"
   },
   "model": "opusplan",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Read|Edit|Write|Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node ~/.claude/hooks/guard-sensitive-files.mjs",
+            "timeout": 5,
+            "statusMessage": "檢查敏感檔案…"
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node ~/.claude/hooks/inject-datetime.mjs",
+            "timeout": 5
+          }
+        ]
+      }
+    ]
+  },
   "statusLine": {
     "type": "command",
     "command": "node ~/.claude/statusline-command.mjs || bash ~/.claude/statusline-command.sh",
