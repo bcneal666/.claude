@@ -20,18 +20,6 @@
     "defaultMode": "plan"
   },
   "model": "opusplan",
-  "hooks": {
-    "SessionStart": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "node ~/.claude/hooks/session-start.mjs"
-          }
-        ]
-      }
-    ]
-  },
   "statusLine": {
     "type": "command",
     "command": "node ~/.claude/statusline-command.mjs || bash ~/.claude/statusline-command.sh",

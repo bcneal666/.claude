@@ -8,11 +8,9 @@
 .
 ├── CLAUDE.md                   # 全域指令（所有專案共用，進版控）
 ├── README.md                   # 本文件
-├── settings.json               # 全域 Claude Code 設定（permissions、env、hooks、statusLine…）
-├── .claude/settings.local.json # 本機專屬覆寫設定
+├── settings.json               # 全域 Claude Code 設定（permissions、env、statusLine…）
 ├── statusline-command.mjs      # statusline 腳本（Node 單一程序版，主要使用）
 ├── statusline-command.sh       # statusline 腳本舊版（Node 版失敗時的 fallback）
-├── hooks/                      # hook 腳本（SessionStart 注入 git status，跨平台 Node）
 ├── commands/                   # 自訂 slash commands
 ├── skills/                     # 自訂 / 第三方 skills
 └── notes/                      # 個人筆記（非設定，僅暫存）
@@ -43,15 +41,14 @@
 
 ## Settings 重點
 
-- `model`：`opus[1m]`（Opus 1M context）
+- `model`：`opusplan`
 - `outputStyle`：`Concise`（精簡輸出）；`language`：`traditional chinese`
 - `permissions.defaultMode`：`plan`（預設進 plan 模式，先規劃再執行）
 - `permissions.allow` 白名單常用低風險指令（`git add`、`git commit -m`、`git push`、`WebSearch`、`Edit(~/.claude/hooks/**)`、`Edit(~/.claude/commands/**)`）
 - statusline 固定使用 Node 版（`statusline-command.mjs`），失敗時 fallback 到 `statusline-command.sh`
-- SessionStart hook（`hooks/session-start.mjs`）開場注入 `git status --short` 前 20 行到 context
 
 ## 維護慣例
 
-- 本機專屬設定寫 `.claude/settings.local.json`，全域共用設定才寫 `settings.json`
+- 全域共用設定寫 `settings.json`
 - 規則文件（`CLAUDE.md`、`commands/*.md`）改動後跑 `/up-rules` 壓縮冗詞並同步本 README
 - 變更完成且經確認後用 `/now-push` 推送
