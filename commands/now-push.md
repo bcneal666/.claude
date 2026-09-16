@@ -2,11 +2,11 @@
 description: 自動執行 git add + commit + push，commit message 用固定格式繁體中文
 ---
 
-立即依序執行，全程不詢問確認：
+立即依序執行，不詢問確認：
 
 ## 執行流程
 
-1. `git status` 檢查有無變更，若工作區乾淨直接回報「無變更可推送」並停止
+1. `git status` 檢查有無變更；工作區乾淨則回報「無變更可推送」並停止
 2. `git diff` + `git diff --staged` 讀完整變更
 3. `git log -5 --oneline` 參考近期 commit 風格
 4. `git add .`
@@ -50,8 +50,8 @@ description: 自動執行 git add + commit + push，commit message 用固定格�
 
 **scope（選填，英文小寫）**
 
-標示變更影響的模組、檔案區域或功能名稱。例：`auth`、`api`、`ui`、`db`、`config`。
-變更橫跨多個無共同 scope 的模組時省略 scope，header 寫成 `<type>: <subject>`。
+標示變更影響的模組／檔案區域／功能名稱，例 `auth`、`api`、`ui`、`db`、`config`。
+跨多個無共同 scope 模組時省略 scope，header 寫成 `<type>: <subject>`。
 
 **subject（必填，繁體中文）**
 
@@ -69,7 +69,7 @@ description: 自動執行 git add + commit + push，commit message 用固定格�
 
 - header 與 body 之間**必須空一行**
 - 每點用 `- ` 開頭
-- 每點一項具體變更，說明「做了什麼」，必要時加「為何這樣做」
+- 每點一項具體變更，說明做了什麼，必要時加原因
 - 每行上限 72 個中文字，過長換行續寫
 - 條列 1 到 6 點；過多代表 commit 太雜應拆分（若已執行至此就照實寫，**不要事後拆 commit**）
 

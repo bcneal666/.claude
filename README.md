@@ -45,7 +45,7 @@
 - `outputStyle`：`Concise`（精簡輸出）；`language`：`traditional chinese`
 - `permissions.defaultMode`：`plan`（預設進 plan 模式，先規劃再執行）
 - `permissions.allow` 白名單常用低風險指令（`git add`、`git commit -m`、`git push`、`WebSearch`、`Edit(~/.claude/hooks/**)`、`Edit(~/.claude/commands/**)`）；`git add`/`commit`/`push` 同時列了 `Bash(...)` 與 `PowerShell(...)` 兩種前綴——Windows 上 PowerShell 是獨立的權限 namespace，不繼承 `Bash(...)` 規則
-- statusline 只用 Node 版（`statusline-command.mjs`），無 shell fallback；三行分別為「model／effort／vim mode」「目錄／branch／耗時」「context 用量與大小／rate limits（5h／7d／overage 用量）／cost」，`hideVimModeIndicator:true` 關閉內建 `-- INSERT --` 指示器改由自繪
+- statusline 只用 Node 版（`statusline-command.mjs`），無 shell fallback；三行分別為「model／effort／vim mode」「目錄／branch」「context 用量與大小／rate limits（5h／overage 用量）／cost」，`hideVimModeIndicator:true` 關閉內建 `-- INSERT --` 指示器改由自繪
 - UserPromptSubmit hook（`hooks/inject-datetime.mjs`）每則 prompt 注入當前完整時間戳（`Asia/Taipei`，含時刻與星期），彌補內建 system prompt 只給開場日期快照的不足
 
 ## 維護慣例

@@ -16,7 +16,7 @@
 // 硬性規則：任何例外都必須仍輸出三行、exit code 0。空輸出／非 0 exit code 會
 // 讓 harness 把整條 statusline 清空，比顯示舊值更糟。
 
-import { readFileSync, statSync, appendFileSync, openSync, fstatSync, readSync, closeSync } from "node:fs";
+import { readFileSync, statSync, appendFileSync, readSync } from "node:fs";
 import path from "node:path";
 import os from "node:os";
 
@@ -75,60 +75,6 @@ function readSettingsSafe() {
   }
 }
 
-// 讀 transcript_path 尾端最後一筆 permission-mode 記錄，用來推導 opusplan 的
-// plan/run 階段標籤。這筆記錄是「每回合寫入」，不是切換當下即時寫入——若讀不到
-// 就整段跳過，讓呼叫端退回舊的「靠 model 名稱猜階段」邏輯，不製造新的靜默錯誤。
-//
-// 從檔尾往前找、逐塊擴大（64KB → 1MB 上限），每塊內由後往前逐行 JSON.parse，
-// 要求 type 欄位精確等於 "permission-mode"——不再用子字串 lastIndexOf，避免
-// 長 session 裡某則 assistant/tool 訊息內文剛好含有這段字面量時誤判命中。
-function readLastPermissionModeSafe(transcriptPath) {
-  if (!transcriptPath) return null;
-  let fd;
-  try {
-    fd = openSync(transcriptPath, "r");
-    const size = fstatSync(fd).size;
-    if (size === 0) return null;
-
-    const MAX_SCAN = 1024 * 1024; // 1MB 上限，避免超大 transcript 拖慢 statusline
-    let scanSize = Math.min(size, 65536);
-
-    for (;;) {
-      const buf = Buffer.alloc(scanSize);
-      readSync(fd, buf, 0, scanSize, size - scanSize);
-      const txt = buf.toString("utf8");
-      const lines = txt.split("\n");
-      // 非首行才視為完整行；scanSize < size 時第 0 行可能被切半，跳過它
-      const startIdx = scanSize < size ? 1 : 0;
-      for (let i = lines.length - 1; i >= startIdx; i--) {
-        const line = lines[i].trim();
-        if (!line) continue;
-        let obj;
-        try {
-          obj = JSON.parse(line);
-        } catch {
-          continue;
-        }
-        if (obj && obj.type === "permission-mode" && typeof obj.permissionMode === "string") {
-          return obj.permissionMode;
-        }
-      }
-      if (scanSize >= size || scanSize >= MAX_SCAN) return null;
-      scanSize = Math.min(scanSize * 4, size, MAX_SCAN);
-    }
-  } catch {
-    return null;
-  } finally {
-    if (fd !== undefined) {
-      try {
-        closeSync(fd);
-      } catch {
-        /* 忽略 */
-      }
-    }
-  }
-}
-
 // ---------- 欄位擷取（缺值 / 型別錯誤一律給預設值，絕不拋出） ----------
 
 function defaultFields() {
@@ -139,10 +85,7 @@ function defaultFields() {
     cost: 0,
     costTier: "good",
     durationMs: 0,
-    modelCfg: "",
-    over200k: false,
     dir: "",
-    transcriptPath: null,
     vimMode: null,
     ctxSize: null,
     rateLimits: null,
@@ -162,10 +105,8 @@ function extractRateLimits(rl) {
   if (!rl || typeof rl !== "object") return null;
   const out = {};
   const fiveHour = clampPercentOrNull(rl.five_hour && typeof rl.five_hour === "object" ? rl.five_hour.used_percentage : undefined);
-  const sevenDay = clampPercentOrNull(rl.seven_day && typeof rl.seven_day === "object" ? rl.seven_day.used_percentage : undefined);
   const overage = clampPercentOrNull(rl.overage && typeof rl.overage === "object" ? rl.overage.used_percentage : undefined);
   if (fiveHour !== null) out.fiveHour = fiveHour;
-  if (sevenDay !== null) out.sevenDay = sevenDay;
   if (overage !== null) out.overage = overage;
   return Object.keys(out).length > 0 ? out : null;
 }
@@ -193,14 +134,9 @@ function extractFields(stdinObj, settings) {
   if (typeof durationMs !== "number" || Number.isNaN(durationMs)) durationMs = 0;
   durationMs = Math.floor(durationMs);
 
-  const modelCfg = (typeof s.model === "string" && s.model) || "";
-  const over200k = o.exceeds_200k_tokens === true;
-
   const dir =
     (o.workspace && typeof o.workspace === "object" && typeof o.workspace.current_dir === "string" && o.workspace.current_dir) ||
     "";
-
-  const transcriptPath = typeof o.transcript_path === "string" ? o.transcript_path : null;
 
   const vimMode =
     (o.vim && typeof o.vim === "object" && typeof o.vim.mode === "string" && o.vim.mode) || null;
@@ -210,7 +146,7 @@ function extractFields(stdinObj, settings) {
 
   const rateLimits = extractRateLimits(o.rate_limits);
 
-  return { model, effort, pct, cost, costTier, durationMs, modelCfg, over200k, dir, transcriptPath, vimMode, ctxSize, rateLimits };
+  return { model, effort, pct, cost, costTier, durationMs, dir, vimMode, ctxSize, rateLimits };
 }
 
 // ---------- 配色（對應 STATUSLINE_THEME：default / mono / light） ----------
@@ -242,71 +178,6 @@ function getPalette(theme) {
         C_GOOD: GREEN, C_WARN: YELLOW, C_BAD: RED,
       };
   }
-}
-
-// ---------- permission mode 圖示 ----------
-//
-// permissionMode 目前觀察到的值："plan"（規劃中）、"auto"（全自動免確認）、
-// "default"（逐步詢問）；未知值一律 fallback 顯示原字串，不吃掉資訊。
-// 回傳 { text, stage }：stage 只分 "plan" / "run"，供下面 opusplan 模型比對用
-// ——auto 與 default 對 opusplan 而言都停在 Sonnet（run 階段），差別只在
-// 「要不要跳確認」，所以圖示要分三種、但 stage 仍是二分。
-function permissionModeTag(permissionMode, { DIM, BOLD, C_WARN, C_GOOD, C_BAD, RESET }) {
-  switch (permissionMode) {
-    case "plan":
-      return { text: `${DIM}${C_WARN}📋 plan${RESET}`, stage: "plan" };
-    case "auto":
-      // auto 是免確認全自動模式，用粗體紅提醒「這個階段風險較高、看仔細」
-      return { text: `${DIM}${BOLD}${C_BAD}🚀 auto${RESET}`, stage: "run" };
-    case "default":
-      return { text: `${DIM}${C_GOOD}✋ manual${RESET}`, stage: "run" };
-    default:
-      return permissionMode
-        ? { text: `${DIM}${C_WARN}🔧 ${permissionMode}${RESET}`, stage: "run" }
-        : null;
-  }
-}
-
-// ---------- opusplan 階段標籤 ----------
-//
-// 優先用 permission mode（來自 transcript 尾端）推導階段，因為那才是「即時生效
-// 的判斷依據」；model 名稱只在 transcript 讀不到時當退路。
-//
-// >200k 只在 plan mode 才會讓 harness 跳過 opusplan 升級（見 claude.exe 內
-// gpn()：`if(n!=="plan")return{model:r,clampWarning:null}`）；auto/default 模式
-// 下升級判斷根本不看 over200k，此時仍顯示 ⚠ 會誤導使用者以為升級被擋。故先解出
-// stage，只有 stage === "plan" 時才用 >200k 警示蓋掉一般標籤。
-function computeOpusplanTag({ modelCfg, model, over200k, permissionMode, DIM, BOLD, C_WARN, C_GOOD, C_BAD, RESET }) {
-  if (!modelCfg.startsWith("opusplan")) return "";
-
-  const modelLower = model.toLowerCase();
-  const hasOpus = modelLower.includes("opus");
-  const hasSonnet = modelLower.includes("sonnet");
-  const modelStage = hasOpus ? "plan" : hasSonnet ? "run" : null;
-
-  const tag = permissionModeTag(permissionMode, { DIM, BOLD, C_WARN, C_GOOD, C_BAD, RESET });
-
-  if (tag !== null) {
-    if (tag.stage === "plan" && over200k) {
-      return ` ${DIM}${C_BAD}⚠ >200k 停用升級${RESET}`;
-    }
-    // modelStage 為 null（model 名稱既非 Opus 也非 Sonnet）時沒有東西可比對，
-    // 不加 ≠ 標記，直接採用 mode 的結論
-    if (modelStage !== null && modelStage !== tag.stage) {
-      return ` ${tag.text} ${DIM}≠${RESET}`;
-    }
-    return ` ${tag.text}`;
-  }
-
-  // transcript 讀不到 permission mode：退回舊邏輯，純靠 model 名稱猜階段。
-  // 這裡沒有 stage 可判斷是否為 plan，>200k 警示一併退回舊的「一律顯示」規則，
-  // 寧可偶爾誤報也不要在退路裡完全丟失 >200k 這個重要資訊。
-  if (over200k) {
-    return ` ${DIM}${C_BAD}⚠ >200k 停用升級${RESET}`;
-  }
-  if (hasOpus) return ` ${DIM}${C_WARN}📋 plan${RESET}`;
-  if (hasSonnet) return ` ${DIM}${C_GOOD}⚡ run${RESET}`;
-  return ` ${DIM}⇄ opusplan${RESET}`;
 }
 
 // ---------- vim mode 標籤 ----------
@@ -348,19 +219,16 @@ function tierColor(pct, { C_GOOD, C_WARN, C_BAD }) {
 
 function rateLimitsSegment(rateLimits, palette) {
   if (!rateLimits) return "";
-  const { DIM, RESET, C_GOOD, C_WARN, C_BAD } = palette;
+  const { DIM, RESET, C_SEP, C_GOOD, C_WARN, C_BAD } = palette;
   const parts = [];
   if (typeof rateLimits.fiveHour === "number") {
     parts.push(`5h ${tierColor(rateLimits.fiveHour, { C_GOOD, C_WARN, C_BAD })}${rateLimits.fiveHour}%${RESET}`);
-  }
-  if (typeof rateLimits.sevenDay === "number") {
-    parts.push(`7d ${tierColor(rateLimits.sevenDay, { C_GOOD, C_WARN, C_BAD })}${rateLimits.sevenDay}%${RESET}`);
   }
   if (typeof rateLimits.overage === "number") {
     parts.push(`ov ${tierColor(rateLimits.overage, { C_GOOD, C_WARN, C_BAD })}${rateLimits.overage}%${RESET}`);
   }
   if (parts.length === 0) return "";
-  return ` ${DIM}📊${RESET} ${parts.join(` ${DIM}·${RESET} `)}`;
+  return ` ${C_SEP}|${RESET} ${parts.join(` ${DIM}·${RESET} `)}`;
 }
 
 // ---------- 目錄縮寫：最後兩段 + .../ 前綴，超過 30 字元截斷 ----------
@@ -432,14 +300,15 @@ function readBranchSafe(dir) {
 
 // ---------- 組裝輸出（三行） ----------
 
-function render(fields, permissionMode, theme) {
-  const { model, effort, pct, cost, costTier, durationMs, modelCfg, over200k, dir, vimMode, ctxSize, rateLimits } = fields;
+function render(fields, theme) {
+  const { model, effort, pct, cost, costTier, dir, vimMode, ctxSize, rateLimits } = fields;
   const P = getPalette(theme);
   const { RESET, BOLD, DIM, C_MODEL, C_DIR, C_BRANCH, C_SEP, C_GOOD, C_WARN, C_BAD } = P;
 
   const barColor = pct >= 90 ? C_BAD : pct >= 70 ? C_WARN : C_GOOD;
-  const filled = Math.floor(pct / 10);
-  const empty = 10 - filled;
+  const BAR_WIDTH = 5;
+  const filled = Math.floor(pct / (100 / BAR_WIDTH));
+  const empty = BAR_WIDTH - filled;
   const bar = "█".repeat(filled) + "░".repeat(empty);
 
   const costColor = costTier === "bad" ? C_BAD : costTier === "warn" ? C_WARN : C_GOOD;
@@ -449,12 +318,7 @@ function render(fields, permissionMode, theme) {
   else if (effort === "high" || effort === "xhigh" || effort === "max" || effort === "ultra") effortColor = BOLD + C_BAD;
   else effortColor = C_WARN;
 
-  const opusplanTag = computeOpusplanTag({ modelCfg, model, over200k, permissionMode, DIM, BOLD, C_WARN, C_GOOD, C_BAD, RESET });
   const vimTag = vimModeTag(vimMode, { DIM, C_WARN, BOLD, C_MODEL, RESET });
-
-  const mins = Math.floor(durationMs / 60000);
-  const secs = Math.floor((durationMs % 60000) / 1000);
-  const durColor = mins >= 15 ? C_BAD : mins >= 5 ? C_WARN : DIM;
 
   const shortDir = shortenDir(dir);
   const branch = readBranchSafe(dir);
@@ -462,16 +326,15 @@ function render(fields, permissionMode, theme) {
 
   const sep = `${C_SEP}|${RESET}`;
   const costFmt = `$${cost.toFixed(2)}`;
-  const costSegment = ` ${sep} ${costColor}💰 ${costFmt}${RESET}`;
-  const durationSegment = ` ${sep} ${durColor}⏱️ ${mins}m ${secs}s${RESET}`;
+  const costSegment = ` ${sep} ${costColor}${costFmt}${RESET}`;
   const ctxSizeFmt = formatCtxSize(ctxSize);
   const pctFmt = ctxSizeFmt ? `${pct}%/${ctxSizeFmt}` : `${pct}%`;
   const rateLimitsFmt = rateLimitsSegment(rateLimits, P);
 
-  // ⏱️ 耗時放第二行（跟在 🌿 branch 之後）；💰 cost 放第三行最右邊（bar/pct 與
-  // rate limits 之後），避免第三行把最常盯著看的 context bar 擠到中間
-  const line1 = `${C_MODEL}🤖 [${model}]${RESET}${opusplanTag} ${effortColor}🔥 ${effort}${RESET}${vimTag}`;
-  const line2 = `${C_DIR}📁 ${shortDir}${RESET}${branchSegment}${durationSegment}`;
+  // 🔤 vim mode 放第一行（跟在 🔥 effort 之後）；cost 放第三行最右邊（bar/pct
+  // 與 rate limits 之後），避免第三行把最常盯著看的 context bar 擠到中間
+  const line1 = `${C_MODEL}🤖 [${model}]${RESET} ${effortColor}🔥 ${effort}${RESET}${vimTag}`;
+  const line2 = `${C_DIR}📁 ${shortDir}${RESET}${branchSegment}`;
   const line3 = `🧠 ${barColor}${bar}${RESET} ${pctFmt}${rateLimitsFmt}${costSegment}`;
 
   return line1 + "\n" + line2 + "\n" + line3 + "\n";
@@ -502,15 +365,14 @@ function main() {
     const stdinObj = JSON.parse(raw);
     const settings = readSettingsSafe();
     const fields = extractFields(stdinObj, settings);
-    const permissionMode = readLastPermissionModeSafe(fields.transcriptPath);
 
-    process.stdout.write(render(fields, permissionMode, theme));
+    process.stdout.write(render(fields, theme));
   } catch {
     try {
-      process.stdout.write(render(defaultFields(), null, theme));
+      process.stdout.write(render(defaultFields(), theme));
     } catch {
       // 最壞情況（render 本身出錯）：純字面量輸出，不呼叫任何可能再度出錯的函式
-      process.stdout.write("🤖 [?] 🔥 medium\n📁 \n🧠 ░░░░░░░░░░ 0% | 💰 $0.00 | ⏱️ 0m 0s\n");
+      process.stdout.write("🤖 [?] 🔥 medium\n📁 \n🧠 ░░░░░░░░░░ 0% | $0.00\n");
     }
   }
 }
