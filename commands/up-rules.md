@@ -2,7 +2,7 @@
 description: 以 caveman full 極限壓縮規則文件（CLAUDE.md / .claude/rules / .claude/commands），只保 AI 可解析語意；同步檢查並維護專案根 README.md 供人類閱讀
 ---
 
-規則文件讀者只 AI——每 session 全文載入，人類幾乎不看。壓縮強度拉滿到 `caveman` skill 的 **full** 級，**不流失任何指令語意**。
+規則文件讀者只 AI——每 session 全文載入，人類幾乎不看。壓縮拉滿 `caveman` **full** 級，**不流失指令語意**。
 
 壓縮對象：**冗詞、重複敘述、裝飾性說明**。具體規則、約束條件、消歧義範例不動。
 
@@ -112,7 +112,7 @@ README **不套 caveman**——目標讀者是人類：完整句子、正常標�
 
 `commands/up-rules.md`、`commands/now-push.md` 本身也落在壓縮範圍內：
 
-- `now-push.md` 幾乎整份是逐字保留內容（commit 格式模板、type 對照表、✅／❌ 正反範例、`Co-Authored-By` trailer），已被「逐字保留」與「不壓縮的場合」規則覆蓋——只能動模板周圍的散文，可壓縮空間很小，不要為壓縮比硬動模板。
+- `now-push.md` 幾乎整份逐字保留（commit 格式模板、type 對照表、✅／❌ 正反範例、`Co-Authored-By` trailer）——只能動模板周圍散文，壓縮空間很小，不要為壓縮比硬動模板。
 - 壓縮到自己時，改寫後仍須通過「步驟 4：驗證未流失」逐條核對。
 
 ## 禁止事項

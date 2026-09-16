@@ -2,7 +2,7 @@
 description: 自動執行 git add + commit + push，commit message 用固定格式繁體中文
 ---
 
-立即依序執行以下動作，全程不詢問確認：
+立即依序執行，全程不詢問確認：
 
 ## 執行流程
 
