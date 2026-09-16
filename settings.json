@@ -14,7 +14,8 @@
       "Bash(git commit -m ' *)",
       "Bash(git push *)",
       "Edit(~/.claude/hooks/**)",
-      "Edit(~/.claude/commands/**)"
+      "Edit(~/.claude/commands/**)",
+      "Skill(update-config)"
     ],
     "defaultMode": "plan"
   },
