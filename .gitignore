@@ -45,3 +45,6 @@ chrome/
 
 # Plugins (install per machine)
 plugins/
+
+# 帳號雲端同步的 skills（UUID 路徑，由平台管理）
+skills/synced/

@@ -12,17 +12,19 @@
 ├── statusline-command.mjs      # statusline 腳本（Node 單一程序版）
 ├── hooks/                      # hook 腳本（時間注入，跨平台 Node）
 ├── commands/                   # 自訂 slash commands
-├── skills/                     # 自訂 / 第三方 skills
+├── skills/                     # 自訂 / 第三方 skills（`skills/synced/` 為雲端同步產物，見下）
 └── notes/                      # 個人筆記（非設定，僅暫存）
 ```
 
-其餘 `sessions/`、`projects/`、`file-history/`、`cache/`、`plugins/`、`backups/`、`daemon/`、`jobs/`、`feedback/` 等為 runtime 產物，已列入 `.gitignore`，不進版控。
+其餘 `sessions/`、`session-env/`、`shell-snapshots/`、`projects/`、`file-history/`、`cache/`、`paste-cache/`、`plugins/`、`backups/`、`daemon/`、`jobs/`、`tasks/`、`plans/`、`feedback/`、`telemetry/`、`ide/`、`chrome/` 等為 runtime 產物，已列入 `.gitignore`，不進版控。
+
+`skills/synced/` 是 Claude 帳號雲端同步下來的 skills（目前 9 個），內容由平台管理、不手動編輯，已列入 `.gitignore`，不進版控。
 
 ## Commands
 
 | Command | 說明 |
 |---|---|
-| `/now-push` | 依固定格式自動執行 `git add` + `commit`（繁體中文 commit message，含 `Co-Authored-By` trailer）+ `push`，全程不詢問確認 |
+| `/now-push [<lng>]` | 依固定格式自動執行 `git add` + `commit`（**英文** commit message，含 `Co-Authored-By` trailer）+ `push`，全程不詢問確認；帶 `<lng>`（如 `zh-TW`、`ja`）改用該語言撰寫 subject／body |
 | `/up-rules` | 以 caveman full 強度壓縮 `CLAUDE.md` / `.claude/rules/*.md` / `.claude/commands/**/*.md`，只刪冗詞不刪語意；同時檢查並同步本 README |
 
 ## Skills
@@ -41,7 +43,7 @@
 
 ## Settings 重點
 
-- `model`：`opusplan`
+- `model`：`opus[1m]`（Opus 5，1M context）
 - `outputStyle`：`Concise`（精簡輸出）；`language`：`traditional chinese`
 - `permissions.defaultMode`：`plan`（預設進 plan 模式，先規劃再執行）
 - `permissions.allow` 白名單常用低風險指令（`git add`、`git commit -m`、`git push`、`WebSearch`、`Edit(~/.claude/hooks/**)`、`Edit(~/.claude/commands/**)`）；`git add`/`commit`/`push` 同時列了 `Bash(...)` 與 `PowerShell(...)` 兩種前綴——Windows 上 PowerShell 是獨立的權限 namespace，不繼承 `Bash(...)` 規則

@@ -1,6 +1,14 @@
 ---
-description: 自動執行 git add + commit + push，commit message 用固定格式繁體中文
+description: 自動執行 git add + commit + push，commit message 用固定格式英文（可用 <lng> 參數指定其他語言）
+argument-hint: "[<lng>]"
 ---
+
+## 語言參數 `<lng>`（位置參數 `$1`，選填）
+
+- `$1` 為空 → subject 與 body 用**英文**
+- `$1` 有值 → subject 與 body 改用該語言；接受 BCP-47 代碼（`zh-TW`、`ja`、`de`）或自然語言名稱（`繁中`、`繁體中文`、`日文`、`Japanese`）
+- 無法辨識 → 一行提示後**退回英文**繼續執行，不中止
+- 不論 `<lng>` 為何，`type`、`scope`、`Co-Authored-By` trailer **恆為英文**
 
 立即依序執行，不詢問確認：
 
@@ -50,44 +58,45 @@ description: 自動執行 git add + commit + push，commit message 用固定格�
 
 **scope（選填，英文小寫）**
 
-標示變更影響的模組／檔案區域／功能名稱，例 `auth`、`api`、`ui`、`db`、`config`。
+標示變更影響的模組／檔案區域／功能，例 `auth`、`api`、`ui`、`db`、`config`。
 跨多個無共同 scope 模組時省略 scope，header 寫成 `<type>: <subject>`。
 
-**subject（必填，繁體中文）**
+**subject（必填，預設英文，`<lng>` 指定時改用該語言）**
 
 - 動詞開頭，描述「做了什麼」
-- 上限 50 個中文字
+- 英文：imperative mood（寫 `add`，不寫 `adds`／`added`）、首字小寫、上限 50 字元
+- 非英文（CJK 等）：上限 50 字
 - 結尾**不加句號**
-- 不重複 type 語意（type 已是 `fix`，subject 就不再寫「修復」）
+- 不重複 type 語意（type 已是 `fix`，subject 就不再寫 `fix`）
 
-✅ 正確：`feat(auth): 加入 JWT token 過期自動續期機制`
-✅ 正確：`fix(api): 處理 user.email 為 null 時的崩潰`
-❌ 錯誤：`feat: 修改了一些東西。`（無資訊量、結尾有句號）
-❌ 錯誤：`fix(api): 修復 API 的 bug`（重複 type 語意）
+✅ 正確：`feat(auth): add automatic JWT token refresh`
+✅ 正確：`fix(api): handle null user.email crash`
+❌ 錯誤：`feat: update some stuff.`（無資訊量、結尾有句號）
+❌ 錯誤：`fix(api): fix API bug`（重複 type 語意）
 
-**body（必填，繁體中文，條列）**
+**body（必填，預設英文，`<lng>` 指定時改用該語言，條列）**
 
 - header 與 body 之間**必須空一行**
 - 每點用 `- ` 開頭
 - 每點一項具體變更，說明做了什麼，必要時加原因
-- 每行上限 72 個中文字，過長換行續寫
-- 條列 1 到 6 點；過多代表 commit 太雜應拆分（若已執行至此就照實寫，**不要事後拆 commit**）
+- 每行上限 72 字元（CJK 為 72 字），過長換行續寫
+- 條列 1–6 點；過多代表 commit 太雜應拆分（已執行至此就照實寫，**不要事後拆 commit**）
 
 **footer**
 
-- **必填 trailer**：`Co-Authored-By: <當前模型全名> <noreply@anthropic.com>`（每次 commit 都必須存在，透過第三個 `-m` 傳入，不可省略；模型全名從本次 session 系統資訊動態取得，例如 `Claude Sonnet 4.6`、`Claude Opus 4.7`、`Claude Haiku 4.5`）
+- **必填 trailer**：`Co-Authored-By: <當前模型全名> <noreply@anthropic.com>`（每次 commit 必須有，透過第三個 `-m` 傳入，不可省略；模型全名取自本次 session 系統資訊，例 `Claude Sonnet 4.6`、`Claude Opus 4.7`、`Claude Haiku 4.5`）
 - 關聯 issue（選填）：`Refs: #123` 或 `Closes: #123`
 - 破壞性變更（選填）：`BREAKING CHANGE: <說明影響與遷移方式>`
 
 ## 範例
 
 ```
-feat(auth): 加入 JWT token 過期自動續期機制
+feat(auth): add automatic JWT token refresh
 
-- 新增 RefreshTokenService 處理 token 即將過期時的背景更新
-- 在 axios interceptor 攔截 401 並觸發續期，避免使用者被登出
-- 將 refresh token 儲存於 httpOnly cookie 提升安全性
-- 加入 useAuth hook 提供前端統一的登入狀態
+- Add RefreshTokenService to renew tokens in the background
+- Intercept 401 in axios interceptor to avoid forced logout
+- Store refresh token in an httpOnly cookie for safety
+- Add useAuth hook as the single source of login state
 
 Refs: #142
 
@@ -95,20 +104,20 @@ Co-Authored-By: <當前模型全名> <noreply@anthropic.com>
 ```
 
 ```
-refactor(db): 將 user 查詢統一改用 Prisma include 預載關聯
+refactor(db): preload user relations via Prisma include
 
-- 移除散落各 service 的手動 N+1 查詢
-- 在 UserRepository 集中定義 include 規則確保一致性
-- 預期可減少 40% 的查詢次數
+- Drop the manual N+1 queries scattered across services
+- Define include rules in UserRepository for consistency
+- Expect roughly 40% fewer queries
 
 Co-Authored-By: <當前模型全名> <noreply@anthropic.com>
 ```
 
 ```
-fix(ui): 修正深色模式下表單錯誤訊息對比度不足
+fix(ui): raise error text contrast in dark mode
 
-- 將 error text 從 #ff0000 改為 #ff6b6b
-- 加入 dark: 變體確保兩種模式都符合 WCAG AA
+- Change error text from #ff0000 to #ff6b6b
+- Add dark: variants so both modes meet WCAG AA
 
 Co-Authored-By: <當前模型全名> <noreply@anthropic.com>
 ```
@@ -116,7 +125,8 @@ Co-Authored-By: <當前模型全名> <noreply@anthropic.com>
 ## 禁止事項
 
 - 不使用 emoji
-- 不用「Updated」「Modified」「Changed」這類無資訊量英文動詞
+- 不用「Updated」「Modified」「Changed」這類無資訊量動詞
+- 英文 subject 不用過去式或第三人稱單數（`added`／`adds` 一律寫 `add`）
 - 不在 subject 寫檔名（檔名寫 body 或用 scope 表達）
 - 不寫「依照需求」「按要求」這類無意義填充字
 - 若 diff 中包含 secret、API key、密碼等敏感資訊，**立即停止並警告使用者**，不要 commit

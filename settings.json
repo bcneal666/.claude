@@ -22,7 +22,7 @@
     ],
     "defaultMode": "plan"
   },
-  "model": "opusplan",
+  "model": "opus[1m]",
   "hooks": {
     "UserPromptSubmit": [
       {
