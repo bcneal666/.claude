@@ -1,0 +1,6 @@
+# ~/.claude/skills/.up-skills-ignore
+# 列在這裡的 skill：不檢查、不更新、不掃描上游
+# 一行一個 skill 目錄名；# 起首為註解；空行忽略；行尾 # 註解亦可
+
+# my-custom-skill
+# copywriting        # 自寫的，與 lockfile 同名，勿覆蓋

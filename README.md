@@ -26,6 +26,7 @@
 |---|---|
 | `/now-push [<lng>]` | 依固定格式自動執行 `git add` + `commit`（**英文** commit message，含 `Co-Authored-By` trailer）+ `push`，全程不詢問確認；帶 `<lng>`（如 `zh-TW`、`ja`）改用該語言撰寫 subject／body |
 | `/up-rules` | 以 caveman full 強度壓縮 `CLAUDE.md` / `.claude/rules/*.md` / `.claude/commands/**/*.md`，只刪冗詞不刪語意；同時檢查並同步本 README |
+| `/up-skills [global\|project]` | 批次更新 skills：已納管者（global 讀 `~/.agents/.skill-lock.json`；project 讀 `<專案根>/skills-lock.json`）逐一指名跑 `npx skills update`；未納管者推斷上游後確認重裝；`skills/.up-skills-ignore` 列出的自製 skill 完全跳過，有未提交改動的 skill 也自動跳過；global 另回報 plugin、雲端同步 skills、CLI 版本狀態 |
 
 ## Skills
 
@@ -36,7 +37,6 @@
 | `design-md` | 分析 Stitch 專案，整理成 `DESIGN.md` 設計系統文件 |
 | `find-skills` | 協助發掘與安裝其他 agent skills |
 | `git-commit` | Conventional commit 訊息分析與智慧分批 staging |
-| `officecli` / `officecli-docx` / `officecli-pptx` / `officecli-xlsx` | 建立、分析、校對、修改 Office 文件（Word / Excel / PowerPoint） |
 | `skill-creator` | 建立、修改、優化 skills，並可跑 eval 測試效能 |
 
 外掛 plugin：`watch@claude-video`（來源 marketplace `bradautomates/claude-video`），提供 `/watch` 影片分析指令。
