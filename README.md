@@ -43,7 +43,7 @@
 
 ## Settings 重點
 
-- `model`：`opus[1m]`（Opus 5，1M context）
+- `model`：`opusplan`（規劃階段用 Opus，執行階段自動切換模型）
 - `outputStyle`：`Concise`（精簡輸出）；`language`：`traditional chinese`
 - `permissions.defaultMode`：`plan`（預設進 plan 模式，先規劃再執行）
 - `permissions.allow` 白名單常用低風險指令（`git add`、`git commit -m`、`git push`、`WebSearch`、`Edit(~/.claude/hooks/**)`、`Edit(~/.claude/commands/**)`）；`git add`/`commit`/`push` 同時列了 `Bash(...)` 與 `PowerShell(...)` 兩種前綴——Windows 上 PowerShell 是獨立的權限 namespace，不繼承 `Bash(...)` 規則
