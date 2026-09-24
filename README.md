@@ -25,7 +25,7 @@
 | Command | 說明 |
 |---|---|
 | `/now-push [<lng>]` | 依固定格式自動執行 `git add` + `commit`（**英文** commit message，含 `Co-Authored-By` trailer）+ `push`，全程不詢問確認；帶 `<lng>`（如 `zh-TW`、`ja`）改用該語言撰寫 subject／body |
-| `/up-rules` | 以 caveman full 強度壓縮 `CLAUDE.md` / `.claude/rules/*.md` / `.claude/commands/**/*.md`，只刪冗詞不刪語意；同時檢查並同步本 README |
+| `/up-rules` | 依序：校正 `CLAUDE.md` 事實 → 檢查是否有內容該分塊到 `rules/<topic>.md`（`paths` frontmatter 按需載入）→ 以 caveman full 強度壓縮 `CLAUDE.md` / `.claude/rules/**/*.md` / `.claude/commands/**/*.md`（只刪冗詞不刪語意）→ 檢查並同步本 README |
 | `/up-skills [global\|project]` | 批次更新 skills：已納管者（global 讀 `~/.agents/.skill-lock.json`；project 讀 `<專案根>/skills-lock.json`）逐一指名跑 `npx skills update`；未納管者推斷上游後確認重裝；`skills/.up-skills-ignore` 列出的自製 skill 完全跳過，有未提交改動的 skill 也自動跳過；global 另回報 plugin、雲端同步 skills、CLI 版本狀態 |
 
 ## Skills
@@ -53,5 +53,5 @@
 ## 維護慣例
 
 - 全域共用設定寫 `settings.json`
-- 規則文件（`CLAUDE.md`、`commands/*.md`）改動後跑 `/up-rules` 壓縮冗詞並同步本 README
+- 規則文件（`CLAUDE.md`、`commands/*.md`）改動後跑 `/up-rules` 校正事實、視需要分塊到 `rules/`、壓縮冗詞並同步本 README
 - 變更完成且經確認後用 `/now-push` 推送
