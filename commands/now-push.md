@@ -63,7 +63,7 @@ argument-hint: "[<lng>]"
 
 **subject（必填，預設英文，`<lng>` 指定時改用該語言）**
 
-- 動詞開頭，描述「做了什麼」
+- 動詞開頭，具體說出改了什麼——讀 log 的人看不到 diff，每個詞都要帶資訊
 - 英文：imperative mood（寫 `add`，不寫 `adds`／`added`）、首字小寫、上限 50 字元
 - 非英文（CJK 等）：上限 50 字
 - 結尾**不加句號**
@@ -80,11 +80,11 @@ argument-hint: "[<lng>]"
 - 每點用 `- ` 開頭
 - 每點一項具體變更，說明做了什麼，必要時加原因
 - 每行上限 72 字元（CJK 為 72 字），過長換行續寫
-- 條列 1–6 點；過多代表 commit 太雜應拆分（已執行至此就照實寫，**不要事後拆 commit**）
+- 變更點多時按模組合併同類項，讓 body 一眼可掃完；已執行至此就照實寫，**不要事後拆 commit**
 
 **footer**
 
-- **必填 trailer**：`Co-Authored-By: <當前模型全名> <noreply@anthropic.com>`（每次 commit 必須有，透過第三個 `-m` 傳入，不可省略；模型全名取自本次 session 系統資訊，例 `Claude Sonnet 4.6`、`Claude Opus 4.7`、`Claude Haiku 4.5`）
+- **必填 trailer**：`Co-Authored-By: <當前模型全名> <noreply@anthropic.com>`（每次 commit 必須有，透過第三個 `-m` 傳入，不可省略；模型全名取自本次 session 系統資訊）
 - 關聯 issue（選填）：`Refs: #123` 或 `Closes: #123`
 - 破壞性變更（選填）：`BREAKING CHANGE: <說明影響與遷移方式>`
 
@@ -125,8 +125,6 @@ Co-Authored-By: <當前模型全名> <noreply@anthropic.com>
 ## 禁止事項
 
 - 不使用 emoji
-- 不用「Updated」「Modified」「Changed」這類無資訊量動詞
 - 英文 subject 不用過去式或第三人稱單數（`added`／`adds` 一律寫 `add`）
 - 不在 subject 寫檔名（檔名寫 body 或用 scope 表達）
-- 不寫「依照需求」「按要求」這類無意義填充字
 - 若 diff 中包含 secret、API key、密碼等敏感資訊，**立即停止並警告使用者**，不要 commit
