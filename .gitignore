@@ -36,6 +36,7 @@ image-cache/
 daemon.log
 jobs/
 feedback/
+state/
 
 # Project-specific session logs & tool results
 projects/
