@@ -1,2 +1,2 @@
-- 一律以繁體中文（台灣）回應。
-- 日期／時間操作：Asia/Taipei (UTC+8)。
+- Always respond in Traditional Chinese (Taiwan).
+- Date/time ops: Asia/Taipei (UTC+8).

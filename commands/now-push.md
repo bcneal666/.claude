@@ -3,46 +3,46 @@ description: 自動執行 git add + commit + push，commit message 固定格式�
 argument-hint: "[--lng <zh-tw|zh|ja|...>] [--pr]"
 ---
 
-## 參數（從 `$ARGUMENTS` 解析，順序不拘）
+## Arguments (parse from `$ARGUMENTS`, any order)
 
-- `--lng <code>` 或 `--lng=<code>`：commit subject／body、repo description、PR title／body 改用該語言；接受 BCP-47 代碼（`zh-TW`、`zh`、`ja`、`de`，大小寫不拘）或自然語言名稱（`繁中`、`日文`、`Japanese`）
-  - 未帶 → **英文**
-  - 無法辨識或缺值 → 一行提示後**退回英文**繼續執行，不中止
-  - `zh` 未指明繁簡 → 繁體中文（`zh-cn`／`簡中` 才用簡體）
-- `--pr`：push 後開 PR；未帶則**不建分支、不開 PR**
-- 其他未知 token → 一行提示後忽略，不中止
-- 不論語言，`type`、`scope`、`Co-Authored-By` trailer、分支名**恆為英文**
+- `--lng <code>` or `--lng=<code>`: language for commit subject/body, repo description, PR title/body. Accept BCP-47 code (`zh-TW`, `zh`, `ja`, `de`, case-insensitive) or natural-language name (`繁中`, `日文`, `Japanese`)
+  - absent → **English**
+  - unrecognized or missing value → one-line notice, **fall back to English**, continue; do not abort
+  - `zh` without script → Traditional Chinese (`zh-cn`/`簡中` only → Simplified)
+- `--pr`: open PR after push; absent → **no branch, no PR**
+- other unknown tokens → one-line notice, ignore; do not abort
+- Regardless of language: `type`, `scope`, `Co-Authored-By` trailer, branch name **always English**
 
-立即依序執行，不詢問確認：
+Execute in order immediately, no confirmation:
 
-## 執行流程
+## Flow
 
-1. `git status` 檢查有無變更；工作區乾淨則回報「無變更可推送」並停止
-2. `git diff` + `git diff --staged` 讀完整變更
-3. `git log -5 --oneline` 參考近期 commit 風格
-4. 依下列**固定格式**生成 commit message（先生成，分支名需用）
-5. **僅 `--pr`**：`gh repo view --json defaultBranchRef -q .defaultBranchRef.name` 取預設分支；目前分支等於預設分支時 `git switch -c <type>/<slug>`（slug 由 scope + subject 英文關鍵字組成，kebab-case，≤40 字元；`--lng` 非英文仍用英文 slug）
+1. `git status`; clean tree → report 「無變更可推送」 and stop
+2. `git diff` + `git diff --staged`; read full changes
+3. `git log -5 --oneline` for recent commit style
+4. Generate commit message in the **fixed format** below (before branching; branch name needs it)
+5. **`--pr` only**: get default branch via `gh repo view --json defaultBranchRef -q .defaultBranchRef.name`; current branch == default → `git switch -c <type>/<slug>` (slug = scope + English subject keywords, kebab-case, ≤40 chars; English even when `--lng` is not English)
 6. `git add .`
-7. `git commit -m "<header>" -m "<body>" -m "Co-Authored-By: <當前模型全名> <noreply@anthropic.com>"`（固定三個 -m，trailer 不可省略；`<當前模型全名>` 取法見 footer）
-8. `git push`；目前分支無 upstream 時用 `git push -u origin HEAD`
-9. **僅 `--pr`**：`gh pr view` 檢查目前分支已有 PR → 回報既有 URL，不重開；無 → `gh pr create --base <預設分支> --title "<commit header>" --body "<body>"`；body = commit body 條列 + 空行 + `🤖 Generated with [Claude Code](https://claude.com/claude-code)`，語言依 `--lng`；回報 PR URL
-10. repo description 檢查（見下節）
+7. `git commit -m "<header>" -m "<body>" -m "Co-Authored-By: <當前模型全名> <noreply@anthropic.com>"` (exactly three `-m`; trailer mandatory; `<當前模型全名>` source: see footer)
+8. `git push`; current branch has no upstream → `git push -u origin HEAD`
+9. **`--pr` only**: `gh pr view` on current branch; PR exists → report existing URL, do not recreate; none → `gh pr create --base <default branch> --title "<commit header>" --body "<body>"`; body = commit body bullets + blank line + `🤖 Generated with [Claude Code](https://claude.com/claude-code)`, language per `--lng`; report PR URL
+10. Repo description check (next section)
 
-步驟 1–9 任一指令非零退出立即停止，回報 stderr 完整內容，**不嘗試修復**。步驟 10 失敗（非 GitHub、`gh` 未登入、無權限）只提示，**不算整體失敗**——commit／push 已完成。
+Steps 1–9: any non-zero exit → stop immediately, report full stderr, **do not attempt repair**. Step 10 failure (not GitHub, `gh` not logged in, no permission) → notice only, **not an overall failure**—commit/push already done.
 
-## Repo Description 維護
+## Repo Description Maintenance
 
-- 前置：`gh repo view --json description,url` 成功才進行；否則一行提示「略過 description 檢查：<原因>」
-- 任一成立即需更新：
-  - description 為空
-  - 語言與目標語言（`--lng`，預設英文）不符
-  - 內容與 repo 實際用途明顯不符（依 README.md 首段、本次 diff、`git ls-files` 頂層結構判斷；本次變更改變專案定位或新增主要功能才算）
-- 不需更新 → 回報「description 已同步，未改動」，不為改而改
-- 需更新 → 生成新 description：一句、≤350 字元、不含 emoji、英文不加結尾句號、說明專案是什麼／做什麼；`gh repo edit --description "<new>"`；回報舊 → 新
+- Precondition: `gh repo view --json description,url` succeeds; else one-line notice 「略過 description 檢查：<原因>」
+- Update needed if any holds:
+  - description empty
+  - language ≠ target language (`--lng`, default English)
+  - content clearly mismatches actual repo purpose (judge from README.md first paragraph, this diff, top-level `git ls-files`; counts only when this change shifts project positioning or adds a major feature)
+- No update needed → report 「description 已同步，未改動」; do not change for change's sake
+- Update needed → generate new description: one sentence, ≤350 chars, no emoji, no trailing period in English, state what the project is/does; `gh repo edit --description "<new>"`; report old → new
 
-## Commit Message 固定格式
+## Commit Message Fixed Format
 
-### 結構
+### Structure
 
 ```
 <type>(<scope>): <subject>
@@ -54,57 +54,57 @@ argument-hint: "[--lng <zh-tw|zh|ja|...>] [--pr]"
 [Refs: #issue 或 BREAKING CHANGE: 說明]（選填）
 ```
 
-### 各欄位規則
+### Field rules
 
-**type（必填，英文小寫，從下表選一個）**
+**type (required, lowercase English, pick one from table)**
 
-| type       | 使用時機                                              |
-| ---------- | ----------------------------------------------------- |
-| `feat`     | 新功能                                                |
-| `fix`      | 修復 bug                                              |
-| `docs`     | 僅文件變更（README、註解、JSDoc 等）                  |
-| `style`    | 格式調整不影響邏輯（空白、分號、排版）                |
-| `refactor` | 重構不改變外部行為                                    |
-| `perf`     | 效能優化                                              |
-| `test`     | 新增或修改測試                                        |
-| `build`    | 建置系統、套件依賴變更（package.json、Dockerfile 等） |
-| `ci`       | CI/CD 設定（GitHub Actions、GitLab CI 等）            |
-| `chore`    | 雜項（不動 src 與 test 的瑣事）                       |
-| `revert`   | 還原先前 commit                                       |
+| type       | when to use                                                      |
+| ---------- | ---------------------------------------------------------------- |
+| `feat`     | new feature                                                      |
+| `fix`      | bug fix                                                          |
+| `docs`     | docs-only change (README, comments, JSDoc, etc.)                 |
+| `style`    | formatting, no logic change (whitespace, semicolons, layout)     |
+| `refactor` | restructure, external behavior unchanged                         |
+| `perf`     | performance optimization                                         |
+| `test`     | add or modify tests                                              |
+| `build`    | build system, dependency changes (package.json, Dockerfile, etc.) |
+| `ci`       | CI/CD config (GitHub Actions, GitLab CI, etc.)                   |
+| `chore`    | misc chores not touching src or tests                            |
+| `revert`   | revert earlier commit                                            |
 
-**scope（選填，英文小寫）**
+**scope (optional, lowercase English)**
 
-標示變更影響的模組／檔案區域／功能，例 `auth`、`api`、`ui`、`db`、`config`。
-跨多個無共同 scope 模組時省略 scope，header 寫成 `<type>: <subject>`。
+Module/file area/feature affected, e.g. `auth`, `api`, `ui`, `db`, `config`.
+Spans several modules with no common scope → omit scope; header becomes `<type>: <subject>`.
 
-**subject（必填，預設英文，`--lng` 指定時改用該語言）**
+**subject (required, default English; other language when `--lng` given)**
 
-- 動詞開頭，具體說出改了什麼——讀 log 的人看不到 diff，每個詞都要帶資訊
-- 英文：imperative mood（寫 `add`，不寫 `adds`／`added`）、首字小寫、上限 50 字元
-- 非英文（CJK 等）：上限 50 字
-- 結尾**不加句號**
-- 不重複 type 語意（type 已是 `fix`，subject 就不再寫 `fix`）
+- Start with verb; say concretely what changed—log readers cannot see the diff, every word must carry information
+- English: imperative mood (`add`, not `adds`/`added`), lowercase first letter, ≤50 chars
+- Non-English (CJK etc.): ≤50 characters
+- **No trailing period**
+- Do not repeat type meaning (type is `fix` → subject does not say `fix`)
 
 ✅ 正確：`feat(auth): add automatic JWT token refresh`
 ✅ 正確：`fix(api): handle null user.email crash`
 ❌ 錯誤：`feat: update some stuff.`（無資訊量、結尾有句號）
 ❌ 錯誤：`fix(api): fix API bug`（重複 type 語意）
 
-**body（必填，預設英文，`--lng` 指定時改用該語言，條列）**
+**body (required, default English; other language when `--lng` given; bullets)**
 
-- header 與 body 之間**必須空一行**
-- 每點用 `- ` 開頭
-- 每點一項具體變更，說明做了什麼，必要時加原因
-- 每行上限 72 字元（CJK 為 72 字），過長換行續寫
-- 變更點多時按模組合併同類項，讓 body 一眼可掃完；已執行至此就照實寫，**不要事後拆 commit**
+- **Blank line required** between header and body
+- Each point starts with `- `
+- One concrete change per point: what was done, add why when needed
+- ≤72 chars per line (CJK: 72 characters); wrap longer lines
+- Many changes → merge like items per module so body scans at a glance; already executed at this point → write truthfully, **do not split the commit afterwards**
 
 **footer**
 
-- **必填 trailer**：`Co-Authored-By: <當前模型全名> <noreply@anthropic.com>`（每次 commit 必須有，透過第三個 `-m` 傳入，不可省略；模型全名取自本次 session 系統資訊）
-- 關聯 issue（選填）：`Refs: #123` 或 `Closes: #123`
-- 破壞性變更（選填）：`BREAKING CHANGE: <說明影響與遷移方式>`
+- **Required trailer**: `Co-Authored-By: <當前模型全名> <noreply@anthropic.com>` (every commit; passed as third `-m`; never omit; full model name from this session's system info)
+- Related issue (optional): `Refs: #123` or `Closes: #123`
+- Breaking change (optional): `BREAKING CHANGE: <說明影響與遷移方式>`
 
-## 範例
+## Examples
 
 ```
 feat(auth): add automatic JWT token refresh
@@ -138,10 +138,10 @@ fix(ui): raise error text contrast in dark mode
 Co-Authored-By: <當前模型全名> <noreply@anthropic.com>
 ```
 
-## 禁止事項
+## Prohibited
 
-- 不使用 emoji
-- 英文 subject 不用過去式或第三人稱單數（`added`／`adds` 一律寫 `add`）
-- 不在 subject 寫檔名（檔名寫 body 或用 scope 表達）
-- 不 force push
-- 若 diff 中包含 secret、API key、密碼等敏感資訊，**立即停止並警告使用者**，不要 commit
+- No emoji
+- English subject: no past tense or third-person singular (`added`/`adds` → always `add`)
+- No filenames in subject (put in body or express via scope)
+- No force push
+- Diff contains secret, API key, password or similar sensitive data → **stop immediately and warn user**; do not commit

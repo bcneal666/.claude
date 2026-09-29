@@ -1,57 +1,57 @@
 # ~/.claude
 
-個人的 Claude Code 全域設定倉庫，內含自訂 skills、slash commands、statusline 與 settings，跨專案共用。
+Personal global Claude Code configuration repo, shared across projects: custom skills, slash commands, statusline and settings.
 
-## 目錄結構
+## Directory structure
 
 ```
 .
-├── CLAUDE.md                   # 全域指令（所有專案共用，進版控）
-├── README.md                   # 本文件
-├── settings.json               # 全域 Claude Code 設定（permissions、env、hooks、statusLine…）
-├── statusline-command.mjs      # statusline 腳本（Node 單一程序版）
-├── hooks/                      # hook 腳本（時間注入，跨平台 Node）
-├── commands/                   # 自訂 slash commands
-├── skills/                     # 自訂 / 第三方 skills（`skills/synced/` 為雲端同步產物，見下）
-└── notes/                      # 個人筆記（非設定，僅暫存）
+├── CLAUDE.md                   # Global instructions (shared by all projects, version-controlled)
+├── README.md                   # This file
+├── settings.json               # Global Claude Code settings (permissions, env, hooks, statusLine…)
+├── statusline-command.mjs      # Statusline script (single-process Node version)
+├── hooks/                      # Hook scripts (time injection, cross-platform Node)
+├── commands/                   # Custom slash commands
+├── skills/                     # Custom / third-party skills (`skills/synced/` is cloud-sync output, see below)
+└── notes/                      # Personal notes (not configuration, scratch only)
 ```
 
-其餘 `sessions/`、`session-env/`、`shell-snapshots/`、`projects/`、`file-history/`、`cache/`、`paste-cache/`、`plugins/`、`backups/`、`daemon/`、`jobs/`、`tasks/`、`plans/`、`feedback/`、`telemetry/`、`ide/`、`chrome/` 等為 runtime 產物，已列入 `.gitignore`，不進版控。
+The rest — `sessions/`, `session-env/`, `shell-snapshots/`, `projects/`, `file-history/`, `cache/`, `paste-cache/`, `plugins/`, `backups/`, `daemon/`, `jobs/`, `tasks/`, `plans/`, `feedback/`, `telemetry/`, `ide/`, `chrome/`, etc. — is runtime output, listed in `.gitignore`, not version-controlled.
 
-`skills/synced/` 是 Claude 帳號雲端同步下來的 skills（目前 10 個），內容由平台管理、不手動編輯，已列入 `.gitignore`，不進版控。
+`skills/synced/` holds skills synced down from the Claude account cloud (currently 10). The platform manages its content, so do not edit it by hand; it is listed in `.gitignore` and not version-controlled.
 
 ## Commands
 
-| Command | 說明 |
+| Command | Description |
 |---|---|
-| `/now-push [--lng <code>] [--pr]` | 依固定格式自動執行 `git add` + `commit`（預設**英文** commit message，含 `Co-Authored-By` trailer）+ `push`，全程不詢問確認；`--lng`（如 `zh-tw`、`ja`）改用該語言；`--pr` 另開 PR（在預設分支時自動開新分支）；每次檢查並依語言更新 GitHub repo description |
-| `/up-rules [--audit] [--lng <code>]` | `--lng`（如 `zh-tw`、`ja`；未帶＝英文）決定所有寫入內容的語言，含 `CLAUDE.md`、`rules/`、`commands/` 散文與本 README，現有語言不同則翻譯。依序：校正 `CLAUDE.md` 事實 →（帶 `--audit` 時）以 `claude-api` prompt-audit 審查過時指令，列 findings 供選擇套用 → 檢查是否有內容該分塊到 `rules/<topic>.md`（`paths` frontmatter 按需載入）→ 以 caveman full 強度壓縮 `CLAUDE.md` / `.claude/rules/**/*.md` / `.claude/commands/**/*.md`（只刪冗詞不刪語意，`--audit` 套用的刪改除外）→ 檢查並同步本 README |
-| `/up-skills [global\|project]` | 批次更新 skills：已納管者（global 讀 `~/.agents/.skill-lock.json`；project 讀 `<專案根>/skills-lock.json`）逐一指名跑 `npx skills update`；未納管者推斷上游後確認重裝；`skills/.up-skills-ignore` 列出的自製 skill 完全跳過，有未提交改動的 skill 也自動跳過；global 另回報 plugin、雲端同步 skills、CLI 版本狀態 |
+| `/now-push [--lng <code>] [--pr]` | Runs `git add` + `commit` (**English** commit message by default, with `Co-Authored-By` trailer) + `push` in the fixed format, without asking for confirmation; `--lng` (e.g. `zh-tw`, `ja`) switches to that language; `--pr` also opens a PR (auto-creates a new branch when on the default branch); every run checks the GitHub repo description and updates it to match the language |
+| `/up-rules [--audit] [--lng <code>]` | `--lng` (e.g. `zh-tw`, `ja`; absent = English) sets the language of everything written, including `CLAUDE.md`, `rules/`, `commands/` prose and this README; existing content in a different language is translated. In order: fact-check `CLAUDE.md` → (with `--audit`) audit for stale instructions via `claude-api` prompt-audit and list findings to choose from → check whether content should be chunked into `rules/<topic>.md` (loaded on demand via `paths` frontmatter) → compress `CLAUDE.md` / `.claude/rules/**/*.md` / `.claude/commands/**/*.md` at caveman full strength (drops filler only, never semantics, except hunks applied via `--audit`) → check and sync this README |
+| `/up-skills [global\|project]` | Batch-update skills: managed ones (global reads `~/.agents/.skill-lock.json`; project reads `<project root>/skills-lock.json`) are updated one by one with `npx skills update`; unmanaged ones have their upstream inferred and are reinstalled after confirmation; self-made skills listed in `skills/.up-skills-ignore` are skipped entirely, and skills with uncommitted changes are skipped automatically; global mode also reports plugin, cloud-synced skills and CLI version status |
 
 ## Skills
 
-| Skill | 說明 |
+| Skill | Description |
 |---|---|
-| `agent-browser` | 瀏覽器自動化 CLI，操作網頁、填表、截圖、爬資料 |
-| `caveman` | 極致精簡溝通模式，降低 token 用量同時保留技術準確性 |
-| `design-md` | 分析 Stitch 專案，整理成 `DESIGN.md` 設計系統文件 |
-| `find-skills` | 協助發掘與安裝其他 agent skills |
-| `git-commit` | Conventional commit 訊息分析與智慧分批 staging |
-| `skill-creator` | 建立、修改、優化 skills，並可跑 eval 測試效能 |
+| `agent-browser` | Browser automation CLI: operate web pages, fill forms, take screenshots, scrape data |
+| `caveman` | Ultra-terse communication mode that cuts token use while keeping technical accuracy |
+| `design-md` | Analyzes a Stitch project and distills it into a `DESIGN.md` design-system document |
+| `find-skills` | Helps discover and install other agent skills |
+| `git-commit` | Conventional commit message analysis and smart batched staging |
+| `skill-creator` | Create, modify and optimize skills, and run evals to test performance |
 
-外掛 plugin：`watch@claude-video`（來源 marketplace `bradautomates/claude-video`），提供 `/watch` 影片分析指令。
+Plugin: `watch@claude-video` (from marketplace `bradautomates/claude-video`), providing the `/watch` video analysis command.
 
-## Settings 重點
+## Key settings
 
-- `model`：`opusplan`（規劃階段用 Opus，執行階段自動切換模型）
-- `outputStyle`：`Concise`（精簡輸出）；`language`：`traditional chinese`
-- `permissions.defaultMode`：`plan`（預設進 plan 模式，先規劃再執行）
-- `permissions.allow` 白名單常用低風險指令（`git add`、`git commit -m`、`git push`、`WebSearch`、`Edit(~/.claude/hooks/**)`、`Edit(~/.claude/commands/**)`）；`git add`/`commit`/`push` 同時列了 `Bash(...)` 與 `PowerShell(...)` 兩種前綴——Windows 上 PowerShell 是獨立的權限 namespace，不繼承 `Bash(...)` 規則
-- statusline 只用 Node 版（`statusline-command.mjs`），無 shell fallback；三行分別為「model／effort／vim mode」「目錄／branch」「context 用量與大小／rate limits（5h／overage 用量）／cost」，`hideVimModeIndicator:true` 關閉內建 `-- INSERT --` 指示器改由自繪
-- UserPromptSubmit hook（`hooks/inject-datetime.mjs`）每則 prompt 注入當前完整時間戳（`Asia/Taipei`，含時刻與星期），彌補內建 system prompt 只給開場日期快照的不足
+- `model`: `opusplan` (Opus for planning, automatic switch to another model for execution)
+- `outputStyle`: `Concise` (terse output); `language`: `traditional chinese`
+- `permissions.defaultMode`: `plan` (starts in plan mode: plan first, then execute)
+- `permissions.allow` whitelists common low-risk commands (`git add`, `git commit -m`, `git push`, `WebSearch`, `Edit(~/.claude/hooks/**)`, `Edit(~/.claude/commands/**)`); `git add`/`commit`/`push` are listed with both `Bash(...)` and `PowerShell(...)` prefixes—on Windows PowerShell is a separate permission namespace and does not inherit `Bash(...)` rules
+- Statusline uses only the Node version (`statusline-command.mjs`), with no shell fallback; the three lines show "model / effort / vim mode", "directory / branch", and "context usage and size / rate limits (5h / overage usage) / cost"; `hideVimModeIndicator:true` turns off the built-in `-- INSERT --` indicator in favor of a custom one
+- The UserPromptSubmit hook (`hooks/inject-datetime.mjs`) injects the full current timestamp (`Asia/Taipei`, with time of day and weekday) into every prompt, making up for the built-in system prompt giving only a snapshot of the date at session start
 
-## 維護慣例
+## Maintenance conventions
 
-- 全域共用設定寫 `settings.json`
-- 規則文件（`CLAUDE.md`、`commands/*.md`）改動後跑 `/up-rules` 校正事實、視需要分塊到 `rules/`、壓縮冗詞並同步本 README；懷疑文件累積過時措辭（如針對舊模型的強調語氣）時加 `--audit` 先審查
-- 變更完成且經確認後用 `/now-push` 推送
+- Put globally shared settings in `settings.json`
+- After changing rule files (`CLAUDE.md`, `commands/*.md`), run `/up-rules` to fact-check, chunk into `rules/` when needed, compress filler and sync this README; if you suspect accumulated stale wording (such as emphatic tone aimed at older models), add `--audit` to audit first
+- Once changes are done and confirmed, push with `/now-push`

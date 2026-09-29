@@ -3,128 +3,128 @@ description: 批次更新 skills（<type> 可選 global|project，預設 global�
 argument-hint: "[<type>]"
 ---
 
-## 範圍參數 `<type>`（位置參數 `$1`，選填）
+## Scope argument `<type>` (positional `$1`, optional)
 
-- `$1` 為空或 `global` → 目標 `~/.claude/skills/`（排除 `synced/` 子目錄）
-- `$1` 為 `project` → 目標 `./.claude/skills/`；不存在則回報「找不到 `./.claude/skills/`」後**停止**，不建立目錄
-- 其他值（無法辨識）→ 一行提示後**退回 `global`** 繼續執行，不中止
+- `$1` empty or `global` → target `~/.claude/skills/` (exclude `synced/` subdirectory)
+- `$1` is `project` → target `./.claude/skills/`; missing → report 「找不到 `./.claude/skills/`」 then **stop**; do not create directory
+- Other value (unrecognized) → one-line notice, **fall back to `global`**, continue; do not abort
 
-## 執行流程
+## Flow
 
-### 1. 前置檢查
+### 1. Preflight
 
-- 在 git repo 內時執行 `git status --short`；工作區不乾淨時一行提示「diff 會混雜既有未提交變更」，但**不中止**
-- 確認 `node -v` 可執行（`npx skills` 前提）；不可用則回報後停止
-- `project` 模式假設**目前工作目錄即專案根目錄**（`.claude/` 的上一層）；全程不 `cd` 離開——`npx skills` 的 project lockfile 讀寫以 cwd 為唯一依據，離開此目錄會靜默失效而非報錯
+- In git repo → run `git status --short`; tree dirty → one-line notice 「diff 會混雜既有未提交變更」, **do not abort**
+- Confirm `node -v` runs (`npx skills` prerequisite); unavailable → report and stop
+- `project` mode assumes **cwd is the project root** (parent of `.claude/`); never `cd` away—`npx skills` reads/writes the project lockfile relative to cwd only; leaving cwd fails silently, not with an error
 
-### 2. 盤點目標目錄
+### 2. Inventory target directory
 
-列出目標路徑下的 skill 子目錄名稱（`global` 排除 `synced/`；兩者都排除隱藏檔與非目錄項）。
+List skill subdirectory names under target path (`global` excludes `synced/`; both exclude hidden files and non-directory entries).
 
-### 3. 讀取來源資料
+### 3. Read source data
 
-- `global` → 讀 `~/.agents/.skill-lock.json` 的 `skills{}`（欄位：`source`、`sourceUrl`、`skillPath`、`skillFolderHash`、`updatedAt`）
-- `project` → 讀 **`<專案根>/skills-lock.json`**（注意：在專案根目錄，**不在** `.claude/skills/` 底下；檔名**無點前綴**）的 `skills{}`（欄位：`source`、`sourceType`、`skillPath`、`computedHash`，無時間戳）；不存在則視為空清單（不報錯），目標目錄下所有 skill 直接進入步驟 4 的 B／C 推斷流程
-- 讀忽略清單（`global` → `~/.claude/skills/.up-skills-ignore`；`project` → `<project>/.claude/skills/.up-skills-ignore`）：逐行去除 `#` 起首之註解與行尾 `# ...` 註解、trim、丟棄空行，得到名稱集合；檔案不存在＝空集合，不自動建立
+- `global` → read `skills{}` of `~/.agents/.skill-lock.json` (fields: `source`, `sourceUrl`, `skillPath`, `skillFolderHash`, `updatedAt`)
+- `project` → read `skills{}` of **`<project root>/skills-lock.json`** (note: at project root, **not** under `.claude/skills/`; filename has **no dot prefix**) (fields: `source`, `sourceType`, `skillPath`, `computedHash`; no timestamp); missing → treat as empty list (no error); every skill in target directory goes straight to step 4 B/C inference
+- Read ignore list (`global` → `~/.claude/skills/.up-skills-ignore`; `project` → `<project>/.claude/skills/.up-skills-ignore`): per line strip `#`-leading comments and trailing `# ...` comments, trim, drop empty lines → name set; file missing = empty set; do not auto-create
 
-### 4. 分類
+### 4. Classify
 
-依下表標記各 skill 為 D／A／B／C，**優先序 D > A > B > C**——名稱同時列於忽略清單與 lockfile 時一律歸 D：
+Tag each skill D/A/B/C per table, **priority D > A > B > C**—name in both ignore list and lockfile → always D:
 
-| 類 | 判定 | 動作 |
+| Class | Criterion | Action |
 | --- | --- | --- |
-| D 自製／凍結 | 名稱列於 `.up-skills-ignore` | 完全跳過：不比對 lockfile、不掃描上游、不執行任何指令 |
-| A 已納管 | 名稱同時存在於目標目錄與 lockfile | 步驟 5：`npx skills update` |
-| B 可推斷 | 不在 lockfile，但 SKILL.md／README 內含 `npx skills add …` 指令或 GitHub repo URL | 步驟 6：確認後 `npx skills add`（重裝會讓 CLI 自動寫入 lockfile，下次即歸 A 類，不需自建對照表） |
-| C 無上游 | 找不到任何上游線索，或由外部二進位安裝 | 步驟 7：僅回報，不執行任何指令 |
+| D self-made/frozen | name listed in `.up-skills-ignore` | skip entirely: no lockfile comparison, no upstream scan, no commands |
+| A managed | name exists in both target directory and lockfile | step 5: `npx skills update` |
+| B inferable | not in lockfile, but SKILL.md/README contains `npx skills add …` command or GitHub repo URL | step 6: after confirmation `npx skills add` (reinstall makes CLI write lockfile automatically → next time class A; no hand-built mapping table) |
+| C no upstream | no upstream clue found, or installed via external binary | step 7: report only, run no command |
 
-`project` 模式 lockfile 內 `sourceType` 為 `node_modules`／`local` 者不歸 A、也不進 B／C 推斷——這是本地來源、無上游可更新的合法狀態，標記「本地來源·不適用」。
+`project` mode, lockfile `sourceType` is `node_modules`/`local` → not A, not B/C inference—local source, no upstream to update, legitimate state; tag 「本地來源·不適用」.
 
-`project` 模式缺 `skills-lock.json`（或有紀錄但目標目錄內找不到對應名稱）時，逐一掃描目標目錄內每個 SKILL.md／README，比照 B 類規則推斷來源；推不出來源標記為 C，不猜測、不捏造 repo URL。
+`project` mode with no `skills-lock.json` (or record exists but name not found in target directory): scan every SKILL.md/README in target directory, infer source by B rules; source not inferable → tag C; do not guess, do not fabricate repo URL.
 
-### 5. 更新 A 類
+### 5. Update class A
 
-先做 git 漂移檢查，再組指令引數：
+Run git drift check first, then build command arguments:
 
-- 在 git repo 內 → 對每個 A 類 skill 執行 `git status --porcelain skills/<name>/`（`global`，cwd 為 `~/.claude`）或 `git status --porcelain .claude/skills/<name>/`（`project`，cwd 為專案根）；有輸出（未提交改動）→ 該 skill 標記「本地有未提交改動·已跳過」、不進引數列，提示先 commit 或加入 `.up-skills-ignore` 永久排除
-- 不在 git repo 內 → 略過此檢查，一行提示「無 git 保護，更新將直接覆蓋」，全部 A 類正常進引數列
+- In git repo → per class-A skill run `git status --porcelain skills/<name>/` (`global`, cwd `~/.claude`) or `git status --porcelain .claude/skills/<name>/` (`project`, cwd project root); any output (uncommitted changes) → tag skill 「本地有未提交改動·已跳過」, exclude from argument list, advise commit first or add to `.up-skills-ignore` for permanent exclusion
+- Not in git repo → skip check, one-line notice 「無 git 保護，更新將直接覆蓋」, all class A go into argument list
 
-分類為 A、通過漂移檢查、且**目標目錄內實際存在**的名稱逐一列為指令引數：
+Names classified A, passing drift check, and **actually present in target directory** → list one by one as command arguments:
 
 ```
 npx skills update <name1> <name2> ... -g -y    # global
 npx skills update <name1> <name2> ... -p -y    # project
 ```
 
-⚠️ project 模式**必須明寫 `-p`**，不可只是「不加 `-g`」——指名 skill 名稱時若兩個 flag 都不給，CLI 會判定成同時更新 global 與 project 兩邊（`"both"`），不等於單純的 project。
+⚠️ `project` mode **must write `-p` explicitly**, not merely "omit `-g`"—with skill names given and neither flag, CLI treats it as updating both global and project (`"both"`), not project alone.
 
-⚠️ **絕不可省略引數裸跑** `npx skills update -g`（無引數＝更新 lockfile 內全部登記筆數，會把已移除的 skill 重新灌回目錄）。
+⚠️ **Never omit arguments and run bare** `npx skills update -g` (no arguments = update every lockfile entry; re-installs removed skills into the directory).
 
-單一 skill 更新失敗（非零退出）→ 記錄失敗與 stderr 摘要，**繼續處理其餘**，不中止整體流程。stdout 若出現「legacy」／「無法就地更新」等字樣（project 模式常見於缺 `skillPath` 的舊紀錄），摘錄進備註欄、計入「失敗」或「已略過」，不視為指令本身出錯。
+Single skill update fails (non-zero exit) → record failure and stderr summary, **continue with the rest**; do not abort overall flow. stdout containing 「legacy」/「無法就地更新」 or similar (common in `project` mode for old records missing `skillPath`) → excerpt into notes column, count as 「失敗」 or 「已略過」; not a command error itself.
 
-project 模式提醒：CLI 內部對這類紀錄重裝時不帶 `-a`，agent 分佈可能因此改變（新增或減少其他 agent 目錄），這是 CLI 已知行為、非本指令可控制，回報時附註即可。
+`project` mode note: CLI reinstalls such records without `-a`, so agent distribution may change (other agent directories added or removed); known CLI behavior, not controllable by this command; add a remark in report.
 
-### 6. 更新 B 類
+### 6. Update class B
 
-逐一顯示待執行完整指令，經確認後才執行：
+Show full command to run one by one; execute only after confirmation:
 
 ```
 npx skills add <owner/repo> -s <skill> -g -y -a claude-code
 ```
 
-`project` 模式不加 `-g`；固定加 `-a claude-code`，避免寫入 lockfile 的 `lastSelectedAgents` 所列其他 agent（amp、cursor、codex 等）目錄。使用者拒絕確認的項目標記為「已略過」。
+`project` mode omits `-g`; always add `-a claude-code` to avoid writing directories for other agents (amp, cursor, codex, etc.) listed in lockfile `lastSelectedAgents`. User declines → tag 「已略過」.
 
-### 7. 更新 C 類
+### 7. Update class C
 
-僅列出名稱與「無法自動更新」，不執行任何指令。
+List name and 「無法自動更新」 only; run no command.
 
-### 8. Plugin 層
+### 8. Plugin layer
 
-1. `claude plugin marketplace update`（全部 marketplace 一併更新）
-2. `claude plugin list` 讀目前版本
-3. 已啟用 plugin（如 `watch@claude-video`）逐一比對新版，有則執行：
+1. `claude plugin marketplace update` (all marketplaces at once)
+2. `claude plugin list` for current versions
+3. Per enabled plugin (e.g. `watch@claude-video`) compare with new version; newer exists → run:
    ```
    claude plugin update <plugin>@<marketplace> -y --json -s user
    ```
-4. 回報「更新後需重啟 session 才會生效」
+4. Report 「更新後需重啟 session 才會生效」
 
-### 9. 唯讀回報層（不寫入、不執行更新）
+### 9. Read-only report layer (no writes, no updates)
 
-**僅 global 模式**適用——`skills/synced/` 是 Claude Code 帳號層概念，project 沒有對應物，project 模式略過本步驟。
+**`global` mode only**—`skills/synced/` is a Claude Code account-level concept; `project` has no counterpart; skip this step in `project` mode.
 
-- 讀 `~/.claude/skills/synced/*/manifest.json`，回報各 skill 的 `source`、`updatedAt` 與整體 `lastUpdated`（平台雲端管理，本機無法更新）
-- 執行 `claude --version`，回報目前 CLI 版本；提示可執行 `claude update` 更新 CLI 內建 skills（不自動執行）
+- Read `~/.claude/skills/synced/*/manifest.json`; report each skill's `source`, `updatedAt` and overall `lastUpdated` (platform cloud-managed, cannot update locally)
+- Run `claude --version`; report current CLI version; suggest `claude update` for CLI built-in skills (do not run automatically)
 
-### 10. 收尾
+### 10. Wrap-up
 
 ```
 git diff --stat
 git status --short
 ```
 
-**不** `git commit`、**不** `git push`；末行提示可用 `/now-push` 提交。
+**No** `git commit`, **no** `git push`; final line hints `/now-push` to commit.
 
-## 回報格式
+## Report format
 
-一張表格，欄位：`skill | 類別 | 來源 | 結果 | 備註`（結果為「已更新／已是最新／失敗／已略過／自製·已跳過／本地有改動·已跳過」）；D 類與漂移跳過項也列入表格，不得從表格中省略。
+One table, columns: `skill | 類別 | 來源 | 結果 | 備註` (result values 「已更新／已是最新／失敗／已略過／自製·已跳過／本地有改動·已跳過」); class D and drift-skipped items also go in the table; never omit them.
 
-表格後補充：
+After table add:
 
-- Plugin 更新結果（含是否需重啟）
-- Synced skills 狀態（唯讀）
-- CLI 版本與是否建議 `claude update`
-- `git diff --stat` 摘要
+- Plugin update result (incl. restart needed)
+- Synced skills status (read-only)
+- CLI version and whether `claude update` is advised
+- `git diff --stat` summary
 
-## 禁止事項
+## Prohibited
 
-- 不裸跑 `npx skills update -g`（無引數）——會把 lockfile 內已移除的 skill 全部灌回目錄
-- 不使用 `npx skills add … --all` 或 `-s '*'`
-- 不觸碰 `skills/synced/`（平台管理，已 gitignore）
-- 不自動執行 `claude update`（會替換 CLI 本體）——僅回報建議
-- 不 `git commit`、不 `git push`
-- B 類重裝前必須先取得使用者確認（來源為推斷，非既有紀錄）
-- 不因單一 skill 更新失敗中止整體流程；僅前置檢查失敗才中止
-- 不更新 `.up-skills-ignore` 列出的 skill，即使名稱存在於 lockfile
-- 不自動增刪 `.up-skills-ignore` 內容——由使用者手動維護
-- git 漂移檢查未通過（該 skill 目錄有未提交改動）時不強制覆蓋
-- 不對 `npx skills update`／`check`／`upgrade` 加 `--help` 探索用法——三者無 `--help` 攔截，會直接執行更新；語法查閱只讀本文件或頂層 `npx skills --help`
+- No bare `npx skills update -g` (no arguments)—re-installs every removed lockfile skill into the directory
+- No `npx skills add … --all` or `-s '*'`
+- Never touch `skills/synced/` (platform-managed, gitignored)
+- Never auto-run `claude update` (replaces CLI itself)—recommend only
+- No `git commit`, no `git push`
+- Class B reinstall requires user confirmation first (source inferred, not from existing record)
+- Single skill update failure does not abort overall flow; only preflight failure aborts
+- Never update skills listed in `.up-skills-ignore`, even if name exists in lockfile
+- Never auto-add/remove `.up-skills-ignore` content—user maintains manually
+- Git drift check failed (skill directory has uncommitted changes) → do not force overwrite
+- Never add `--help` to `npx skills update`/`check`/`upgrade` to explore usage—none intercepts `--help`; they run the update directly; consult only this file or top-level `npx skills --help` for syntax
