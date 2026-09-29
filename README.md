@@ -18,14 +18,14 @@
 
 其餘 `sessions/`、`session-env/`、`shell-snapshots/`、`projects/`、`file-history/`、`cache/`、`paste-cache/`、`plugins/`、`backups/`、`daemon/`、`jobs/`、`tasks/`、`plans/`、`feedback/`、`telemetry/`、`ide/`、`chrome/` 等為 runtime 產物，已列入 `.gitignore`，不進版控。
 
-`skills/synced/` 是 Claude 帳號雲端同步下來的 skills（目前 9 個），內容由平台管理、不手動編輯，已列入 `.gitignore`，不進版控。
+`skills/synced/` 是 Claude 帳號雲端同步下來的 skills（目前 10 個），內容由平台管理、不手動編輯，已列入 `.gitignore`，不進版控。
 
 ## Commands
 
 | Command | 說明 |
 |---|---|
-| `/now-push [<lng>]` | 依固定格式自動執行 `git add` + `commit`（**英文** commit message，含 `Co-Authored-By` trailer）+ `push`，全程不詢問確認；帶 `<lng>`（如 `zh-TW`、`ja`）改用該語言撰寫 subject／body |
-| `/up-rules [--audit]` | 依序：校正 `CLAUDE.md` 事實 →（帶 `--audit` 時）以 `claude-api` prompt-audit 審查過時指令，列 findings 供選擇套用 → 檢查是否有內容該分塊到 `rules/<topic>.md`（`paths` frontmatter 按需載入）→ 以 caveman full 強度壓縮 `CLAUDE.md` / `.claude/rules/**/*.md` / `.claude/commands/**/*.md`（只刪冗詞不刪語意，`--audit` 套用的刪改除外）→ 檢查並同步本 README |
+| `/now-push [--lng <code>] [--pr]` | 依固定格式自動執行 `git add` + `commit`（預設**英文** commit message，含 `Co-Authored-By` trailer）+ `push`，全程不詢問確認；`--lng`（如 `zh-tw`、`ja`）改用該語言；`--pr` 另開 PR（在預設分支時自動開新分支）；每次檢查並依語言更新 GitHub repo description |
+| `/up-rules [--audit] [--lng <code>]` | `--lng`（如 `zh-tw`、`ja`；未帶＝英文）決定所有寫入內容的語言，含 `CLAUDE.md`、`rules/`、`commands/` 散文與本 README，現有語言不同則翻譯。依序：校正 `CLAUDE.md` 事實 →（帶 `--audit` 時）以 `claude-api` prompt-audit 審查過時指令，列 findings 供選擇套用 → 檢查是否有內容該分塊到 `rules/<topic>.md`（`paths` frontmatter 按需載入）→ 以 caveman full 強度壓縮 `CLAUDE.md` / `.claude/rules/**/*.md` / `.claude/commands/**/*.md`（只刪冗詞不刪語意，`--audit` 套用的刪改除外）→ 檢查並同步本 README |
 | `/up-skills [global\|project]` | 批次更新 skills：已納管者（global 讀 `~/.agents/.skill-lock.json`；project 讀 `<專案根>/skills-lock.json`）逐一指名跑 `npx skills update`；未納管者推斷上游後確認重裝；`skills/.up-skills-ignore` 列出的自製 skill 完全跳過，有未提交改動的 skill 也自動跳過；global 另回報 plugin、雲端同步 skills、CLI 版本狀態 |
 
 ## Skills
