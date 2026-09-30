@@ -24,10 +24,11 @@ Compress filler, repetition, decorative explanation. Leave concrete rules, const
 
 - `CLAUDE.md` (project root)
 - `./.claude/CLAUDE.md`
+- `CLAUDE.local.md` (project root) and `./.claude/CLAUDE.local.md`—personal, machine-local, usually gitignored; same treatment as CLAUDE.md (fact check, compression, no-loss verification); never add to README or commit
 - `./.claude/rules/**/*.md` (recursive, incl. subdirectories; project root is itself `.claude` directory (e.g. this repo) → `./rules/**/*.md`)
 - `./.claude/commands/**/*.md` (incl. namespaced subdirectories; project root is itself `.claude` directory (e.g. this repo) → `./commands/**/*.md`)
 
-Process only if exists; skip missing. `@path` import files (e.g. `@CLAUDE.local.md`) not compressed proactively unless listed above.
+Process only if exists; skip missing (`CLAUDE.local.md` absent on most machines—normal, no notice). Other `@path` import files not compressed proactively unless listed above.
 
 ⚠️ `./.claude/rules/**/*.md` (or this repo's `./rules/**/*.md`) are **user-level rules**, apply to all projects on machine, not only this project; before creating or modifying, confirm scope is not unique to this repo.
 
@@ -50,7 +51,8 @@ Process only paths above; **do not** extend to `skills/`, `settings.json`.
 
 Fix facts only; add no behavior rules.
 
-- Check every path, command/skill name, setting value, hook filename mentioned in CLAUDE.md (incl. `./.claude/CLAUDE.md`, existing `rules/**/*.md`); verify still exists.
+- Check every path, command/skill name, setting value, hook filename mentioned in CLAUDE.md (incl. `./.claude/CLAUDE.md`, `CLAUDE.local.md`, existing `rules/**/*.md`); verify still exists.
+- `CLAUDE.local.md` overlaps or contradicts CLAUDE.md → report only, do not merge across files (local file is personal override; user decides).
 - Per step 1 git log/diff fix renamed, deleted, changed-value items; merge overlapping or contradicting rules found in step 1.
 - No correction needed → state 「CLAUDE.md 事實已同步，未改動」; do not change for change's sake.
 - Record each correction (before→after, basis) for step 9 report.
@@ -147,7 +149,7 @@ Test: **if compressed text has a second reasonable reading, do not compress.**
 
 ### 7. Verify no loss (after compression)
 
-Compare item by item with step 4 instruction list: confirm **every** item still exists after rewrite in union of CLAUDE.md ∪ `rules/**/*.md` (semantic equivalence enough, wording need not match). Chunked items must land in a rule file whose `paths` covers original scope.
+Compare item by item with step 4 instruction list: confirm **every** item still exists after rewrite in union of CLAUDE.md ∪ `rules/**/*.md` (`CLAUDE.local.md` verified against itself, not in union—stays separate file) (semantic equivalence enough, wording need not match). Chunked items must land in a rule file whose `paths` covers original scope.
 
 ⚠️ Casual "feels like nothing missing" is not verification—check list item by item, else edge rules get deleted silently while success is reported.
 
