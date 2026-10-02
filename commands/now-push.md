@@ -1,6 +1,6 @@
 ---
-description: 自動執行 git add + commit + push，commit message 固定格式英文；--lng 指定語言、--pr 開 PR，並檢查更新 GitHub repo description
-argument-hint: "[--lng <zh-tw|zh|ja|...>] [--pr]"
+description: 自動執行 git add + commit + push，commit message 固定格式英文；--lng 指定語言、--pr 開 PR、--merge 開 PR 後 squash merge 並刪分支回 main，並檢查更新 GitHub repo description
+argument-hint: "[--lng <zh-tw|zh|ja|...>] [--pr] [--merge]"
 ---
 
 ## Arguments (parse from `$ARGUMENTS`, any order)
@@ -10,6 +10,7 @@ argument-hint: "[--lng <zh-tw|zh|ja|...>] [--pr]"
   - unrecognized or missing value → one-line notice, **fall back to English**, continue; do not abort
   - `zh` without script → Traditional Chinese (`zh-cn`/`簡中` only → Simplified)
 - `--pr`: open PR after push; absent → **no branch, no PR**
+- `--merge`: implies `--pr`; after PR, squash merge into default branch, delete branch (local + remote), switch back to default branch and sync; absent → PR stays open
 - other unknown tokens → one-line notice, ignore; do not abort
 - Regardless of language: `type`, `scope`, `Co-Authored-By` trailer, branch name **always English**
 
@@ -21,14 +22,19 @@ Execute in order immediately, no confirmation:
 2. `git diff` + `git diff --staged`; read full changes
 3. `git log -5 --oneline` for recent commit style
 4. Generate commit message in the **fixed format** below (before branching; branch name needs it)
-5. **`--pr` only**: get default branch via `gh repo view --json defaultBranchRef -q .defaultBranchRef.name`; current branch == default → `git switch -c <type>/<slug>` (slug = scope + English subject keywords, kebab-case, ≤40 chars; English even when `--lng` is not English)
+5. **`--pr`/`--merge`**: get default branch via `gh repo view --json defaultBranchRef -q .defaultBranchRef.name`; current branch == default → `git switch -c <type>/<slug>` (slug = scope + English subject keywords, kebab-case, ≤40 chars; English even when `--lng` is not English)
 6. `git add .`
 7. `git commit -m "<header>" -m "<body>" -m "Co-Authored-By: <當前模型全名> <noreply@anthropic.com>"` (exactly three `-m`; trailer mandatory; `<當前模型全名>` source: see footer)
 8. `git push`; current branch has no upstream → `git push -u origin HEAD`
-9. **`--pr` only**: `gh pr view` on current branch; PR exists → report existing URL, do not recreate; none → `gh pr create --base <default branch> --title "<commit header>" --body "<body>"`; body = commit body bullets + blank line + `🤖 Generated with [Claude Code](https://claude.com/claude-code)`, language per `--lng`; report PR URL
-10. Repo description check (next section)
+9. **`--pr`/`--merge`**: `gh pr view` on current branch; PR exists → report existing URL, do not recreate; none → `gh pr create --base <default branch> --title "<commit header>" --body "<body>"`; body = commit body bullets + blank line + `🤖 Generated with [Claude Code](https://claude.com/claude-code)`, language per `--lng`; report PR URL
+10. **`--merge` only** (existing PR also merged):
+    1. `gh pr merge <PR number> --squash --delete-branch --subject "<commit header>"`
+    2. `git switch <default branch>` (skip if `gh` already switched) + `git pull --ff-only`
+    3. `git fetch --prune`; local branch still present → `git branch -D <branch>`
+    4. report merged PR URL, deleted branch name, current branch `<default>` + HEAD short sha
+11. Repo description check (next section)
 
-Steps 1–9: any non-zero exit → stop immediately, report full stderr, **do not attempt repair**. Step 10 failure (not GitHub, `gh` not logged in, no permission) → notice only, **not an overall failure**—commit/push already done.
+Steps 1–10: any non-zero exit → stop immediately, report full stderr, **do not attempt repair**. Step 10 blocked (required checks / review / conflict) → report stderr + PR URL, stay on feature branch, no retry, no `--admin`/`--auto`. Step 11 failure (not GitHub, `gh` not logged in, no permission) → notice only, **not an overall failure**—commit/push already done.
 
 ## Repo Description Maintenance
 
@@ -144,4 +150,5 @@ Co-Authored-By: <當前模型全名> <noreply@anthropic.com>
 - English subject: no past tense or third-person singular (`added`/`adds` → always `add`)
 - No filenames in subject (put in body or express via scope)
 - No force push
+- `--merge`: no `--admin` to bypass branch protection
 - Diff contains secret, API key, password or similar sensitive data → **stop immediately and warn user**; do not commit
