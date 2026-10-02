@@ -44,7 +44,8 @@
     "hideVimModeIndicator": true
   },
   "enabledPlugins": {
-    "watch@claude-video": true
+    "watch@claude-video": true,
+    "mindful-claude@mindful-claude": true
   },
   "extraKnownMarketplaces": {
     "claude-video": {
@@ -52,11 +53,25 @@
         "source": "github",
         "repo": "bradautomates/claude-video"
       }
+    },
+    "mindful-claude": {
+      "source": {
+        "source": "github",
+        "repo": "halluton/Mindful-Claude"
+      }
     }
   },
   "outputStyle": "Concise",
   "language": "traditional chinese",
   "effortLevel": "xhigh",
+  "modelSettings": {
+    "claude-sonnet-5-5": {
+      "effortLevel": "high"
+    },
+    "claude-opus-5-5": {
+      "effortLevel": "high"
+    }
+  },
   "theme": "dark",
   "editorMode": "vim",
   "vimInsertModeRemaps": {
@@ -78,13 +93,5 @@
     ],
     "hard_deny": []
   },
-  "additionalDirectories": [],
-  "modelSettings": {
-    "claude-sonnet-5-5": {
-      "effortLevel": "high"
-    },
-    "claude-opus-5-5": {
-      "effortLevel": "high"
-    }
-  }
+  "additionalDirectories": []
 }

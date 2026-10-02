@@ -140,7 +140,7 @@ Co-Authored-By: <當前模型全名> <noreply@anthropic.com>
 
 ## Prohibited
 
-- No emoji
+- No emoji in commit message or repo description (PR body trailer `🤖 Generated with …` required, exempt)
 - English subject: no past tense or third-person singular (`added`/`adds` → always `add`)
 - No filenames in subject (put in body or express via scope)
 - No force push

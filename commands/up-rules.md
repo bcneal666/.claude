@@ -3,7 +3,7 @@ description: 校正 CLAUDE.md 事實、按需分塊到 rules/、以 caveman full
 argument-hint: "[--audit] [--lng <zh-tw|zh|ja|...>]"
 ---
 
-Rule files read by AI only, loaded in full each session, humans rarely read. Compress to `caveman` **full**, **no loss of instruction semantics**.
+Rule files read by AI only, loaded in full when active (`CLAUDE.md` each session, `rules/` per `paths`, commands on invocation), humans rarely read. Compress to `caveman` **full**, **no loss of instruction semantics**.
 
 Compress filler, repetition, decorative explanation. Leave concrete rules, constraints, reasons attached to rules ("——因為…" clauses), disambiguating examples untouched—reasons let model judge situations rule does not cover; semantics, not decoration.
 
@@ -182,7 +182,7 @@ Write files directly with Edit/Write, **no** automatic git commit; leave to `/no
 
 ## Self-compression reminder
 
-`commands/up-rules.md`, `commands/now-push.md` themselves are in compression scope:
+`commands/up-rules.md`, `commands/now-push.md`, `commands/up-skills.md` themselves are in compression scope:
 
 - `now-push.md` nearly whole file verbatim (commit format template, type table, ✅/❌ good/bad examples, `Co-Authored-By` trailer)—touch only prose around template, little room; do not force template changes for ratio.
 - When compressing itself, rewrite must still pass "Step 7: verify no loss" item by item.

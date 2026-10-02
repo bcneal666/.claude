@@ -106,7 +106,7 @@ git status --short
 
 ## Report format
 
-One table, columns: `skill | 類別 | 來源 | 結果 | 備註` (result values 「已更新／已是最新／失敗／已略過／自製·已跳過／本地有改動·已跳過」); class D and drift-skipped items also go in the table; never omit them.
+One table, columns: `skill | 類別 | 來源 | 結果 | 備註` (result values 「已更新／已是最新／失敗／已略過／自製·已跳過／本地有未提交改動·已跳過／本地來源·不適用」); class D and drift-skipped items also go in the table; never omit them.
 
 After table add:
 

@@ -39,7 +39,10 @@ The rest — `sessions/`, `session-env/`, `shell-snapshots/`, `projects/`, `file
 | `git-commit` | Conventional commit message analysis and smart batched staging |
 | `skill-creator` | Create, modify and optimize skills, and run evals to test performance |
 
-Plugin: `watch@claude-video` (from marketplace `bradautomates/claude-video`), providing the `/watch` video analysis command.
+Plugins:
+
+- `watch@claude-video` (from marketplace `bradautomates/claude-video`) provides the `/watch` video analysis command.
+- `mindful-claude@mindful-claude` (from marketplace `halluton/Mindful-Claude`) shows a guided breathing animation above the prompt while Claude works, controlled with `/breathe`. It is a function-hooks plugin, so it needs `CLAUDE_CODE_ENABLE_FUNCTION_HOOKS=1` (already set under `env` in `settings.json`) and Claude Code 2.1.269 or later.
 
 ## Key settings
 
