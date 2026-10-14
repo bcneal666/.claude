@@ -17,7 +17,7 @@ Personal global Claude Code configuration repo, shared across projects: custom s
 └── notes/                      # Personal notes (not configuration, scratch only)
 ```
 
-The rest — `sessions/`, `session-env/`, `shell-snapshots/`, `projects/`, `file-history/`, `cache/`, `paste-cache/`, `plugins/`, `backups/`, `daemon/`, `jobs/`, `tasks/`, `plans/`, `feedback/`, `telemetry/`, `ide/`, `chrome/`, etc. — is runtime output, listed in `.gitignore`, not version-controlled.
+The rest — `sessions/`, `session-env/`, `shell-snapshots/`, `projects/`, `file-history/`, `cache/`, `paste-cache/`, `plugins/`, `backups/`, `daemon/`, `jobs/`, `tasks/`, `plans/`, `feedback/`, `state/`, `telemetry/`, `ide/`, `chrome/`, etc. — is runtime output, listed in `.gitignore`, not version-controlled.
 
 `skills/synced/` holds skills synced down from the Claude account cloud (currently 14). The platform manages its content, so do not edit it by hand; it is listed in `.gitignore` and not version-controlled.
 
@@ -36,6 +36,7 @@ The rest — `sessions/`, `session-env/`, `shell-snapshots/`, `projects/`, `file
 | `agent-browser` | Browser automation CLI: operate web pages, fill forms, take screenshots, scrape data |
 | `caveman` | Ultra-terse communication mode that cuts token use while keeping technical accuracy |
 | `design-md` | Analyzes a Stitch project and distills it into a `DESIGN.md` design-system document |
+| `find-skills` | Helps discover and install skills from the open skills ecosystem (tracked as a symlink to `~/.agents/skills/find-skills`, installed by the skills CLI) |
 | `git-commit` | Conventional commit message analysis and smart batched staging |
 | `skill-creator` | Create, modify and optimize skills, and run evals to test performance |
 
@@ -43,7 +44,7 @@ Plugins:
 
 - `watch@claude-video` (from marketplace `bradautomates/claude-video`) provides the `/watch` video analysis command.
 - `mindful-claude@mindful-claude` (from marketplace `halluton/Mindful-Claude`) shows a guided breathing animation above the prompt while Claude works, controlled with `/breathe`. It is a function-hooks plugin, so it needs `CLAUDE_CODE_ENABLE_FUNCTION_HOOKS=1` (already set under `env` in `settings.json`) and Claude Code 2.1.269 or later.
-- `image-view@claude-image-view` (from marketplace `jarrodwatts/claude-image-view`) shows thumbnails of pasted images above the prompt instead of bare `[Image #n]` tags. Only kitty and Ghostty draw real pictures; in other terminals, including Windows Terminal and PowerShell, it falls back to low-resolution colored half blocks (`▀`), which look like mosaics. This is expected, not a bug. It stays enabled in the synced `settings.json`; on Windows machines, disable it in the gitignored `settings.local.json` with `"enabledPlugins": { "image-view@claude-image-view": false }`. `~/.claude/settings.local.json` is not a user-scope file and Claude Code does not read it on its own, so the PowerShell profile defines a `claude` function that launches `claude.exe --settings ~/.claude/settings.local.json` (`--settings` outranks user scope). It only applies to `claude` started from PowerShell, not IDE or desktop launches.
+- `image-view@claude-image-view` (from marketplace `jarrodwatts/claude-image-view`) shows thumbnails of pasted images above the prompt instead of bare `[Image #n]` tags. Only kitty and Ghostty draw real pictures; in other terminals, including Windows Terminal and PowerShell, it falls back to low-resolution colored half blocks (`▀`), which look like mosaics. This is expected, not a bug. It stays enabled in the synced `settings.json`; on Windows machines, disable it in the gitignored `settings.local.json` with `"enabledPlugins": { "image-view@claude-image-view": false }`. `~/.claude/settings.local.json` is not a user-scope file and Claude Code does not read it on its own, so the PowerShell profile defines a `claude` function that launches `claude.exe --settings ~/.claude/settings.local.json` (`--settings` outranks user scope). It only applies to `claude` started from PowerShell, not IDE or desktop launches, and only to shells opened after the profile change (run `. $PROFILE` or open a new tab; an already-open pwsh keeps resolving `claude` to `claude.exe`).
 - `cc-plugin-you-should-know@builtin` is a plugin from Claude Code's built-in marketplace, enabled under `enabledPlugins` in `settings.json`; it has no entry under `extraKnownMarketplaces` because the marketplace ships with the CLI.
 
 ## Key settings
