@@ -43,6 +43,7 @@ Plugins:
 - `watch@claude-video` (from marketplace `bradautomates/claude-video`) provides the `/watch` video analysis command.
 - `mindful-claude@mindful-claude` (from marketplace `halluton/Mindful-Claude`) shows a guided breathing animation above the prompt while Claude works, controlled with `/breathe`. It is a function-hooks plugin, so it needs `CLAUDE_CODE_ENABLE_FUNCTION_HOOKS=1` (already set under `env` in `settings.json`) and Claude Code 2.1.269 or later.
 - `image-view@claude-image-view` (from marketplace `jarrodwatts/claude-image-view`) shows thumbnails of pasted images above the prompt instead of bare `[Image #n]` tags. Only kitty and Ghostty draw real pictures; in other terminals, including Windows Terminal and PowerShell, it falls back to low-resolution colored half blocks (`▀`), which look like mosaics. This is expected, not a bug.
+- `cc-plugin-you-should-know@builtin` is a plugin from Claude Code's built-in marketplace, enabled under `enabledPlugins` in `settings.json`; it has no entry under `extraKnownMarketplaces` because the marketplace ships with the CLI.
 
 ## Key settings
 
