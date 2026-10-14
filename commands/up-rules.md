@@ -67,7 +67,7 @@ Has `--audit` →
 - After getting audit report and proposed diff, **pause**; list findings, ask user to pick hunks to apply one by one—do not use prompt-audit default "no asking, diff only"; this command is interactive.
 - Selected hunks → apply to files; unselected stay in report only, not applied.
 - Low-confidence/`flag` items report only, not offered as selectable hunks.
-- Applied result folds into step 4 instruction-list baseline—deleted semantics **not** listed, so step 6 verification does not misjudge loss.
+- Applied result folds into step 4 instruction-list baseline—deleted semantics **not** listed, so step 7 verification does not misjudge loss.
 
 ### 4. Build instruction list (before compression)
 

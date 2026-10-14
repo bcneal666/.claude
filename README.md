@@ -18,7 +18,7 @@ Personal global Claude Code configuration repo, shared across projects: custom s
 
 The rest — `sessions/`, `session-env/`, `shell-snapshots/`, `projects/`, `file-history/`, `cache/`, `paste-cache/`, `plugins/`, `backups/`, `daemon/`, `jobs/`, `tasks/`, `plans/`, `feedback/`, `telemetry/`, `ide/`, `chrome/`, etc. — is runtime output, listed in `.gitignore`, not version-controlled.
 
-`skills/synced/` holds skills synced down from the Claude account cloud (currently 10). The platform manages its content, so do not edit it by hand; it is listed in `.gitignore` and not version-controlled.
+`skills/synced/` holds skills synced down from the Claude account cloud (currently 14). The platform manages its content, so do not edit it by hand; it is listed in `.gitignore` and not version-controlled.
 
 ## Commands
 
@@ -35,7 +35,6 @@ The rest — `sessions/`, `session-env/`, `shell-snapshots/`, `projects/`, `file
 | `agent-browser` | Browser automation CLI: operate web pages, fill forms, take screenshots, scrape data |
 | `caveman` | Ultra-terse communication mode that cuts token use while keeping technical accuracy |
 | `design-md` | Analyzes a Stitch project and distills it into a `DESIGN.md` design-system document |
-| `find-skills` | Helps discover and install other agent skills |
 | `git-commit` | Conventional commit message analysis and smart batched staging |
 | `skill-creator` | Create, modify and optimize skills, and run evals to test performance |
 
@@ -43,13 +42,14 @@ Plugins:
 
 - `watch@claude-video` (from marketplace `bradautomates/claude-video`) provides the `/watch` video analysis command.
 - `mindful-claude@mindful-claude` (from marketplace `halluton/Mindful-Claude`) shows a guided breathing animation above the prompt while Claude works, controlled with `/breathe`. It is a function-hooks plugin, so it needs `CLAUDE_CODE_ENABLE_FUNCTION_HOOKS=1` (already set under `env` in `settings.json`) and Claude Code 2.1.269 or later.
+- `image-view@claude-image-view` (from marketplace `jarrodwatts/claude-image-view`) shows thumbnails of pasted images above the prompt instead of bare `[Image #n]` tags. Only kitty and Ghostty draw real pictures; in other terminals, including Windows Terminal and PowerShell, it falls back to low-resolution colored half blocks (`▀`), which look like mosaics. This is expected, not a bug.
 
 ## Key settings
 
 - `model`: `opusplan` (Opus for planning, automatic switch to another model for execution)
 - `outputStyle`: `Concise` (terse output); `language`: `traditional chinese`
 - `permissions.defaultMode`: `plan` (starts in plan mode: plan first, then execute)
-- `permissions.allow` whitelists common low-risk commands (`git add`, `git commit -m`, `git push`, `WebSearch`, `Edit(~/.claude/hooks/**)`, `Edit(~/.claude/commands/**)`); `git add`/`commit`/`push` are listed with both `Bash(...)` and `PowerShell(...)` prefixes—on Windows PowerShell is a separate permission namespace and does not inherit `Bash(...)` rules
+- `permissions.allow` whitelists common low-risk commands (`git add`, `git commit -m`, `git push`, `WebSearch`, `Edit(~/.claude/hooks/**)`, `Edit(~/.claude/commands/**)`, `Skill(update-config)`); `git add`/`commit`/`push` are listed with both `Bash(...)` and `PowerShell(...)` prefixes—on Windows PowerShell is a separate permission namespace and does not inherit `Bash(...)` rules
 - Statusline uses only the Node version (`statusline-command.mjs`), with no shell fallback; the three lines show "model / effort / vim mode", "directory / branch", and "context usage and size / rate limits (5h / overage usage) / cost"; `hideVimModeIndicator:true` turns off the built-in `-- INSERT --` indicator in favor of a custom one
 - The UserPromptSubmit hook (`hooks/inject-datetime.mjs`) injects the full current timestamp (`Asia/Taipei`, with time of day and weekday) into every prompt, making up for the built-in system prompt giving only a snapshot of the date at session start
 

@@ -45,7 +45,8 @@
   },
   "enabledPlugins": {
     "watch@claude-video": true,
-    "mindful-claude@mindful-claude": true
+    "mindful-claude@mindful-claude": true,
+    "image-view@claude-image-view": true
   },
   "extraKnownMarketplaces": {
     "claude-video": {
@@ -58,6 +59,12 @@
       "source": {
         "source": "github",
         "repo": "halluton/Mindful-Claude"
+      }
+    },
+    "claude-image-view": {
+      "source": {
+        "source": "github",
+        "repo": "jarrodwatts/claude-image-view"
       }
     }
   },
