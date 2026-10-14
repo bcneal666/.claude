@@ -9,6 +9,7 @@ Personal global Claude Code configuration repo, shared across projects: custom s
 ├── CLAUDE.md                   # Global instructions (shared by all projects, version-controlled)
 ├── README.md                   # This file
 ├── settings.json               # Global Claude Code settings (permissions, env, hooks, statusLine…)
+├── settings.local.json         # Machine-local overrides (gitignored, e.g. disabling a plugin on one OS)
 ├── statusline-command.mjs      # Statusline script (single-process Node version)
 ├── hooks/                      # Hook scripts (time injection, cross-platform Node)
 ├── commands/                   # Custom slash commands
@@ -42,7 +43,7 @@ Plugins:
 
 - `watch@claude-video` (from marketplace `bradautomates/claude-video`) provides the `/watch` video analysis command.
 - `mindful-claude@mindful-claude` (from marketplace `halluton/Mindful-Claude`) shows a guided breathing animation above the prompt while Claude works, controlled with `/breathe`. It is a function-hooks plugin, so it needs `CLAUDE_CODE_ENABLE_FUNCTION_HOOKS=1` (already set under `env` in `settings.json`) and Claude Code 2.1.269 or later.
-- `image-view@claude-image-view` (from marketplace `jarrodwatts/claude-image-view`) shows thumbnails of pasted images above the prompt instead of bare `[Image #n]` tags. Only kitty and Ghostty draw real pictures; in other terminals, including Windows Terminal and PowerShell, it falls back to low-resolution colored half blocks (`▀`), which look like mosaics. This is expected, not a bug.
+- `image-view@claude-image-view` (from marketplace `jarrodwatts/claude-image-view`) shows thumbnails of pasted images above the prompt instead of bare `[Image #n]` tags. Only kitty and Ghostty draw real pictures; in other terminals, including Windows Terminal and PowerShell, it falls back to low-resolution colored half blocks (`▀`), which look like mosaics. This is expected, not a bug. It stays enabled in the synced `settings.json`; on Windows machines, disable it locally in the gitignored `settings.local.json` with `"enabledPlugins": { "image-view@claude-image-view": false }` (local scope overrides user scope).
 - `cc-plugin-you-should-know@builtin` is a plugin from Claude Code's built-in marketplace, enabled under `enabledPlugins` in `settings.json`; it has no entry under `extraKnownMarketplaces` because the marketplace ships with the CLI.
 
 ## Key settings
@@ -56,6 +57,6 @@ Plugins:
 
 ## Maintenance conventions
 
-- Put globally shared settings in `settings.json`
+- Put globally shared settings in `settings.json`; put machine- or OS-specific overrides (e.g. disabling `image-view` on Windows) in the gitignored `settings.local.json`, since `settings.json` cannot branch by platform
 - After changing rule files (`CLAUDE.md`, `commands/*.md`), run `/up-rules` to fact-check, chunk into `rules/` when needed, compress filler and sync this README; if you suspect accumulated stale wording (such as emphatic tone aimed at older models), add `--audit` to audit first
 - Once changes are done and confirmed, push with `/now-push`
