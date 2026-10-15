@@ -12,7 +12,7 @@ bash.exe.stackdump
 .last-cleanup
 .last-update-result.json
 policy-limits.json*
-remote-settings.json
+remote-settings.json*
 stats-cache.json
 statusline-debug.log
 
