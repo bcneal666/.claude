@@ -1,8 +1,0 @@
-{
-  "mcpServers": {
-    "n8n": {
-      "type": "http",
-      "url": "https://n8n.darkwater.eu.cc/mcp-server/http"
-    }
-  }
-}

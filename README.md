@@ -10,7 +10,6 @@ Personal global Claude Code configuration repo, shared across projects: custom s
 ├── README.md                   # This file
 ├── settings.json               # Global Claude Code settings (permissions, env, hooks, statusLine…)
 ├── settings.local.json         # Machine-local overrides (gitignored; NOT auto-loaded here, passed via `claude --settings`, e.g. disabling a plugin on one OS)
-├── mcp.json                    # Version-controlled MCP servers (n8n); NOT auto-loaded, passed via `claude --mcp-config`
 ├── statusline-command.mjs      # Statusline script (single-process Node version)
 ├── hooks/                      # Hook scripts (time injection, cross-platform Node)
 ├── commands/                   # Custom slash commands
@@ -48,13 +47,6 @@ Plugins:
 - `image-view@claude-image-view` (from marketplace `jarrodwatts/claude-image-view`) shows thumbnails of pasted images above the prompt instead of bare `[Image #n]` tags. Only kitty and Ghostty draw real pictures; in other terminals, including Windows Terminal and PowerShell, it falls back to low-resolution colored half blocks (`▀`), which look like mosaics. This is expected, not a bug. It stays enabled in the synced `settings.json`; on Windows machines, disable it in the gitignored `settings.local.json` with `"enabledPlugins": { "image-view@claude-image-view": false }`. `~/.claude/settings.local.json` is not a user-scope file and Claude Code does not read it on its own, so the PowerShell profile defines a `claude` function that launches `claude.exe --settings ~/.claude/settings.local.json` (`--settings` outranks user scope). It only applies to `claude` started from PowerShell, not IDE or desktop launches, and only to shells opened after the profile change (run `. $PROFILE` or open a new tab; an already-open pwsh keeps resolving `claude` to `claude.exe`).
 - `cc-plugin-you-should-know@builtin` is a plugin from Claude Code's built-in marketplace, enabled under `enabledPlugins` in `settings.json`; it has no entry under `extraKnownMarketplaces` because the marketplace ships with the CLI.
 
-## MCP servers
-
-- `mcp.json` defines `n8n` (http, `https://n8n.darkwater.eu.cc/mcp-server/http`, OAuth, no secret in the file). `settings.json` / `settings.local.json` cannot hold `mcpServers`, and `~/.claude.json` (user scope) is not version-controlled, so the file is loaded with `--mcp-config`.
-- The PowerShell profile `claude` function launches `claude.exe --mcp-config ~/.claude/mcp.json --settings ~/.claude/settings.local.json`. Keep `--settings` last: `--mcp-config` is variadic and would swallow trailing arguments such as `mcp get n8n`. It only applies to `claude` started from PowerShell, not IDE or desktop launches.
-- `claude mcp list/get` ignore `--mcp-config`, so n8n does not show there; check it with `/mcp` inside a session.
-- On a new machine or after removing the user-scope entry, run `/mcp` → n8n → Authenticate once to redo OAuth.
-
 ## Key settings
 
 - `model`: `opusplan` (Opus for planning, automatic switch to another model for execution)
@@ -66,6 +58,6 @@ Plugins:
 
 ## Maintenance conventions
 
-- Put globally shared settings in `settings.json`; put machine- or OS-specific overrides (e.g. disabling `image-view` on Windows) in the gitignored `settings.local.json` (loaded via `claude --settings`, see the `image-view` note), since `settings.json` cannot branch by platform; put MCP server definitions in `mcp.json` (see "MCP servers")
+- Put globally shared settings in `settings.json`; put machine- or OS-specific overrides (e.g. disabling `image-view` on Windows) in the gitignored `settings.local.json` (loaded via `claude --settings`, see the `image-view` note), since `settings.json` cannot branch by platform
 - After changing rule files (`CLAUDE.md`, `commands/*.md`), run `/up-rules` to fact-check, chunk into `rules/` when needed, compress filler and sync this README; if you suspect accumulated stale wording (such as emphatic tone aimed at older models), add `--audit` to audit first
 - Once changes are done and confirmed, push with `/now-push`
