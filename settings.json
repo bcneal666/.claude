@@ -47,7 +47,8 @@
     "watch@claude-video": true,
     "mindful-claude@mindful-claude": true,
     "image-view@claude-image-view": true,
-    "cc-plugin-you-should-know@builtin": true
+    "cc-plugin-you-should-know@builtin": true,
+    "stripe@claude-plugins-official": true
   },
   "extraKnownMarketplaces": {
     "claude-video": {

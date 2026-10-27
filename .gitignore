@@ -34,6 +34,8 @@ plans/
 tasks/
 image-cache/
 daemon.log
+daemon.lock
+daemon.status.json
 jobs/
 feedback/
 state/
