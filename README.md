@@ -53,11 +53,12 @@ Plugins:
 
 ## Key settings
 
-- `model`: `opusplan` (Opus for planning, automatic switch to another model for execution)
+- `model`: `opus`
 - `outputStyle`: `Concise` (terse output); `language`: `traditional chinese`
 - `permissions.defaultMode`: `plan` (starts in plan mode: plan first, then execute)
 - `permissions.allow` whitelists common low-risk commands (`git add`, `git commit -m`, `git push`, `WebSearch`, `Edit(~/.claude/hooks/**)`, `Edit(~/.claude/commands/**)`, `Skill(update-config)`); `git add`/`commit`/`push` are listed with both `Bash(...)` and `PowerShell(...)` prefixes—on Windows PowerShell is a separate permission namespace and does not inherit `Bash(...)` rules
 - Statusline uses only the Node version (`statusline-command.mjs`), with no shell fallback; the three lines show "model / effort / vim mode", "directory / branch", and "context usage and size / rate limits (5h / overage usage) / cost"; `hideVimModeIndicator:true` turns off the built-in `-- INSERT --` indicator in favor of a custom one
+- agent-browser cleanup is handled through `env` rather than hooks: `AGENT_BROWSER_IDLE_TIMEOUT_MS=900000` shuts the browser and daemon down after 15 minutes of inactivity, and `AGENT_BROWSER_SCREENSHOT_DIR` / `AGENT_BROWSER_DOWNLOAD_PATH` send screenshots and downloads to `/tmp/agent-browser/`, where the system's tmp cleanup removes them. An idle shutdown discards cookies, logins and open tabs, so `CLAUDE.md` tells Claude to use `--session <name> --restore` for login or multi-turn authenticated flows
 - The UserPromptSubmit hook (`hooks/inject-datetime.mjs`) injects the full current timestamp (`Asia/Taipei`, with time of day and weekday) into every prompt, making up for the built-in system prompt giving only a snapshot of the date at session start
 
 ## Maintenance conventions

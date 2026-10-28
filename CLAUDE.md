@@ -1,2 +1,3 @@
 - Always respond in Traditional Chinese (Taiwan).
 - Date/time ops: Asia/Taipei (UTC+8).
+- agent-browser: idle 15m → daemon exits, unsaved cookies/login/tabs lost. Login or multi-turn auth flows → always `--session <name> --restore`.
