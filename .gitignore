@@ -33,6 +33,7 @@ file-history/
 plans/
 tasks/
 image-cache/
+uploads/
 daemon.log
 daemon.lock
 daemon.status.json
