@@ -19,7 +19,7 @@ Personal global Claude Code configuration repo, shared across projects: custom s
 
 The rest — `sessions/`, `session-env/`, `shell-snapshots/`, `projects/`, `file-history/`, `cache/`, `paste-cache/`, `plugins/`, `backups/`, `daemon/`, `jobs/`, `tasks/`, `plans/`, `feedback/`, `state/`, `telemetry/`, `ide/`, `chrome/`, etc. — is runtime output, listed in `.gitignore`, not version-controlled.
 
-`skills/synced/` holds skills synced down from the Claude account cloud (currently 14). The platform manages its content, so do not edit it by hand; it is listed in `.gitignore` and not version-controlled.
+`skills/synced/` holds skills synced down from the Claude account cloud (currently 15). The platform manages its content, so do not edit it by hand; it is listed in `.gitignore` and not version-controlled.
 
 ## Commands
 
@@ -53,7 +53,7 @@ Plugins:
 
 ## Key settings
 
-- `model`: `opus`
+- `model`: `opusplan` (Opus in plan mode, Sonnet when executing)
 - `outputStyle`: `Concise` (terse output); `language`: `traditional chinese`
 - `permissions.defaultMode`: `plan` (starts in plan mode: plan first, then execute)
 - `permissions.allow` whitelists common low-risk commands (`git add`, `git commit -m`, `git push`, `WebSearch`, `Edit(~/.claude/hooks/**)`, `Edit(~/.claude/commands/**)`, `Skill(update-config)`); `git add`/`commit`/`push` are listed with both `Bash(...)` and `PowerShell(...)` prefixes—on Windows PowerShell is a separate permission namespace and does not inherit `Bash(...)` rules
