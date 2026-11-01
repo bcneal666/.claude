@@ -52,3 +52,6 @@ plugins/
 
 # 帳號雲端同步的 skills（UUID 路徑，由平台管理）
 skills/synced/
+
+# skills CLI 回收區
+skills/.trash/
