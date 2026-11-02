@@ -1,6 +1,7 @@
 ---
 description: 校正 CLAUDE.md 事實、按需分塊到 rules/、以 caveman full 極限壓縮規則文件（CLAUDE.md / .claude/rules / .claude/commands），只保 AI 可解析語意；同步檢查並維護專案根 README.md 供人類閱讀；`--audit` 時先以 prompt-audit 審查過時指令；`--lng` 指定所有檔案內容語言（預設英文）
 argument-hint: "[--audit] [--lng <zh|ja|...>]"
+disable-model-invocation: true
 ---
 
 Rule files read by AI only, loaded in full when active (`CLAUDE.md` each session, `rules/` per `paths`, commands on invocation), humans rarely read. Compress to `caveman` **full**, **no loss of instruction semantics**.

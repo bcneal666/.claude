@@ -1,6 +1,7 @@
 ---
 description: 自動執行 git add + commit + push，commit message 固定格式英文；--lng 指定語言、--pr 開 PR、--merge 開 PR 後 squash merge 並刪分支回 main，並檢查更新 GitHub repo description
 argument-hint: "[--lng <zh|ja|...>] [--pr] [--merge]"
+disable-model-invocation: true
 ---
 
 ## Arguments (parse from `$ARGUMENTS`, any order)

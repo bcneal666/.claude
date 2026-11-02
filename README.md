@@ -29,6 +29,8 @@ The rest — `sessions/`, `session-env/`, `shell-snapshots/`, `projects/`, `file
 | `/up-rules [--audit] [--lng <code>]` | `--lng` (e.g. `zh` = Traditional Chinese, `ja`; absent = English) sets the language of everything written, including `CLAUDE.md`, `rules/`, `commands/` prose and this README; existing content in a different language is translated. In order: fact-check `CLAUDE.md` → (with `--audit`) audit for stale instructions via `claude-api` prompt-audit and list findings to choose from → check whether content should be chunked into `rules/<topic>.md` (loaded on demand via `paths` frontmatter) → compress `CLAUDE.md` / `.claude/rules/**/*.md` / `.claude/commands/**/*.md` at caveman full strength (drops filler only, never semantics, except hunks applied via `--audit`) → check and sync this README |
 | `/up-skills [global\|project]` | Batch-update skills: managed ones (global reads `~/.agents/.skill-lock.json`; project reads `<project root>/skills-lock.json`) are updated one by one with `npx skills update`; unmanaged ones have their upstream inferred and are reinstalled after confirmation; self-made skills listed in `skills/.up-skills-ignore` are skipped entirely, and skills with uncommitted changes are skipped automatically; global mode also reports plugin, cloud-synced skills and CLI version status |
 
+All three commands set `disable-model-invocation: true` in their frontmatter, because each has side effects (pushing, rewriting rule files, reinstalling skills). Claude cannot invoke them on its own; they run only when you type them.
+
 ## Skills
 
 | Skill | Description |
