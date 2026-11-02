@@ -106,6 +106,5 @@
     ],
     "hard_deny": []
   },
-  "additionalDirectories": [],
-  "remoteControlAtStartup": true
+  "additionalDirectories": []
 }
