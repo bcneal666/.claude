@@ -1,6 +1,6 @@
 ---
 description: 校正 CLAUDE.md 事實、按需分塊到 rules/、以 caveman full 極限壓縮規則文件（CLAUDE.md / .claude/rules / .claude/commands），只保 AI 可解析語意；同步檢查並維護專案根 README.md 供人類閱讀；`--audit` 時先以 prompt-audit 審查過時指令；`--lng` 指定所有檔案內容語言（預設英文）
-argument-hint: "[--audit] [--lng <zh-tw|zh|ja|...>]"
+argument-hint: "[--audit] [--lng <zh|ja|...>]"
 ---
 
 Rule files read by AI only, loaded in full when active (`CLAUDE.md` each session, `rules/` per `paths`, commands on invocation), humans rarely read. Compress to `caveman` **full**, **no loss of instruction semantics**.
@@ -10,10 +10,10 @@ Compress filler, repetition, decorative explanation. Leave concrete rules, const
 ## Arguments (parse from `$ARGUMENTS`, any order)
 
 - `--audit`: see step 3
-- `--lng <code>` or `--lng=<code>`: language of **all file content** this command writes—compression targets (`CLAUDE.md`, `rules/`, `commands/` prose) and `README.md` all follow it; accept BCP-47 code (`zh-TW`, `zh`, `ja`, `de`, case-insensitive) or natural-language name (`繁中`, `日文`, `Japanese`)
+- `--lng <code>` or `--lng=<code>`: language of **all file content** this command writes—compression targets (`CLAUDE.md`, `rules/`, `commands/` prose) and `README.md` all follow it; accept BCP-47 code (`zh`, `ja`, `de`, case-insensitive) or natural-language name (`繁中`, `日文`, `Japanese`)
   - absent → **English**
   - unrecognized or missing value → one-line notice, **fall back to English**, continue; do not abort
-  - `zh` without script → Traditional Chinese (`zh-cn`/`簡中` only → Simplified)
+  - `zh` → Traditional Chinese (`zh-cn`/`簡中` → Simplified)
   - existing file language ≠ target → needs rewrite; translate to target, semantics equivalent
 - other unknown tokens → one-line notice, ignore; do not abort
 - `--lng` governs file content only; conversation and report always Traditional Chinese

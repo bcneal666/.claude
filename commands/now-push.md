@@ -1,14 +1,14 @@
 ---
 description: 自動執行 git add + commit + push，commit message 固定格式英文；--lng 指定語言、--pr 開 PR、--merge 開 PR 後 squash merge 並刪分支回 main，並檢查更新 GitHub repo description
-argument-hint: "[--lng <zh-tw|zh|ja|...>] [--pr] [--merge]"
+argument-hint: "[--lng <zh|ja|...>] [--pr] [--merge]"
 ---
 
 ## Arguments (parse from `$ARGUMENTS`, any order)
 
-- `--lng <code>` or `--lng=<code>`: language for commit subject/body, repo description, PR title/body. Accept BCP-47 code (`zh-TW`, `zh`, `ja`, `de`, case-insensitive) or natural-language name (`繁中`, `日文`, `Japanese`)
+- `--lng <code>` or `--lng=<code>`: language for commit subject/body, repo description, PR title/body. Accept BCP-47 code (`zh`, `ja`, `de`, case-insensitive) or natural-language name (`繁中`, `日文`, `Japanese`)
   - absent → **English**
   - unrecognized or missing value → one-line notice, **fall back to English**, continue; do not abort
-  - `zh` without script → Traditional Chinese (`zh-cn`/`簡中` only → Simplified)
+  - `zh` → Traditional Chinese (`zh-cn`/`簡中` → Simplified)
 - `--pr`: open PR after push; absent → **no branch, no PR**
 - `--merge`: implies `--pr`; after PR, squash merge into default branch, delete branch (local + remote), switch back to default branch and sync; absent → PR stays open
 - other unknown tokens → one-line notice, ignore; do not abort
