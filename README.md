@@ -19,7 +19,7 @@ Personal global Claude Code configuration repo, shared across projects: custom s
 
 The rest — `sessions/`, `session-env/`, `shell-snapshots/`, `projects/`, `file-history/`, `cache/`, `paste-cache/`, `plugins/`, `backups/`, `daemon/`, `jobs/`, `tasks/`, `plans/`, `uploads/`, `feedback/`, `state/`, `telemetry/`, `ide/`, `chrome/`, etc. — is runtime output, listed in `.gitignore`, not version-controlled.
 
-`skills/synced/` holds skills synced down from the Claude account cloud (currently 15). The platform manages its content, so do not edit it by hand; it is listed in `.gitignore` and not version-controlled.
+`skills/synced/` holds skills synced down from the Claude account cloud (currently 16). The platform manages its content, so do not edit it by hand; it is listed in `.gitignore` and not version-controlled.
 
 ## Commands
 
