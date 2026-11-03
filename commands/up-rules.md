@@ -108,7 +108,7 @@ Rewrite file content by **caveman full rules** below (incl. rules files created/
 
 Rewrite together: merge overlapping/duplicate rules found in step 1; keep structure that helps AI scan fast (headings, bullets, tables, code blocks).
 
-**caveman full rules**:
+**caveman full rules** (compression targets only; README never follows them, see step 8):
 
 - Drop: articles, filler (just/really/basically), pleasantries, vague hedging, decorative openers and closers
 - Keep: negations and qualifiers (not/never/no/only/except, 不/勿/僅/除非), numbers and units—dropping flips meaning
@@ -162,11 +162,49 @@ Language check: target-file prose all in `--lng` language (excl. verbatim blocks
 
 Check project-root `./README.md` every run.
 
-**Exists** → read, compare refined rule files and actual directory structure, decide whether update needed: rule-file sections added/removed (incl. step-5 new `rules/*.md`) should reflect in README; command / skill / path / setting mentioned in README no longer exists or renamed. README language ≠ `--lng` language also counts as needs update; translate whole file to target (code blocks, paths, commands, proper nouns not translated). No update needed → state 「README 已同步，未改動」; do not change for change's sake.
+**Exists** → read, compare refined rule files and actual directory structure, decide whether update needed: rule-file sections added/removed (incl. step-5 new `rules/*.md`) should reflect in README; command / skill / path / setting mentioned in README no longer exists or renamed. README language ≠ `--lng` language also counts as needs update; translate whole file to target (code blocks, paths, commands, proper nouns not translated). README clearly violating "Style guide" below (paragraph over 3 sentences, table cell over ~80 chars, parallel items crammed into one paragraph, H2 without emoji) also counts as needs update: restyle layout and wording only, never change facts. No update needed → state 「README 已同步，未改動」; do not change for change's sake.
 
-**Missing** → create, same judgment for content; skeleton: one-sentence project positioning; directory tree (runtime artifacts noted as gitignored); available commands / skills tables; key settings; maintenance conventions.
+**Missing** → create, same judgment for content, structured per Style guide; project-specific sections: directory tree (runtime artifacts noted as gitignored), commands / skills tables, key settings, maintenance conventions.
 
-README **not caveman**—readers are humans: full sentences, normal punctuation, needed tables and directory tree. New or updated content always in `--lng` language (default English), incl. directory-tree comments and table description columns.
+README is exempt from all caveman rules in step 6 (incl. fragment sentences and emoji ban)—readers are humans: full sentences, natural tone, lively but concise. New or updated content always in `--lng` language (default English), incl. directory-tree comments and table description columns.
+
+#### Style guide
+
+Distilled from standard-readme and well-known GitHub READMEs: clear identity first, fast path to action, scannable structure, long reference folded away.
+
+**Structure** (top to bottom, skip what does not apply):
+
+1. `# <emoji> <name>` + one-line tagline (≤120 chars). Badges only when they carry real signal (CI, version, license); config repos usually none
+2. Intro: ≤2 sentences, or 3–6 bullet highlights
+3. Table of contents only when README exceeds 100 lines
+4. `🚀 Quick start`: copy-pasteable code block
+5. Project-specific sections (structure, commands, skills, settings, maintenance…)
+6. Contributing / License only when repo has them
+
+**Writing**:
+
+- Paragraph ≤3 sentences. 3+ parallel items → bullet list, never one comma-chained paragraph
+- One concept per bullet: `- **Name** — description` or `` - `code` — description ``
+- Table cell ≤ one short sentence (~80 chars); move detail to bullets under the table or `<details>`
+- Active voice, concrete verbs; say what it does, not how impressive it is
+- Bold only key terms, ≤2 per paragraph
+- Code blocks carry a language tag; link repo files with relative links
+
+**Emoji**: one semantically fitting emoji at start of H1 and each H2, no repeats within a README; allowed on highlight bullets and ✅ / ❌ in status columns; none inside body prose, code, or paths. Default picks for consistency across runs:
+
+```
+🚀 Quick start   ✨ Features    📁 Structure    ⚡ Commands     🧩 Skills
+🔌 Plugins       ⚙️ Settings    🛠️ Maintenance  📝 Notes        🤝 Contributing   📄 License
+```
+
+**Markdown features**:
+
+- Callouts: `> [!NOTE]`, `> [!TIP]`, `> [!IMPORTANT]`, `> [!WARNING]`, `> [!CAUTION]`; ≤1 per section, never nested
+- Long reference (full lists, platform workarounds) → `<details><summary>…</summary>` with a blank line after `</summary>`, else inner Markdown does not render
+- Mermaid `flowchart` only for flows of 3+ steps where a diagram beats a list
+- Not translated under `--lng`: callout keywords, emoji, Mermaid syntax
+
+**Self-check before writing**: skim headings + first line of each section; reader must learn what it is, how to start, where things live within 30 seconds. Check paragraph length, cell length, emoji uniqueness, callout syntax.
 
 ### 9. Write and report
 
@@ -178,7 +216,7 @@ Write files directly with Edit/Write, **no** automatic git commit; leave to `/no
 - Per-file instruction list, each item marked 「保留 ✓」
 - Per-file lines/chars before→after and compression ratio (**observation, not goal**)
 - Main edits (what merged, what filler removed)
-- README.md outcome (created / updated / synced unchanged)
+- README.md outcome (created / updated / restyled layout only / synced unchanged)
 - Language outcome: language actually used (incl. notice when unrecognized `--lng` fell back to English), whether each file translated (source→target language)
 
 ## Self-compression reminder
