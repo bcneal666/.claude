@@ -85,6 +85,7 @@ Personal global Claude Code configuration, shared across projects: skills, slash
 | `agent-browser` | Browser automation CLI: operate pages, fill forms, screenshot, scrape |
 | `ai-seo` | Get content cited by AI search engines and LLMs (AEO / GEO, `llms.txt`) |
 | `animate` | Build an animation from scratch, deciding purpose, tool, curve and exit in order |
+| `animation-performance` | Fix dropped frames: composite-only properties, `will-change`, main-thread cost |
 | `caveman` | Ultra-terse mode that cuts tokens while keeping technical accuracy |
 | `design-md` | Distill a Stitch project into a `DESIGN.md` design-system document |
 | `emil-design-eng` | Emil Kowalski's UI polish, component and animation philosophy |
@@ -96,6 +97,7 @@ Personal global Claude Code configuration, shared across projects: skills, slash
 | `improve-animations` | Read-only motion audit with prioritized, self-contained plans |
 | `mobile-native` | CSS and meta-tag fixes that make a web app feel native on a phone |
 | `programmatic-seo` | Plan SEO pages generated at scale from templates and data |
+| `remove-animations` | Remove motion the UI doesn't need; subtract-only, never adds or retunes |
 | `review-animations` | Review animation code against a high craft bar (manual only) |
 | `review-fix` | Functional test + review loop for the current project, max 3 rounds |
 | `seo-audit` | Diagnose ranking, indexing and traffic problems |
@@ -105,7 +107,7 @@ Personal global Claude Code configuration, shared across projects: skills, slash
 
 **Pipelines**
 
-- `up-animate`: `find-animation-opportunities` → `animate` → `improve-animations` (audit, then applies the selected plans) → (`--m`: `mobile-native`) → `review-animations`
+- `up-animate`: `remove-animations` (you pick removals) → `find-animation-opportunities` → `animate` → `improve-animations` (audit, then applies the selected plans) → `animation-performance` → (`--m`: `mobile-native`) → `review-animations`
 - `up-seo`: `ai-seo` → `seo-audit` → `programmatic-seo`, and you pick fixes after each stage
 
 **Notes**
