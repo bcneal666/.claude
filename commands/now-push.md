@@ -1,5 +1,5 @@
 ---
-description: 自動執行 git add + commit + push，commit message 固定格式英文；--lng 指定語言、--pr 開 PR、--merge 開 PR 後 squash merge 並刪分支回 main，並檢查更新 GitHub repo description
+description: 自動執行 git add + commit + push，commit message 固定格式英文；--lng 指定語言、--pr 開 PR、--merge 開 PR 後等必要檢查通過再 squash merge 並刪分支回 main，並檢查更新 GitHub repo description
 argument-hint: "[--lng <zh|ja|...>] [--pr] [--merge]"
 disable-model-invocation: true
 ---
@@ -11,7 +11,7 @@ disable-model-invocation: true
   - unrecognized or missing value → one-line notice, **fall back to English**, continue; do not abort
   - `zh` → Traditional Chinese (`zh-cn`/`簡中` → Simplified)
 - `--pr`: open PR after push; absent → **no branch, no PR**
-- `--merge`: implies `--pr`; after PR, squash merge into default branch, delete branch (local + remote), switch back to default branch and sync; absent → PR stays open
+- `--merge`: implies `--pr`; after PR, wait for required checks to pass, squash merge into default branch, delete branch (local + remote), switch back to default branch and sync; absent → PR stays open
 - other unknown tokens → one-line notice, ignore; do not abort
 - Regardless of language: `type`, `scope`, `Co-Authored-By` trailer, branch name **always English**
 
@@ -29,13 +29,15 @@ Execute in order immediately, no confirmation:
 8. `git push`; current branch has no upstream → `git push -u origin HEAD`
 9. **`--pr`/`--merge`**: `gh pr view` on current branch; PR exists → report existing URL, do not recreate; none → `gh pr create --base <default branch> --title "<commit header>" --body "<body>"`; body = commit body bullets + blank line + `🤖 Generated with [Claude Code](https://claude.com/claude-code)`, language per `--lng`; report PR URL
 10. **`--merge` only** (existing PR also merged):
-    1. `gh pr merge <PR number> --squash --delete-branch --subject "<commit header>"`
-    2. `git switch <default branch>` (skip if `gh` already switched) + `git pull --ff-only`
-    3. `git fetch --prune`; local branch still present → `git branch -D <branch>`
-    4. report merged PR URL, deleted branch name, current branch `<default>` + HEAD short sha
+    1. Wait for required checks: `gh pr checks <PR number> --required --watch --fail-fast` (Bash timeout 600000 ms). Checks not registered yet ("no checks reported") → wait ~10s, retry, ≤60s total; still none → repo has no required checks, continue. Any check fails → stop, report failing check name + URL + PR URL, stay on feature branch. Still pending at timeout → report PR URL, stay on feature branch
+    2. `gh pr merge <PR number> --squash --delete-branch --subject "<commit header>"`
+    3. `git switch <default branch>` (skip if `gh` already switched) + `git pull --ff-only`
+    4. `git fetch --prune`; local branch still present → `git branch -D <branch>`
+    5. report merged PR URL, deleted branch name, current branch `<default>` + HEAD short sha
+    6. `gh run list --commit <HEAD sha> --json name,status,url` → report workflow runs the merge triggered (deploys etc.); runs may take a few seconds to appear, do not wait for them to finish
 11. Repo description check (next section)
 
-Steps 1–10: any non-zero exit → stop immediately, report full stderr, **do not attempt repair**. Step 10 blocked (required checks / review / conflict) → report stderr + PR URL, stay on feature branch, no retry, no `--admin`/`--auto`. Step 11 failure (not GitHub, `gh` not logged in, no permission) → notice only, **not an overall failure**—commit/push already done.
+Steps 1–10: any non-zero exit → stop immediately, report full stderr, **do not attempt repair**. Step 10 merge blocked after checks passed (review / conflict / other policy) → report stderr + PR URL, stay on feature branch, no retry, no `--admin`/`--auto`. Step 11 failure (not GitHub, `gh` not logged in, no permission) → notice only, **not an overall failure**—commit/push already done.
 
 ## Repo Description Maintenance
 
