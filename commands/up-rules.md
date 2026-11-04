@@ -39,7 +39,7 @@ Process only if exists; skip missing (`CLAUDE.local.md` absent on most machines�
 
 - `./README.md` (project root)—see "Step 8"
 
-Process only paths above; **do not** extend to `skills/`, `settings.json`.
+Process only paths above; **do not** extend to `skills/`, `settings.json`. Exception: read-only inventory in "Inventory sync" (step 8)—never compress or modify those files.
 
 ## Flow
 
@@ -162,9 +162,27 @@ Language check: target-file prose all in `--lng` language (excl. verbatim blocks
 
 Check project-root `./README.md` every run.
 
-**Exists** → read, compare refined rule files and actual directory structure, decide whether update needed: rule-file sections added/removed (incl. step-5 new `rules/*.md`) should reflect in README; command / skill / path / setting mentioned in README no longer exists or renamed. README language ≠ `--lng` language also counts as needs update; translate whole file to target (code blocks, paths, commands, proper nouns not translated). README clearly violating "Style guide" below (paragraph over 3 sentences, table cell over ~80 chars, parallel items crammed into one paragraph, H2 without emoji) also counts as needs update: restyle layout and wording only, never change facts. No update needed → state 「README 已同步，未改動」; do not change for change's sake.
+**Exists** → read, compare refined rule files and actual directory structure, decide whether update needed: rule-file sections added/removed (incl. step-5 new `rules/*.md`) should reflect in README; command / skill / path / setting mentioned in README no longer exists or renamed. README language ≠ `--lng` language also counts as needs update; translate whole file to target (code blocks, paths, commands, proper nouns not translated). README clearly violating "Style guide" below also counts as needs update: paragraph over 3 sentences, table cell over ~80 chars, parallel items crammed into one paragraph, H2 without emoji, history wording ("Current state only"), over length budget or implementation detail ("Depth"). Restyle and trim to essentials; never add or alter facts—trimming detail is not a fact change. Inventory mismatch (below) also counts. No update needed → state 「README 已同步，未改動」; do not change for change's sake.
 
-**Missing** → create, same judgment for content, structured per Style guide; project-specific sections: directory tree (runtime artifacts noted as gitignored), commands / skills tables, key settings, maintenance conventions.
+**Missing** → create, same judgment for content, structured per Style guide; project-specific sections: directory tree (runtime artifacts noted as gitignored), inventory sections from "Inventory sync", key settings, maintenance conventions.
+
+#### Inventory sync
+
+Run every time, whether README exists or not. Compare what actually exists with what README lists; add missing, delete gone, order rows as actual.
+
+| Category | Actual source |
+| -------- | ------------- |
+| Rules | `./.claude/rules/**/*.md` (this repo: `./rules/**/*.md`) |
+| Skills | `./.claude/skills/*/SKILL.md` (incl. symlinks into `.agents/skills/`; name = directory name) |
+| Commands | `./.claude/commands/**/*.md` (this repo: `./commands/**/*.md`) |
+| Hooks | `hooks` events in `./.claude/settings.json` and the script files they call |
+| MCP | `mcpServers` in `./.mcp.json` |
+| Plugins | `enabledPlugins` entries set `true` in `./.claude/settings.json` |
+
+- List only items that exist in this project. Items from global `~/.claude/` not listed; never write "now provided globally" or similar.
+- Category has items but README lacks its section → add section. Category empty → no section.
+- One-line purpose per item (≤80 chars), taken from SKILL.md / rule `description` or first paragraph; never guess.
+- Report per category what was added or removed; all matched → 「清單已同步」.
 
 README is exempt from all caveman rules in step 6 (incl. fragment sentences and emoji ban)—readers are humans: full sentences, natural tone, lively but concise. New or updated content always in `--lng` language (default English), incl. directory-tree comments and table description columns.
 
@@ -189,6 +207,19 @@ Distilled from standard-readme and well-known GitHub READMEs: clear identity fir
 - Active voice, concrete verbs; say what it does, not how impressive it is
 - Bold only key terms, ≤2 per paragraph
 - Code blocks carry a language tag; link repo files with relative links
+- Lively, not salesy: tagline says what the user gets, not the tech stack; features as `- **Name** — one sentence` highlight bullets, optional fitting emoji; verbs concrete ("customers file tickets, PMs reply live", not "provides ticketing")
+
+**Current state only**:
+
+- README describes what is true now. No history: migration, removal, relocation, rename, "formerly / no longer / now provided by / moved to / 原本 / 不再 / 改由 / 已移除 / 新增了". Deleted things simply disappear.
+- History belongs in git log or CHANGELOG, not README.
+
+**Depth** (README is a guide, not a spec):
+
+- Test: would a newcomer need this on day one? No → leave out.
+- Per feature: one-line summary plus ≤3 user-visible highlights; more → `<details>` or delete.
+- Leave out: cache durations, DB columns and SQL, algorithms and formulas, file-level implementation maps, edge cases, UI micro-interactions (animation, skeleton timing). They live in `rules/` or code; link with one line (`details: .claude/rules/xxx.md`) when needed.
+- Length budget: ≤200 lines for a typical project README (incl. `<details>` content). Over budget → cut detail first, fold second.
 
 **Emoji**: one semantically fitting emoji at start of H1 and each H2, no repeats within a README; allowed on highlight bullets and ✅ / ❌ in status columns; none inside body prose, code, or paths. Default picks for consistency across runs:
 
@@ -204,7 +235,7 @@ Distilled from standard-readme and well-known GitHub READMEs: clear identity fir
 - Mermaid `flowchart` only for flows of 3+ steps where a diagram beats a list
 - Not translated under `--lng`: callout keywords, emoji, Mermaid syntax
 
-**Self-check before writing**: skim headings + first line of each section; reader must learn what it is, how to start, where things live within 30 seconds. Check paragraph length, cell length, emoji uniqueness, callout syntax.
+**Self-check before writing**: skim headings + first line of each section; reader must learn what it is, how to start, where things live within 30 seconds. Check paragraph length, cell length, emoji uniqueness, callout syntax, line count within budget, zero history-wording hits (grep the words in "Current state only"), inventory categories match actual files, each feature ≤3 highlights.
 
 ### 9. Write and report
 
@@ -216,7 +247,8 @@ Write files directly with Edit/Write, **no** automatic git commit; leave to `/no
 - Per-file instruction list, each item marked 「保留 ✓」
 - Per-file lines/chars before→after and compression ratio (**observation, not goal**)
 - Main edits (what merged, what filler removed)
-- README.md outcome (created / updated / restyled layout only / synced unchanged)
+- README.md outcome (created / updated / restyled or trimmed / synced unchanged), lines before→after
+- Inventory sync (step 8): per category added/removed items, or 「清單已同步」
 - Language outcome: language actually used (incl. notice when unrecognized `--lng` fell back to English), whether each file translated (source→target language)
 
 ## Self-compression reminder
