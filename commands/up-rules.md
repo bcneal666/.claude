@@ -162,7 +162,7 @@ Language check: target-file prose all in `--lng` language (excl. verbatim blocks
 
 Check project-root `./README.md` every run.
 
-**Exists** → read, compare refined rule files and actual directory structure, decide whether update needed: rule-file sections added/removed (incl. step-5 new `rules/*.md`) should reflect in README; command / skill / path / setting mentioned in README no longer exists or renamed. README language ≠ `--lng` language also counts as needs update; translate whole file to target (code blocks, paths, commands, proper nouns not translated). README clearly violating "Style guide" below also counts as needs update: paragraph over 3 sentences, table cell over ~80 chars, parallel items crammed into one paragraph, H2 without emoji, history wording ("Current state only"), over length budget or implementation detail ("Depth"). Restyle and trim to essentials; never add or alter facts—trimming detail is not a fact change. Inventory mismatch (below) also counts. No update needed → state 「README 已同步，未改動」; do not change for change's sake.
+**Exists** → read, compare refined rule files and actual directory structure, decide whether update needed: rule-file sections added/removed (incl. step-5 new `rules/*.md`) should reflect in README; command / skill / path / setting mentioned in README no longer exists or renamed. README language ≠ `--lng` language also counts as needs update; translate whole file to target (code blocks, paths, commands, proper nouns not translated). README clearly violating "Style guide" below also counts as needs update: paragraph over 3 sentences, parallel items crammed into one paragraph, keyed parallel bullet list that should be a table or table that should be a list (see "Writing"), table violating "Tables" (misaligned source, inconsistent headers, over-long cell), H2 without emoji, history wording ("Current state only"), over length budget or implementation detail ("Depth"). Restyle and trim to essentials; never add or alter facts—trimming detail is not a fact change. Inventory mismatch (below) also counts. No update needed → state 「README 已同步，未改動」; do not change for change's sake.
 
 **Missing** → create, same judgment for content, structured per Style guide; project-specific sections: directory tree (runtime artifacts noted as gitignored), inventory sections from "Inventory sync", key settings, maintenance conventions.
 
@@ -181,7 +181,7 @@ Run every time, whether README exists or not. Compare what actually exists with 
 
 - List only items that exist in this project. Items from global `~/.claude/` not listed; never write "now provided globally" or similar.
 - Category has items but README lacks its section → add section. Category empty → no section.
-- One-line purpose per item (≤80 chars), taken from SKILL.md / rule `description` or first paragraph; never guess.
+- Output one table per category, per "Tables": columns `Name | Purpose` (Rules, Skills, Commands, MCP, Plugins) or `Script | Event | Purpose` (Hooks); same headers and column order across runs. Purpose one line (≤ ~80 display width), taken from SKILL.md / rule `description` or first paragraph; never guess.
 - Report per category what was added or removed; all matched → 「清單已同步」.
 
 README is exempt from all caveman rules in step 6 (incl. fragment sentences and emoji ban)—readers are humans: full sentences, natural tone, lively but concise. New or updated content always in `--lng` language (default English), incl. directory-tree comments and table description columns.
@@ -193,7 +193,7 @@ Distilled from standard-readme and well-known GitHub READMEs: clear identity fir
 **Structure** (top to bottom, skip what does not apply):
 
 1. `# <emoji> <name>` + one-line tagline (≤120 chars). Badges only when they carry real signal (CI, version, license); config repos usually none
-2. Intro: ≤2 sentences, or 3–6 bullet highlights
+2. Intro: ≤2 sentences, or 3–6 highlights (table or bullets per "Writing")
 3. Table of contents only when README exceeds 100 lines
 4. `🚀 Quick start`: copy-pasteable code block
 5. Project-specific sections (structure, commands, skills, settings, maintenance…)
@@ -201,13 +201,18 @@ Distilled from standard-readme and well-known GitHub READMEs: clear identity fir
 
 **Writing**:
 
-- Paragraph ≤3 sentences. 3+ parallel items → bullet list, never one comma-chained paragraph
-- One concept per bullet: `- **Name** — description` or `` - `code` — description ``
-- Table cell ≤ one short sentence (~80 chars); move detail to bullets under the table or `<details>`
+- Paragraph ≤3 sentences. 3+ parallel items never one comma-chained paragraph
+- 3+ parallel items sharing a key (name, command, path, role…) → **table first**: key in first column, description in last. See "Tables"
+- Use a list instead only when:
+  - any item's description exceeds 2 lines (~120 display width; CJK/full-width chars count 2, ≈60 CJK chars)—first trim per "Depth"; still too long → whole group as list, never mix table and list in one group
+  - items have no natural key (plain sentences; table would be one column)
+  - items are ordered steps → numbered list
+- List item: one concept per bullet, `- **Name** — description` or `` - `code` — description ``
+- Table cell ≤ one short sentence (≤ ~120 display width); move detail to bullets under the table or `<details>`
 - Active voice, concrete verbs; say what it does, not how impressive it is
 - Bold only key terms, ≤2 per paragraph
 - Code blocks carry a language tag; link repo files with relative links
-- Lively, not salesy: tagline says what the user gets, not the tech stack; features as `- **Name** — one sentence` highlight bullets, optional fitting emoji; verbs concrete ("customers file tickets, PMs reply live", not "provides ticketing")
+- Lively, not salesy: tagline says what the user gets, not the tech stack; features as highlight table (`Name | one sentence`), bullets `- **Name** — one sentence` only when a row would be too long, optional fitting emoji; verbs concrete ("customers file tickets, PMs reply live", not "provides ticketing")
 
 **Current state only**:
 
@@ -219,14 +224,20 @@ Distilled from standard-readme and well-known GitHub READMEs: clear identity fir
 - Test: would a newcomer need this on day one? No → leave out.
 - Per feature: one-line summary plus ≤3 user-visible highlights; more → `<details>` or delete.
 - Leave out: cache durations, DB columns and SQL, algorithms and formulas, file-level implementation maps, edge cases, UI micro-interactions (animation, skeleton timing). They live in `rules/` or code; link with one line (`details: .claude/rules/xxx.md`) when needed.
-- Length budget: ≤200 lines for a typical project README (incl. `<details>` content). Over budget → cut detail first, fold second.
+- Length budget: ≤300 lines for a typical project README (incl. `<details>` content). Over budget → cut detail first, fold second.
 
-**Emoji**: one semantically fitting emoji at start of H1 and each H2, no repeats within a README; allowed on highlight bullets and ✅ / ❌ in status columns; none inside body prose, code, or paths. Default picks for consistency across runs:
+**Emoji**: one semantically fitting emoji at start of H1 and each H2, no repeats within a README; allowed on highlight rows / bullets and ✅ / ❌ in status columns; none inside body prose, code, or paths. Default picks for consistency across runs:
 
 ```
 🚀 Quick start   ✨ Features    📁 Structure    ⚡ Commands     🧩 Skills
 🔌 Plugins       ⚙️ Settings    🛠️ Maintenance  📝 Notes        🤝 Contributing   📄 License
 ```
+
+**Tables**:
+
+- **Aligned source**: one space padding each side of cell; pad with spaces to column width so every row's `|` lines up vertically; width = display width (CJK/full-width chars and emoji count 2); separator row dashes fill column width. Result should match `prettier --write` when project uses prettier (run it to verify). Literal `|` inside cell → `\|`
+- **Consistent structure**: same-kind tables (e.g. inventory categories) share header names and column order; headers short, in `--lng` language; one format per column (all code or all plain text, never mixed); left-aligned by default, numeric columns `---:`; ≤4 columns, more → split table or move detail to bullets under it
+- **Lean cells**: one short sentence per cell; no line breaks, no `<br>`, no lists inside; descriptions in same column similar length; too long → trim text, never widen column
 
 **Markdown features**:
 
@@ -235,7 +246,7 @@ Distilled from standard-readme and well-known GitHub READMEs: clear identity fir
 - Mermaid `flowchart` only for flows of 3+ steps where a diagram beats a list
 - Not translated under `--lng`: callout keywords, emoji, Mermaid syntax
 
-**Self-check before writing**: skim headings + first line of each section; reader must learn what it is, how to start, where things live within 30 seconds. Check paragraph length, cell length, emoji uniqueness, callout syntax, line count within budget, zero history-wording hits (grep the words in "Current state only"), inventory categories match actual files, each feature ≤3 highlights.
+**Self-check before writing**: skim headings + first line of each section; reader must learn what it is, how to start, where things live within 30 seconds. Check paragraph length, every list meets a "use a list instead" condition (else convert to table), every table's `|` aligned (full-width = 2) with consistent same-kind headers, no `<br>`, cell length, emoji uniqueness, callout syntax, line count within budget, zero history-wording hits (grep the words in "Current state only"), inventory categories match actual files, each feature ≤3 highlights.
 
 ### 9. Write and report
 
