@@ -1,4 +1,4 @@
-- 一律以 Traditional Chinese (Taiwan) 回應。
-- 日期/時間操作：Asia/Taipei (UTC+8)。
-- agent-browser：閒置 15 分鐘 → daemon 結束，未存的 cookie/登入/分頁遺失。登入或多輪驗證流程 → 一律用 `--session <name> --restore`。
-- `skynet42.cc` 子網域站共用同一 AdSense 帳號（`pub-4779881788299004`；一位收款人僅能持有一個帳號）——絕不另申請。任一站違反 AdSense 政策可能處罰整個帳號，波及所有站收益；規劃內容與廣告位置時須遵守 AdSense 政策。各站於自身 `/ads.txt` 管理其他聯播網；根目錄 `skynet42.cc/ads.txt` 以 `subdomain=` 指向各站。
+- Always respond in Traditional Chinese (Taiwan).
+- Date/time ops: Asia/Taipei (UTC+8).
+- agent-browser: idle 15m → daemon exits, unsaved cookies/login/tabs lost. Login or multi-turn auth flows → always `--session <name> --restore`.
+- `skynet42.cc` subdomain sites share one AdSense account (`pub-4779881788299004`; one payee may hold only one account)—never apply for another. Any site violating AdSense policy can penalize whole account, hitting revenue of all sites; follow AdSense policy when planning content and ad placements. Each site manages other networks in own `/ads.txt`; root `skynet42.cc/ads.txt` points to them via `subdomain=`.

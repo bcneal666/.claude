@@ -4,278 +4,278 @@ argument-hint: "[--audit] [--lng <zh|ja|...>]"
 disable-model-invocation: true
 ---
 
-規則檔僅供 AI 讀取，啟用時整份載入（`CLAUDE.md` 每 session、`rules/` 依 `paths`、commands 於呼叫時），人類極少閱讀。壓縮至 `caveman` **full**，**不損失指令語意**。
+Rule files read by AI only, loaded in full when active (`CLAUDE.md` each session, `rules/` per `paths`, commands on invocation), humans rarely read. Compress to `caveman` **full**, **no loss of instruction semantics**.
 
-壓縮贅詞、重複、裝飾性說明。具體規則、限制、附於規則的理由（「——因為…」子句）、消歧義範例一律不動——理由讓模型能判斷規則未涵蓋的情境；壓語意以外的裝飾，不壓語意。
+Compress filler, repetition, decorative explanation. Leave concrete rules, constraints, reasons attached to rules ("——因為…" clauses), disambiguating examples untouched—reasons let model judge situations rule does not cover; semantics, not decoration.
 
-## 參數（從 `$ARGUMENTS` 解析，順序不拘）
+## Arguments (parse from `$ARGUMENTS`, any order)
 
-- `--audit`：見步驟 3
-- `--lng <code>` 或 `--lng=<code>`：本指令寫入的**所有檔案內容**語言——壓縮目標（`CLAUDE.md`、`rules/`、`commands/` prose）與 `README.md` 皆遵循；接受 BCP-47 代碼（`zh`、`ja`、`de`，不分大小寫）或自然語言名稱（`繁中`、`日文`、`Japanese`）
-  - 未給 → **英文**
-  - 無法辨識或缺值 → 一行提示，**退回英文**，繼續；不中止
-  - `zh` → 繁體中文（`zh-cn`/`簡中` → 簡體中文）
-  - 既有檔案語言 ≠ 目標 → 需改寫；翻成目標語言，語意等價
-- 其他未知 token → 一行提示，忽略；不中止
-- `--lng` 僅管檔案內容；對話與報告一律繁體中文
+- `--audit`: see step 3
+- `--lng <code>` or `--lng=<code>`: language of **all file content** this command writes—compression targets (`CLAUDE.md`, `rules/`, `commands/` prose) and `README.md` all follow it; accept BCP-47 code (`zh`, `ja`, `de`, case-insensitive) or natural-language name (`繁中`, `日文`, `Japanese`)
+  - absent → **English**
+  - unrecognized or missing value → one-line notice, **fall back to English**, continue; do not abort
+  - `zh` → Traditional Chinese (`zh-cn`/`簡中` → Simplified)
+  - existing file language ≠ target → needs rewrite; translate to target, semantics equivalent
+- other unknown tokens → one-line notice, ignore; do not abort
+- `--lng` governs file content only; conversation and report always Traditional Chinese
 
-## 目標檔案
+## Target files
 
-### 壓縮目標（caveman full，只留 AI 可解析語意）
+### Compression targets (caveman full, keep only AI-parseable semantics)
 
-- `CLAUDE.md`（專案根）
+- `CLAUDE.md` (project root)
 - `./.claude/CLAUDE.md`
-- `CLAUDE.local.md`（專案根）與 `./.claude/CLAUDE.local.md`——個人、機器本地，通常 gitignore；處理同 CLAUDE.md（事實查核、壓縮、無損驗證）；絕不加入 README 或 commit
-- `./.claude/rules/**/*.md`（遞迴，含子目錄；專案根本身就是 `.claude` 目錄（如本 repo）→ `./rules/**/*.md`）
-- `./.claude/commands/**/*.md`（含命名空間子目錄；專案根本身就是 `.claude` 目錄（如本 repo）→ `./commands/**/*.md`）
+- `CLAUDE.local.md` (project root) and `./.claude/CLAUDE.local.md`—personal, machine-local, usually gitignored; same treatment as CLAUDE.md (fact check, compression, no-loss verification); never add to README or commit
+- `./.claude/rules/**/*.md` (recursive, incl. subdirectories; project root is itself `.claude` directory (e.g. this repo) → `./rules/**/*.md`)
+- `./.claude/commands/**/*.md` (incl. namespaced subdirectories; project root is itself `.claude` directory (e.g. this repo) → `./commands/**/*.md`)
 
-僅處理存在者；缺少即略過（多數機器無 `CLAUDE.local.md`——正常，不提示）。其他 `@path` 匯入檔除非列於上方，否則不主動壓縮。
+Process only if exists; skip missing (`CLAUDE.local.md` absent on most machines—normal, no notice). Other `@path` import files not compressed proactively unless listed above.
 
-⚠️ `./.claude/rules/**/*.md`（或本 repo 的 `./rules/**/*.md`）是**使用者層級規則**，適用於本機所有專案，不只本專案；建立或修改前，確認範圍並非本 repo 獨有。
+⚠️ `./.claude/rules/**/*.md` (or this repo's `./rules/**/*.md`) are **user-level rules**, apply to all projects on machine, not only this project; before creating or modifying, confirm scope is not unique to this repo.
 
-⚠️ 絕不在任意專案 glob 裸 `commands/**/*.md`——一般專案的 `commands/` 可能是原始碼（如 CQRS command 模式）；僅明確對應 Claude Code `.claude/commands/` 的路徑才算目標。
+⚠️ Never glob bare `commands/**/*.md` in arbitrary projects—ordinary project `commands/` may be source code (e.g. CQRS command pattern); only paths clearly mapping to Claude Code `.claude/commands/` count as targets.
 
-### 同步目標（人類可讀優先，不壓縮）
+### Sync target (human-readable first, not compressed)
 
-- `./README.md`（專案根）——見「步驟 8」
+- `./README.md` (project root)—see "Step 8"
 
-僅處理上列路徑；**不**延伸到 `skills/`、`settings.json`。例外：「清單同步」（步驟 8）的唯讀盤點——絕不壓縮或修改這些檔案。
+Process only paths above; **do not** extend to `skills/`, `settings.json`. Exception: read-only inventory in "Inventory sync" (step 8)—never compress or modify those files.
 
-## 流程
+## Flow
 
-### 1. 蒐集脈絡
+### 1. Gather context
 
-- Glob 實際存在的壓縮目標（含 `.claude/rules/**/*.md`、`.claude/commands/**/*.md`），全部讀取；檢查 `./README.md` 是否存在。
-- `git log --oneline -15` + `git diff` 看近期方向。找出與既有內容**重疊、重複或矛盾**的新規則——優先合併或刪除。將重疊帶入後續步驟，不只是看過。
+- Glob compression targets that actually exist (incl. `.claude/rules/**/*.md`, `.claude/commands/**/*.md`), read all; check whether `./README.md` exists.
+- `git log --oneline -15` + `git diff` for recent direction. Find new rules **overlapping, duplicating or contradicting** existing content—first to merge or delete. Feed overlaps into later steps, not merely view them.
 
-### 2. 更新 CLAUDE.md（事實校正）
+### 2. Update CLAUDE.md (fact correction)
 
-僅修事實；不新增行為規則。
+Fix facts only; add no behavior rules.
 
-- 檢查 CLAUDE.md（含 `./.claude/CLAUDE.md`、`CLAUDE.local.md`、既有 `rules/**/*.md`）提及的每個路徑、指令/skill 名稱、設定值、hook 檔名；確認仍存在。
-- `CLAUDE.local.md` 與 CLAUDE.md 重疊或矛盾 → 僅回報，不跨檔合併（本地檔是個人覆寫；由使用者決定）。
-- 依步驟 1 的 git log/diff 修正已改名、已刪除、值已變的項目；合併步驟 1 找到的重疊或矛盾規則。
-- 無需校正 → 回報 「CLAUDE.md 事實已同步，未改動」；不為改而改。
-- 記錄每項校正（前→後、依據）供步驟 9 報告。
+- Check every path, command/skill name, setting value, hook filename mentioned in CLAUDE.md (incl. `./.claude/CLAUDE.md`, `CLAUDE.local.md`, existing `rules/**/*.md`); verify still exists.
+- `CLAUDE.local.md` overlaps or contradicts CLAUDE.md → report only, do not merge across files (local file is personal override; user decides).
+- Per step 1 git log/diff fix renamed, deleted, changed-value items; merge overlapping or contradicting rules found in step 1.
+- No correction needed → state 「CLAUDE.md 事實已同步，未改動」; do not change for change's sake.
+- Record each correction (before→after, basis) for step 9 report.
 
-### 3. 過時指令審查（有 `--audit` 時）
+### 3. Stale-instruction audit (when `--audit`)
 
-`$ARGUMENTS` 缺 `--audit` → 略過此步，不提及，流程視為無此步。
+`$ARGUMENTS` lacks `--audit` → skip this step, do not mention it, flow as if step absent.
 
-有 `--audit` →
+Has `--audit` →
 
-- 呼叫 `Skill(skill: "claude-api", args: "prompt-audit")`，範圍限於步驟 1 蒐集的壓縮目標檔（不含 README.md、`skills/`、`settings.json`）；目標模型依 prompt-audit 自身的 Step 0 規則。
-- 取得審查報告與建議 diff 後**暫停**；列出發現，請使用者逐一挑選要套用的 hunk——不採用 prompt-audit 預設的「不詢問、只給 diff」；本指令為互動式。
-- 選定的 hunk → 套用至檔案；未選者僅留在報告，不套用。
-- 低信心/`flag` 項目僅回報，不作為可選 hunk 提供。
-- 套用結果併入步驟 4 指令清單基準——被刪除的語意**不**列入，讓步驟 7 驗證不誤判為遺失。
+- Call `Skill(skill: "claude-api", args: "prompt-audit")`, scope limited to compression-target files gathered in step 1 (excl. README.md, `skills/`, `settings.json`); target model per prompt-audit's own Step 0 rule.
+- After getting audit report and proposed diff, **pause**; list findings, ask user to pick hunks to apply one by one—do not use prompt-audit default "no asking, diff only"; this command is interactive.
+- Selected hunks → apply to files; unselected stay in report only, not applied.
+- Low-confidence/`flag` items report only, not offered as selectable hunks.
+- Applied result folds into step 4 instruction-list baseline—deleted semantics **not** listed, so step 7 verification does not misjudge loss.
 
-### 4. 建立指令清單（壓縮前）
+### 4. Build instruction list (before compression)
 
-以步驟 2 校正與步驟 3 已套用 hunk（若有執行）後的內容為準，逐檔列出**明確指令清單**——規則、限制、禁令、格式要求各自成項；附屬理由隨條目一起列。清單是後續無損驗證的基準；必須在編輯前建立。壓縮強度越高，遺失風險越高。
+Based on content after step 2 corrections and step 3 applied hunks (if run), list **explicit instruction list** per file—rules, constraints, prohibitions, format requirements each own item; attached reason listed with it. List is baseline for later no-loss verification; must build before editing. Higher compression strength, higher loss risk.
 
-### 5. 檢查與分塊
+### 5. Check and chunk
 
-準則——**兩項皆成立**才將內容移至 `rules/<topic>.md`：
+Criteria—move content to `rules/<topic>.md` only if **both** hold:
 
-- 內容僅在處理特定檔案/目錄/副檔名時適用，可用明確 glob 表達。
-- 規則不需在「未先讀取類似既有檔案就建立新檔」的情境生效——`paths` 規則僅在 Claude **Read** 到符合的檔案時載入，不是每次工具呼叫都載入；新檔情境會漏載；關鍵規則不分塊。
+- Content applies only when handling specific files/directories/extensions, expressible as explicit glob.
+- Rule need not take effect in "new file created without reading similar existing file first" situation—`paths` rules load only when Claude **Reads** a matching file, not on every tool use; new-file situation misses; critical rules not chunked.
 
-**不分塊**：
+**Do not chunk**:
 
-- 全域行為規則（語言、時區、commit/報告慣例等）。
-- 無法對應 glob 的主題——無 `paths` 的規則仍於啟動時載入，同 CLAUDE.md，省不了脈絡；不做。
-- 多步驟流程/任務型工作流——不適合當規則；於報告中**建議**改寫為 skill 或 command；不自動轉換。
+- Global behavior rules (language, timezone, commit/report conventions, etc.).
+- Topic not mappable to glob—rule without `paths` still loads at start like CLAUDE.md, saves no context; do not.
+- Multi-step flows/task-style workflows—rules unsuited; **suggest** in report rewriting as skill or command; do not convert automatically.
 
-**執行**：
+**Execute**:
 
-- 建立 `rules/<topic>.md`（kebab-case 主題檔名，可用子目錄分組），frontmatter 僅 `paths`：
+- Create `rules/<topic>.md` (kebab-case topic filename, subdirectories allowed for grouping), frontmatter only `paths`:
   ```markdown
   ---
   paths:
     - "src/api/**/*.ts"
   ---
   ```
-  glob 一律加雙引號——以 `*` 或 `{` 開頭的未加引號字串會被 YAML 誤解析，破壞 frontmatter，使規則退化為無 `paths` 的全量載入。
-- 驗證每個 glob 至少符合 1 個既有檔案；0 筆 → 仍寫入，於報告標警告。
-- 從 CLAUDE.md **完整移除**已搬走的內容；不留 `@path` 匯入（啟動即載入，等於沒省脈絡），不留重複副本。
-- 既有 `rules/**/*.md`：路徑專屬內容缺 `paths` → 補上；與 CLAUDE.md 或其他規則重疊 → 合併。
-- 無分塊需求 → 說明理由（如「全為全域規則，無檔案專屬內容」）；CLAUDE.md 超過 200 行且無可分塊內容 → 於報告註明行數。
+  Always double-quote globs—unquoted strings starting with `*` or `{` are misparsed by YAML, breaking frontmatter and degrading rule to full-load without `paths`.
+- Verify each glob matches ≥1 existing file; 0 matches → still write, flag warning in report.
+- **Fully remove** moved content from CLAUDE.md; leave no `@path` import (loads at start, same as no context saved), no duplicate copy.
+- Existing `rules/**/*.md`: path-specific content lacking `paths` → add; overlaps CLAUDE.md or other rule → merge.
+- No chunking need → state reason (e.g. "all global rules, no file-specific content"); CLAUDE.md over 200 lines with nothing chunkable → note line count in report.
 
-### 6. 逐檔精煉（caveman full）
+### 6. Refine per file (caveman full)
 
-依下列 **caveman full 規則**改寫檔案內容（含步驟 5 建立/修改的規則檔）。不要 Read caveman skill——它管的是對話風格，會持續整個 session，且要求檔案用一般 prose，與本指令相反。
+Rewrite file content by **caveman full rules** below (incl. rules files created/modified in step 5). Do not Read caveman skill—it governs conversation style, persists whole session, and requires normal prose in files, opposite of this command.
 
-一併改寫：合併步驟 1 找到的重疊/重複規則；保留有助 AI 快速掃描的結構（標題、條列、表格、code block）。
+Rewrite together: merge overlapping/duplicate rules found in step 1; keep structure that helps AI scan fast (headings, bullets, tables, code blocks).
 
-**caveman full 規則**（僅限壓縮目標；README 一律不適用，見步驟 8）：
+**caveman full rules** (compression targets only; README never follows them, see step 8):
 
-- 刪：冠詞、贅詞（just/really/basically）、客套、模糊修飾、裝飾性開場與收尾
-- 留：否定與限定詞（not/never/no/only/except、不/勿/僅/除非）、數字與單位——刪掉會反轉語意
-- 可：片段句、短同義詞（fix，不用 implement a solution for）
-- 禁：自創縮寫、裝飾性表格、emoji
-- 允許標準技術縮寫：DB / API / HTTP
-- 句型：`[thing] [action] [reason]. [next step].`
+- Drop: articles, filler (just/really/basically), pleasantries, vague hedging, decorative openers and closers
+- Keep: negations and qualifiers (not/never/no/only/except, 不/勿/僅/除非), numbers and units—dropping flips meaning
+- Allow: fragment sentences, short synonyms (fix, not implement a solution for)
+- Forbid: invented abbreviations, decorative tables, emoji
+- Standard technical abbreviations allowed: DB / API / HTTP
+- Pattern: `[thing] [action] [reason]. [next step].`
 
-**語言**：改寫後 prose 一律用 `--lng` 語言（預設英文）；來源語言不同 → 翻譯，語意等價。caveman full 精神（刪贅詞、客套、冗餘；留否定/限定詞與數字）適用任何目標語言。一律**保留原文**、不翻譯：
+**Language**: prose after rewrite always in `--lng` language (default English); source language differs → translate, semantics equivalent. Caveman full spirit (drop filler, pleasantries, redundancy; keep negations/qualifiers and numbers) applies to any target language. Always **keep original**, never translate:
 
-- 專有名詞與專案代號（如 `COSS`、主機名、服務名）
-- 路徑、指令、環境變數、檔名
-- **關於語言**的規則本身（如 「以繁中回應」）——規則 prose 隨 `--lng`，但引號內指名的目標語言不得更動
-- 下方「逐字」清單的全部內容——含整個 command frontmatter 區塊，故 command 的 `description`/`argument-hint` 不隨 `--lng`
-- 以中文引用的使用者可見輸出字串（如 「CLAUDE.md 事實已同步，未改動」）——報告語言維持繁體中文
+- Proper nouns and project codenames (e.g. `COSS`, hostnames, service names)
+- Paths, commands, environment variables, filenames
+- Rules **about language** themselves (e.g. 「以繁中回應」)—rule prose follows `--lng`, but target language named inside quotes must not change
+- Everything in "verbatim" list below—incl. whole command frontmatter block, so command `description`/`argument-hint` do not follow `--lng`
+- User-facing output strings quoted in Chinese (e.g. 「CLAUDE.md 事實已同步，未改動」)—report language stays Traditional Chinese
 
-**逐字（byte-for-byte）**：
+**Verbatim (byte-for-byte)**:
 
-- code block 與 fenced block 內所有內容
-- 確切的指令字串（如 `git commit -m ...`）
-- 格式模板（如 commit message 結構、`Co-Authored-By: ...` 之類的 trailer）
-- 消歧義的好/壞範例（✅ 正確 / ❌ 錯誤）
-- `@path` 匯入語法（如 `@CLAUDE.local.md`）——功能性語法，改寫會壞
-- Frontmatter 鍵名與值（`description:`、`name:`、`paths:` 等）
-- Command 檔 frontmatter **整個區塊**逐字（`description`、`argument-hint`、`allowed-tools`、`model`、`disable-model-invocation`）——`description` 驅動 slash command 觸發與清單顯示，壓縮會降低準確度
-- Command 參數佔位符 `$ARGUMENTS`、`$1`–`$9`
-- Command 以 `!` 開頭的 bash 執行語法——功能性語法，改寫會壞
+- All content inside code blocks and fenced blocks
+- Exact command strings (e.g. `git commit -m ...`)
+- Format templates (e.g. commit message structure, trailer like `Co-Authored-By: ...`)
+- Disambiguating good/bad examples (✅ 正確 / ❌ 錯誤)
+- `@path` import syntax (e.g. `@CLAUDE.local.md`)—functional syntax, rewrite breaks it
+- Frontmatter key names and values (`description:`, `name:`, `paths:`, etc.)
+- Command file frontmatter **whole block** verbatim (`description`, `argument-hint`, `allowed-tools`, `model`, `disable-model-invocation`)—`description` drives slash command triggering and list display, compressing lowers accuracy
+- Command argument placeholders `$ARGUMENTS`, `$1`–`$9`
+- Command `!`-prefixed bash execution syntax—functional syntax, rewrite breaks it
 
-僅壓縮這些區塊**周圍的 prose**；區塊本身不動。
+Compress only **prose around** these blocks; blocks themselves untouched.
 
-**不壓縮**（依 caveman Auto-Clarity）——保留完整句子：
+**Do not compress** (per caveman Auto-Clarity)—keep full sentences:
 
-- **順序重要**的多步驟流程（刪連接詞易讀錯順序）
-- 條件/例外分支（if / unless / 除非 / 僅當）
-- 破壞性或不可逆操作的警告
-- 壓縮造成技術歧義
+- Multi-step flows where **order matters** (dropping connectives makes order easy to misread)
+- Conditional/exception branches (if / unless / 除非 / 僅當)
+- Destructive or irreversible operation warnings
+- Compression creates technical ambiguity
 
-檢驗：**壓縮後的文字若有第二種合理解讀，就不壓。**
+Test: **if compressed text has a second reasonable reading, do not compress.**
 
-### 7. 驗證無損（壓縮後）
+### 7. Verify no loss (after compression)
 
-逐項對照步驟 4 指令清單：確認**每一項**在改寫後仍存在於 CLAUDE.md ∪ `rules/**/*.md` 的聯集（`CLAUDE.local.md` 對自身驗證，不入聯集——維持獨立檔案）（語意等價即可，不必字句相同）。分塊項目必須落在 `paths` 涵蓋原範圍的規則檔。
+Compare item by item with step 4 instruction list: confirm **every** item still exists after rewrite in union of CLAUDE.md ∪ `rules/**/*.md` (`CLAUDE.local.md` verified against itself, not in union—stays separate file) (semantic equivalence enough, wording need not match). Chunked items must land in a rule file whose `paths` covers original scope.
 
-⚠️ 憑感覺「好像沒少」不算驗證——須逐項核對清單，否則邊角規則會被靜默刪除卻回報成功。
+⚠️ Casual "feels like nothing missing" is not verification—check list item by item, else edge rules get deleted silently while success is reported.
 
-Caveman 回讀檢查：片段化後順序/條件未被誤讀；技術術語、code、錯誤字串、`@path` 匯入逐字未動；無自創縮寫。
+Caveman readback check: order/conditions not misread after fragmenting; technical terms, code, error strings, `@path` imports untouched verbatim; no invented abbreviations.
 
-語言檢查：目標檔 prose 全為 `--lng` 語言（逐字區塊與專有名詞除外）；翻譯未改動任何否定、限定詞、數字、條件分支；語言規則引號內的目標語言未動。
+Language check: target-file prose all in `--lng` language (excl. verbatim blocks and proper nouns); translation changed no negation, qualifier, number, conditional branch; target language inside quotes of language rules untouched.
 
-### 8. README.md 同步
+### 8. README.md sync
 
-每次執行都檢查專案根 `./README.md`。
+Check project-root `./README.md` every run.
 
-**存在** → 讀取，對照精煉後的規則檔與實際目錄結構，判斷是否需更新：規則檔段落新增/移除（含步驟 5 新建的 `rules/*.md`）應反映於 README；README 提及的 command / skill / 路徑 / 設定已不存在或已改名。README 語言 ≠ `--lng` 語言也算需更新；整份翻成目標語言（code block、路徑、指令、專有名詞不翻）。README 明顯違反下方「風格指南」也算需更新：段落超過 3 句、並列項目擠在一段、帶鍵並列 bullet 應改表格或表格應改清單（見「寫法」）、表格違反「表格」（原始碼未對齊、表頭不一致、儲存格過長）、H2 無 emoji、歷史用語（「僅現況」）、超出長度預算或含實作細節（「深度」）。重新排版並精簡至要點；絕不新增或更動事實——刪細節不算改事實。清單不符（見下）也算。無需更新 → 回報 「README 已同步，未改動」；不為改而改。
+**Exists** → read, compare refined rule files and actual directory structure, decide whether update needed: rule-file sections added/removed (incl. step-5 new `rules/*.md`) should reflect in README; command / skill / path / setting mentioned in README no longer exists or renamed. README language ≠ `--lng` language also counts as needs update; translate whole file to target (code blocks, paths, commands, proper nouns not translated). README clearly violating "Style guide" below also counts as needs update: paragraph over 3 sentences, parallel items crammed into one paragraph, keyed parallel bullet list that should be a table or table that should be a list (see "Writing"), table violating "Tables" (misaligned source, inconsistent headers, over-long cell), H2 without emoji, history wording ("Current state only"), over length budget or implementation detail ("Depth"). Restyle and trim to essentials; never add or alter facts—trimming detail is not a fact change. Inventory mismatch (below) also counts. No update needed → state 「README 已同步，未改動」; do not change for change's sake.
 
-**不存在** → 建立，內容判斷同上，結構依風格指南；專案專屬段落：目錄樹（執行期產物標註 gitignore）、「清單同步」的清單段落、關鍵設定、維護慣例。
+**Missing** → create, same judgment for content, structured per Style guide; project-specific sections: directory tree (runtime artifacts noted as gitignored), inventory sections from "Inventory sync", key settings, maintenance conventions.
 
-#### 清單同步
+#### Inventory sync
 
-每次都執行，不論 README 是否存在。比對實際存在者與 README 列出者；缺的補、沒了的刪、列順序依實際。
+Run every time, whether README exists or not. Compare what actually exists with what README lists; add missing, delete gone, order rows as actual.
 
-| 類別 | 實際來源 |
+| Category | Actual source |
 | -------- | ------------- |
-| Rules | `./.claude/rules/**/*.md`（本 repo：`./rules/**/*.md`） |
-| Skills | `./.claude/skills/*/SKILL.md`（含指向 `.agents/skills/` 的 symlink；名稱 = 目錄名）（本 repo：`./skills/*/SKILL.md`） |
-| Commands | `./.claude/commands/**/*.md`（本 repo：`./commands/**/*.md`） |
-| Hooks | `./.claude/settings.json` 的 `hooks` 事件及其呼叫的腳本檔（本 repo：`./settings.json`） |
-| MCP | `./.mcp.json` 的 `mcpServers` |
-| Plugins | `./.claude/settings.json` 中設為 `true` 的 `enabledPlugins` 項目（本 repo：`./settings.json`） |
+| Rules | `./.claude/rules/**/*.md` (this repo: `./rules/**/*.md`) |
+| Skills | `./.claude/skills/*/SKILL.md` (incl. symlinks into `.agents/skills/`; name = directory name) (this repo: `./skills/*/SKILL.md`) |
+| Commands | `./.claude/commands/**/*.md` (this repo: `./commands/**/*.md`) |
+| Hooks | `hooks` events in `./.claude/settings.json` and the script files they call (this repo: `./settings.json`) |
+| MCP | `mcpServers` in `./.mcp.json` |
+| Plugins | `enabledPlugins` entries set `true` in `./.claude/settings.json` (this repo: `./settings.json`) |
 
-- 只列本專案存在的項目。來自全域 `~/.claude/` 的項目不列（專案根本身就是 `~/.claude`，如本 repo，則例外）；絕不寫「現改由全域提供」之類字句。
-- 類別有項目但 README 缺該段 → 新增該段。類別為空 → 不設該段。
-- 每類別輸出一張表，依「表格」：欄位 `Name | Purpose`（Rules、Skills、Commands、MCP、Plugins）或 `Script | Event | Purpose`（Hooks）；各次執行表頭與欄序一致。Purpose 一行（≤ ~80 顯示寬度），取自 SKILL.md / 規則 `description` 或首段；不猜測。
-- 回報每類別新增或移除了什麼；全部相符 → 「清單已同步」。
+- List only items that exist in this project. Items from global `~/.claude/` not listed (exception: project root is itself `~/.claude`, e.g. this repo); never write "now provided globally" or similar.
+- Category has items but README lacks its section → add section. Category empty → no section.
+- Output one table per category, per "Tables": columns `Name | Purpose` (Rules, Skills, Commands, MCP, Plugins) or `Script | Event | Purpose` (Hooks); same headers and column order across runs. Purpose one line (≤ ~80 display width), taken from SKILL.md / rule `description` or first paragraph; never guess.
+- Report per category what was added or removed; all matched → 「清單已同步」.
 
-README 免於步驟 6 所有 caveman 規則（含片段句與 emoji 禁令）——讀者是人類：完整句子、自然語氣、生動但精簡。新增或更新的內容一律用 `--lng` 語言（預設英文），含目錄樹註解與表格說明欄。
+README is exempt from all caveman rules in step 6 (incl. fragment sentences and emoji ban)—readers are humans: full sentences, natural tone, lively but concise. New or updated content always in `--lng` language (default English), incl. directory-tree comments and table description columns.
 
-#### 風格指南
+#### Style guide
 
-提煉自 standard-readme 與知名 GitHub README：先講清楚身分、快速到行動、結構易掃、長參考收合。
+Distilled from standard-readme and well-known GitHub READMEs: clear identity first, fast path to action, scannable structure, long reference folded away.
 
-**結構**（由上而下，不適用者略過）：
+**Structure** (top to bottom, skip what does not apply):
 
-1. `# <emoji> <name>` + 一行標語（≤120 字元）。徽章僅在帶有真實訊號時加（CI、版本、授權）；設定類 repo 通常不加
-2. 簡介：≤2 句，或 3–6 個亮點（依「寫法」用表格或條列）
-3. 目錄僅在 README 超過 100 行時加
-4. `🚀 Quick start`：可直接複製貼上的 code block
-5. 專案專屬段落（結構、指令、skills、設定、維護…）
-6. Contributing / License 僅在 repo 有時加
+1. `# <emoji> <name>` + one-line tagline (≤120 chars). Badges only when they carry real signal (CI, version, license); config repos usually none
+2. Intro: ≤2 sentences, or 3–6 highlights (table or bullets per "Writing")
+3. Table of contents only when README exceeds 100 lines
+4. `🚀 Quick start`: copy-pasteable code block
+5. Project-specific sections (structure, commands, skills, settings, maintenance…)
+6. Contributing / License only when repo has them
 
-**寫法**：
+**Writing**:
 
-- 段落 ≤3 句。3 個以上並列項目絕不擠成一個逗號串接的段落
-- 3 個以上共用同一鍵（名稱、指令、路徑、角色…）的並列項目 → **優先用表格**：鍵放第一欄，說明放最後一欄。見「表格」
-- 僅在下列情況改用清單：
-  - 任一項說明超過 2 行（~120 顯示寬度；CJK/全形字算 2，≈60 個 CJK 字）——先依「深度」精簡；仍過長 → 整組改清單，同組不混用表格與清單
-  - 項目無自然的鍵（純句子；表格會只剩一欄）
-  - 項目是有序步驟 → 編號清單
-- 清單項：一個概念一條，`- **Name** — description` 或 `` - `code` — description ``
-- 表格儲存格 ≤ 一個短句（≤ ~120 顯示寬度）；細節移至表格下方條列或 `<details>`
-- 主動語態、具體動詞；寫它做什麼，不寫它多厲害
-- 粗體僅用於關鍵詞，每段 ≤2 處
-- Code block 帶語言標籤；repo 檔案用相對連結
-- 生動但不推銷：標語寫使用者得到什麼，不寫技術堆疊；功能用亮點表格（`Name | one sentence`），僅在一列會過長時改用 `- **Name** — one sentence` 條列，可加合適的 emoji；動詞要具體（「客戶開工單，PM 即時回覆」，不是「提供工單功能」）
+- Paragraph ≤3 sentences. 3+ parallel items never one comma-chained paragraph
+- 3+ parallel items sharing a key (name, command, path, role…) → **table first**: key in first column, description in last. See "Tables"
+- Use a list instead only when:
+  - any item's description exceeds 2 lines (~120 display width; CJK/full-width chars count 2, ≈60 CJK chars)—first trim per "Depth"; still too long → whole group as list, never mix table and list in one group
+  - items have no natural key (plain sentences; table would be one column)
+  - items are ordered steps → numbered list
+- List item: one concept per bullet, `- **Name** — description` or `` - `code` — description ``
+- Table cell ≤ one short sentence (≤ ~120 display width); move detail to bullets under the table or `<details>`
+- Active voice, concrete verbs; say what it does, not how impressive it is
+- Bold only key terms, ≤2 per paragraph
+- Code blocks carry a language tag; link repo files with relative links
+- Lively, not salesy: tagline says what the user gets, not the tech stack; features as highlight table (`Name | one sentence`), bullets `- **Name** — one sentence` only when a row would be too long, optional fitting emoji; verbs concrete ("customers file tickets, PMs reply live", not "provides ticketing")
 
-**僅現況**：
+**Current state only**:
 
-- README 只描述現在為真的事。無歷史：遷移、移除、搬遷、改名、「formerly / no longer / now provided by / moved to / 原本 / 不再 / 改由 / 已移除 / 新增了」。被刪除的東西直接消失。
-- 歷史屬於 git log 或 CHANGELOG，不屬於 README。
+- README describes what is true now. No history: migration, removal, relocation, rename, "formerly / no longer / now provided by / moved to / 原本 / 不再 / 改由 / 已移除 / 新增了". Deleted things simply disappear.
+- History belongs in git log or CHANGELOG, not README.
 
-**深度**（README 是指南，不是規格）：
+**Depth** (README is a guide, not a spec):
 
-- 檢驗：新手第一天需要這個嗎？不需要 → 不寫。
-- 每個功能：一行摘要加 ≤3 個使用者可見亮點；超過 → `<details>` 或刪除。
-- 不寫：快取時長、DB 欄位與 SQL、演算法與公式、檔案層級實作地圖、邊角情況、UI 微互動（動畫、skeleton 時序）。這些屬於 `rules/` 或程式碼；必要時用一行連結（`details: .claude/rules/xxx.md`）。
-- 長度預算：一般專案 README ≤300 行（含 `<details>` 內容）。超標 → 先砍細節，再收合。
+- Test: would a newcomer need this on day one? No → leave out.
+- Per feature: one-line summary plus ≤3 user-visible highlights; more → `<details>` or delete.
+- Leave out: cache durations, DB columns and SQL, algorithms and formulas, file-level implementation maps, edge cases, UI micro-interactions (animation, skeleton timing). They live in `rules/` or code; link with one line (`details: .claude/rules/xxx.md`) when needed.
+- Length budget: ≤300 lines for a typical project README (incl. `<details>` content). Over budget → cut detail first, fold second.
 
-**Emoji**：H1 與每個 H2 開頭各一個語意貼切的 emoji，同一 README 內不重複；允許用於亮點列/條列與狀態欄的 ✅ / ❌；內文 prose、code、路徑內不用。預設選擇以維持各次執行一致：
+**Emoji**: one semantically fitting emoji at start of H1 and each H2, no repeats within a README; allowed on highlight rows / bullets and ✅ / ❌ in status columns; none inside body prose, code, or paths. Default picks for consistency across runs:
 
 ```
 🚀 Quick start   ✨ Features    📁 Structure    ⚡ Commands     🧩 Skills
 🔌 Plugins       ⚙️ Settings    🛠️ Maintenance  📝 Notes        🤝 Contributing   📄 License
 ```
 
-**表格**：
+**Tables**:
 
-- **原始碼對齊**：儲存格左右各一空格；以空格補到欄寬，使每列的 `|` 垂直對齊；寬度 = 顯示寬度（CJK/全形字與 emoji 算 2）；分隔列的破折號填滿欄寬。專案使用 prettier 時，結果應與 `prettier --write` 一致（執行以驗證）。儲存格內的字面 `|` → `\|`
-- **結構一致**：同類表格（如各清單類別）共用表頭名稱與欄序；表頭簡短，用 `--lng` 語言；每欄格式一致（全為 code 或全為純文字，不混用）；預設靠左，數字欄 `---:`；≤4 欄，更多 → 拆表或把細節移到表下條列
-- **儲存格精簡**：每格一個短句；不換行、不用 `<br>`、格內不放清單；同欄說明長度相近；過長 → 精簡文字，絕不加寬欄位
+- **Aligned source**: one space padding each side of cell; pad with spaces to column width so every row's `|` lines up vertically; width = display width (CJK/full-width chars and emoji count 2); separator row dashes fill column width. Result should match `prettier --write` when project uses prettier (run it to verify). Literal `|` inside cell → `\|`
+- **Consistent structure**: same-kind tables (e.g. inventory categories) share header names and column order; headers short, in `--lng` language; one format per column (all code or all plain text, never mixed); left-aligned by default, numeric columns `---:`; ≤4 columns, more → split table or move detail to bullets under it
+- **Lean cells**: one short sentence per cell; no line breaks, no `<br>`, no lists inside; descriptions in same column similar length; too long → trim text, never widen column
 
-**Markdown 功能**：
+**Markdown features**:
 
-- Callout：`> [!NOTE]`、`> [!TIP]`、`> [!IMPORTANT]`、`> [!WARNING]`、`> [!CAUTION]`；每段 ≤1 個，不巢狀
-- 長參考（完整清單、平台 workaround）→ `<details><summary>…</summary>`，`</summary>` 後空一行，否則內層 Markdown 不會渲染
-- Mermaid `flowchart` 僅用於 3 步以上、圖勝過清單的流程
-- `--lng` 下不翻譯：callout 關鍵字、emoji、Mermaid 語法
+- Callouts: `> [!NOTE]`, `> [!TIP]`, `> [!IMPORTANT]`, `> [!WARNING]`, `> [!CAUTION]`; ≤1 per section, never nested
+- Long reference (full lists, platform workarounds) → `<details><summary>…</summary>` with a blank line after `</summary>`, else inner Markdown does not render
+- Mermaid `flowchart` only for flows of 3+ steps where a diagram beats a list
+- Not translated under `--lng`: callout keywords, emoji, Mermaid syntax
 
-**寫入前自檢**：掃過標題與每段首行；讀者須在 30 秒內得知它是什麼、如何開始、東西在哪。檢查段落長度、每個清單都符合「改用清單」條件（否則改表格）、每張表的 `|` 已對齊（全形 = 2）且同類表頭一致、無 `<br>`、儲存格長度、emoji 不重複、callout 語法、行數在預算內、歷史用語零命中（grep 「僅現況」中的字詞）、清單類別與實際檔案相符、每個功能 ≤3 個亮點。
+**Self-check before writing**: skim headings + first line of each section; reader must learn what it is, how to start, where things live within 30 seconds. Check paragraph length, every list meets a "use a list instead" condition (else convert to table), every table's `|` aligned (full-width = 2) with consistent same-kind headers, no `<br>`, cell length, emoji uniqueness, callout syntax, line count within budget, zero history-wording hits (grep the words in "Current state only"), inventory categories match actual files, each feature ≤3 highlights.
 
-### 9. 寫入與報告
+### 9. Write and report
 
-直接用 Edit/Write 寫檔，**不**自動 git commit；留給 `/now-push` 或使用者。報告：
+Write files directly with Edit/Write, **no** automatic git commit; leave to `/now-push` or user. Report:
 
-- 事實校正清單（步驟 2）：每項前→後與依據
-- 過時指令審查（步驟 3，有 `--audit` 時）：發現數/信心分布、已套用 hunk 清單、未套用（含低信心/`flag`）項目；未執行 → 寫 「未加 `--audit`，略過」
-- 分塊結果（步驟 5）：來源段落 → 目標檔、`paths`、glob 符合數；或 「無分塊需求」 + 理由；skill/command 轉換建議
-- 逐檔指令清單，每項標 「保留 ✓」
-- 逐檔行數/字元數前→後與壓縮比（**僅觀察，非目標**）
-- 主要編輯（合併了什麼、刪了哪些贅詞）
-- README.md 結果（新建 / 更新 / 重新排版或精簡 / 已同步未改動），行數前→後
-- 清單同步（步驟 8）：每類別新增/移除的項目，或 「清單已同步」
-- 語言結果：實際使用的語言（含無法辨識的 `--lng` 退回英文時的提示）、各檔是否翻譯（來源→目標語言）
+- Fact correction list (step 2): each before→after and basis
+- Stale-instruction audit (step 3, when `--audit`): findings count/confidence distribution, applied hunk list, unapplied (incl. low-confidence/`flag`) items; not run → write 「未加 `--audit`，略過」
+- Chunking result (step 5): source section → target file, `paths`, glob match count; or 「無分塊需求」 + reason; skill/command conversion suggestions
+- Per-file instruction list, each item marked 「保留 ✓」
+- Per-file lines/chars before→after and compression ratio (**observation, not goal**)
+- Main edits (what merged, what filler removed)
+- README.md outcome (created / updated / restyled or trimmed / synced unchanged), lines before→after
+- Inventory sync (step 8): per category added/removed items, or 「清單已同步」
+- Language outcome: language actually used (incl. notice when unrecognized `--lng` fell back to English), whether each file translated (source→target language)
 
-## 自我壓縮提醒
+## Self-compression reminder
 
-`commands/up-rules.md`、`commands/now-push.md`、`commands/up-skills.md` 本身在壓縮範圍內：
+`commands/up-rules.md`, `commands/now-push.md`, `commands/up-skills.md` themselves are in compression scope:
 
-- `now-push.md` 幾乎整份逐字（commit 格式模板、type 表、✅/❌ 好壞範例、`Co-Authored-By` trailer）——僅動模板周圍的 prose，空間不大；不為壓縮比強改模板。
-- 壓縮自身時，改寫結果仍須逐項通過「步驟 7：驗證無損」。
+- `now-push.md` nearly whole file verbatim (commit format template, type table, ✅/❌ good/bad examples, `Co-Authored-By` trailer)—touch only prose around template, little room; do not force template changes for ratio.
+- When compressing itself, rewrite must still pass "Step 7: verify no loss" item by item.
 
-## 禁止事項
+## Prohibited
 
-- 不新增既有內容沒有的規則或功能——僅適用於壓縮目標檔；README 是補充性質，不在此限。事實校正（步驟 2）與分塊搬移（步驟 5）不算新增，僅修正與搬移，語意不變；使用者在 `--audit`（步驟 3）選定的 hunk 例外，屬使用者授權的語意變更。
-- 不因「太長」而刪規則——只刪贅詞，絕不刪語意；使用者在 `--audit` 選定的 hunk 例外。
-- 不為壓縮比過度砍；寧可保守也不遺失指令。caveman full 是風格上限，不是壓縮率指標。
-- 壓縮（步驟 6）不得重新引入 `--audit` 已移除的過時模式（全大寫強調 MUST/CRITICAL、施壓語氣、裝飾性步驟腳本）。
-- 不以 `@path` 匯入取代分塊——匯入於啟動時載入，達不到按需載入的目的。
-- 不用 caveman 風格對話或回報——本指令只改檔案內容；對話與報告維持一般繁體中文，不隨 `--lng`。
-- 翻譯不得改變語意：不增刪規則，不弱化否定或限定詞；有疑義處 → 保留原文並於報告標警告，不猜測。
-- 不壓縮到需要重讀兩次才懂——AI 的理解成本也是成本。
+- Do not add rules or features not already present—applies to compression-target files only; README is supplementary, exempt. Fact correction (step 2) and chunk moving (step 5) not additions, only fix and move, semantics unchanged; hunks user selected under `--audit` (step 3) exempt, user-authorized semantic change.
+- Do not delete a rule because it is "too long"—drop filler only, never semantics; hunks user selected under `--audit` exempt.
+- Do not over-cut for ratio; prefer conservative over losing instructions. caveman full is style ceiling, not compression-rate metric.
+- Compression (step 6) must not reintroduce stale patterns `--audit` removed (all-caps emphasis MUST/CRITICAL, pressure tone, decorative step scripts).
+- Do not replace chunking with `@path` import—import loads at start, misses on-demand loading goal.
+- Do not converse or report in caveman style—command changes file content only; conversation and report stay normal Traditional Chinese, not following `--lng`.
+- Translation must not change semantics: no rules added or removed, no negation or qualifier weakened; ambiguous spot → keep original and flag warning in report, do not guess.
+- Do not compress so hard it needs rereading twice—AI comprehension cost is cost.

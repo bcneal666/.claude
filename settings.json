@@ -21,10 +21,10 @@
       "PowerShell(git commit -m \"*)",
       "PowerShell(git push *)",
       "Edit(~/.claude/hooks/**)",
-      "Edit(~/.claude/commands/**)",
+      "Edit(~/.claude/com:mands/**)",
       "Skill(update-config)"
     ],
-    "defaultMode": "plan"
+    "defaultMode": "auto"
   },
   "model": "opusplan",
   "hooks": {
@@ -105,5 +105,6 @@
     ],
     "hard_deny": []
   },
-  "additionalDirectories": []
+  "additionalDirectories": [],
+  "advisorModel": "opus"
 }
