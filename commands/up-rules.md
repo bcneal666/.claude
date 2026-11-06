@@ -39,7 +39,7 @@ Process only if exists; skip missing (`CLAUDE.local.md` absent on most machines�
 
 - `./README.md` (project root)—see "Step 8"
 
-Process only paths above; **do not** extend to `skills/`, `settings.json`. Exception: read-only inventory in "Inventory sync" (step 8)—never compress or modify those files.
+Process only paths above; **do not** extend to `skills/`, `agents/`, `settings.json`. Exception: read-only inventory in "Inventory sync" (step 8)—never compress or modify those files.
 
 ## Flow
 
@@ -64,7 +64,7 @@ Fix facts only; add no behavior rules.
 
 Has `--audit` →
 
-- Call `Skill(skill: "claude-api", args: "prompt-audit")`, scope limited to compression-target files gathered in step 1 (excl. README.md, `skills/`, `settings.json`); target model per prompt-audit's own Step 0 rule.
+- Call `Skill(skill: "claude-api", args: "prompt-audit")`, scope limited to compression-target files gathered in step 1 (excl. README.md, `skills/`, `agents/`, `settings.json`); target model per prompt-audit's own Step 0 rule.
 - After getting audit report and proposed diff, **pause**; list findings, ask user to pick hunks to apply one by one—do not use prompt-audit default "no asking, diff only"; this command is interactive.
 - Selected hunks → apply to files; unselected stay in report only, not applied.
 - Low-confidence/`flag` items report only, not offered as selectable hunks.
@@ -175,13 +175,14 @@ Run every time, whether README exists or not. Compare what actually exists with 
 | Rules | `./.claude/rules/**/*.md` (this repo: `./rules/**/*.md`) |
 | Skills | `./.claude/skills/*/SKILL.md` (incl. symlinks into `.agents/skills/`; name = directory name) (this repo: `./skills/*/SKILL.md`) |
 | Commands | `./.claude/commands/**/*.md` (this repo: `./commands/**/*.md`) |
+| Subagents | `./.claude/agents/**/*.md` (this repo: `./agents/**/*.md`); name = frontmatter `name`, else filename without `.md` |
 | Hooks | `hooks` events in `./.claude/settings.json` and the script files they call (this repo: `./settings.json`) |
 | MCP | `mcpServers` in `./.mcp.json` |
 | Plugins | `enabledPlugins` entries set `true` in `./.claude/settings.json` (this repo: `./settings.json`) |
 
 - List only items that exist in this project. Items from global `~/.claude/` not listed (exception: project root is itself `~/.claude`, e.g. this repo); never write "now provided globally" or similar.
 - Category has items but README lacks its section → add section. Category empty → no section.
-- Output one table per category, per "Tables": columns `Name | Purpose` (Rules, Skills, Commands, MCP, Plugins) or `Script | Event | Purpose` (Hooks); same headers and column order across runs. Purpose one line (≤ ~80 display width), taken from SKILL.md / rule `description` or first paragraph; never guess.
+- Output one table per category, per "Tables": columns `Name | Purpose` (Rules, Skills, Commands, Subagents, MCP, Plugins) or `Script | Event | Purpose` (Hooks); same headers and column order across runs. Purpose one line (≤ ~80 display width), taken from SKILL.md / rule / subagent `description` or first paragraph; never guess.
 - Report per category what was added or removed; all matched → 「清單已同步」.
 
 README is exempt from all caveman rules in step 6 (incl. fragment sentences and emoji ban)—readers are humans: full sentences, natural tone, lively but concise. New or updated content always in `--lng` language (default English), incl. directory-tree comments and table description columns.
@@ -196,7 +197,7 @@ Distilled from standard-readme and well-known GitHub READMEs: clear identity fir
 2. Intro: ≤2 sentences, or 3–6 highlights (table or bullets per "Writing")
 3. Table of contents only when README exceeds 100 lines
 4. `🚀 Quick start`: copy-pasteable code block
-5. Project-specific sections (structure, commands, skills, settings, maintenance…)
+5. Project-specific sections (structure, commands, skills, subagents, settings, maintenance…)
 6. Contributing / License only when repo has them
 
 **Writing**:
@@ -230,7 +231,8 @@ Distilled from standard-readme and well-known GitHub READMEs: clear identity fir
 
 ```
 🚀 Quick start   ✨ Features    📁 Structure    ⚡ Commands     🧩 Skills
-🔌 Plugins       ⚙️ Settings    🛠️ Maintenance  📝 Notes        🤝 Contributing   📄 License
+🤖 Subagents     🔌 Plugins     ⚙️ Settings     🛠️ Maintenance  📝 Notes
+🤝 Contributing  📄 License
 ```
 
 **Tables**:
