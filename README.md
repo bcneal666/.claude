@@ -129,17 +129,17 @@ Personal global Claude Code configuration shared across projects: skills, slash 
 
 ## 🤖 Subagents
 
-| Name               | Purpose                                                                          | Model  |
-| ------------------ | -------------------------------------------------------------------------------- | ------ |
-| `ui-ux-tester`     | Drive documented UI flows like a frustrated user; report visual and UX defects   | sonnet |
-| `test-runner`      | Run tests, lint, typecheck and build; report only a failure summary              | haiku  |
-| `debugger`         | Reproduce the problem, trace the root cause, propose a minimal fix (no edits)    | sonnet |
-| `code-reviewer`    | Read-only review of a diff in fresh context for correctness bugs and regressions | sonnet |
-| `researcher`       | Look up docs, APIs and error messages; return a short cited answer               | haiku  |
-| `security-auditor` | Read-only scan for leaked secrets, injection, auth flaws and unsafe dependencies | sonnet |
+| Name               | Purpose                                                                          |
+| ------------------ | -------------------------------------------------------------------------------- |
+| `ui-ux-tester`     | Drive documented UI flows like a frustrated user; report visual and UX defects   |
+| `test-runner`      | Run tests, lint, typecheck and build; report only a failure summary              |
+| `debugger`         | Reproduce the problem, trace the root cause, propose a minimal fix (no edits)    |
+| `code-reviewer`    | Read-only review of a diff in fresh context for correctness bugs and regressions |
+| `researcher`       | Look up docs, APIs and error messages; return a short cited answer               |
+| `security-auditor` | Read-only scan for leaked secrets, injection, auth flaws and unsafe dependencies |
 
 > [!NOTE]
-> All six subagents are read-only (no `Edit` / `Write` granted). The first five descriptions contain "Use proactively", so the main agent delegates to them automatically; `ui-ux-tester` runs when you ask for it.
+> All six subagents are read-only (no `Edit` / `Write` granted). Every one except `ui-ux-tester` has "Use proactively" in its description, so the main agent delegates to them automatically; `ui-ux-tester` runs when you ask for it. `test-runner` and `researcher` run on haiku, the rest on sonnet.
 
 ## 🪝 Hooks
 
@@ -157,9 +157,8 @@ The built-in system prompt gives only a date snapshot at session start, so this 
 | `mindful-claude@mindful-claude`     | Show a breathing animation while Claude works; toggle with `/breathe` (marketplace `halluton/Mindful-Claude`) |
 | `image-view@claude-image-view`      | Show pasted-image thumbnails instead of bare `[Image #n]` tags (marketplace `jarrodwatts/claude-image-view`)  |
 | `cc-plugin-you-should-know@builtin` | From Claude Code's built-in marketplace, enabled under `enabledPlugins`                                       |
-| `stripe@claude-plugins-official`    | Stripe skills (`stripe-best-practices`, `test-cards`, `explain-error`) and a Stripe MCP server                |
 
-`cc-plugin-you-should-know` and `stripe` have no `extraKnownMarketplaces` entry because their marketplaces ship with the CLI.
+`cc-plugin-you-should-know` has no `extraKnownMarketplaces` entry because its marketplace ships with the CLI.
 
 > [!IMPORTANT]
 > `mindful-claude` is a function-hooks plugin. It needs `CLAUDE_CODE_ENABLE_FUNCTION_HOOKS=1` (already set under `env` in `settings.json`) and Claude Code 2.1.269 or later.

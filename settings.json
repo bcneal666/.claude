@@ -50,8 +50,7 @@
     "watch@claude-video": true,
     "mindful-claude@mindful-claude": true,
     "image-view@claude-image-view": true,
-    "cc-plugin-you-should-know@builtin": true,
-    "stripe@claude-plugins-official": true
+    "cc-plugin-you-should-know@builtin": true
   },
   "extraKnownMarketplaces": {
     "claude-video": {
@@ -84,6 +83,7 @@
       "effortLevel": "high"
     }
   },
+  "advisorModel": "opus",
   "theme": "dark",
   "editorMode": "vim",
   "vimInsertModeRemaps": {
@@ -105,6 +105,5 @@
     ],
     "hard_deny": []
   },
-  "additionalDirectories": [],
-  "advisorModel": "opus"
+  "additionalDirectories": []
 }
