@@ -21,7 +21,7 @@
       "PowerShell(git commit -m \"*)",
       "PowerShell(git push *)",
       "Edit(~/.claude/hooks/**)",
-      "Edit(~/.claude/com:mands/**)",
+      "Edit(~/.claude/commands/**)",
       "Skill(update-config)"
     ],
     "defaultMode": "auto"
