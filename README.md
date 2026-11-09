@@ -139,7 +139,7 @@ Personal global Claude Code configuration shared across projects: skills, slash 
 | `security-auditor` | Read-only scan for leaked secrets, injection, auth flaws and unsafe dependencies |
 
 > [!NOTE]
-> All six subagents are read-only (no `Edit` / `Write` granted). Every one except `ui-ux-tester` has "Use proactively" in its description, so the main agent delegates to them automatically; `ui-ux-tester` runs when you ask for it. `test-runner` and `researcher` run on haiku, the rest on sonnet.
+> All six subagents are read-only (no `Edit` / `Write` granted). Every one except `ui-ux-tester` has "Use proactively" in its description, so the main agent delegates to them automatically; `ui-ux-tester` runs when you ask for it. All six run on haiku: each file sets `model: haiku`, and `settings.json` forces it for every subagent.
 
 ## 🪝 Hooks
 
@@ -181,14 +181,15 @@ The built-in system prompt gives only a date snapshot at session start, so this 
 
 ## ⚙️ Settings
 
-| Item          | Details                                                                                               |
-| ------------- | ----------------------------------------------------------------------------------------------------- |
-| Model         | `model` is `opusplan` (Opus in plan mode, Sonnet when executing)                                      |
-| Output        | `outputStyle` is `Concise`; `language` is `traditional chinese`                                       |
-| Start mode    | `permissions.defaultMode` is `auto`                                                                   |
-| Permissions   | `permissions.allow` whitelists low-risk commands (list below the table)                               |
-| Statusline    | Node only (`statusline-command.mjs`), no shell fallback; three lines (model, location, usage)         |
-| Vim indicator | `hideVimModeIndicator: true` turns off the built-in `-- INSERT --` indicator in favor of a custom one |
+| Item           | Details                                                                                                          |
+| -------------- | ---------------------------------------------------------------------------------------------------------------- |
+| Model          | `model` is `opusplan` (Opus in plan mode, Sonnet when executing)                                                 |
+| Subagent model | `env` forces `CLAUDE_CODE_SUBAGENT_MODEL=haiku`, so every subagent runs on haiku                                 |
+| Output         | `outputStyle` is `Concise`; `language` is `traditional chinese`                                                  |
+| Start mode     | `permissions.defaultMode` is `auto`                                                                              |
+| Permissions    | `permissions.allow` whitelists low-risk commands (list below the table)                                          |
+| Statusline     | Node only (`statusline-command.mjs`), no shell fallback; three lines (model, location, usage)                    |
+| Vim indicator  | `statusLine.hideVimModeIndicator: true` turns off the built-in `-- INSERT --` indicator in favor of a custom one |
 
 Allowed: `git add`, `git commit -m`, `git push`, `WebSearch`, `Edit(~/.claude/hooks/**)`, `Edit(~/.claude/commands/**)`, `Skill(update-config)`.
 
