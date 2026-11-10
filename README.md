@@ -114,11 +114,13 @@ Personal global Claude Code configuration shared across projects: skills, slash 
 | `seo-audit`                    | Diagnose ranking, indexing and traffic problems                                  |
 | `skill-creator`                | Create, modify and optimize skills, and run evals                                |
 | `up-animate`                   | `/up-animate [--m] [@path ...]`: animation pipeline on the project's UI          |
+| `up-design`                    | `/up-design [@path ... \| url]`: screenshot-driven visual design review loop     |
 | `up-seo`                       | `/up-seo [url] [@path ...]`: SEO pipeline with shared context                    |
 
 **Pipelines**
 
 - `up-animate`: `remove-animations` (you pick removals) → `find-animation-opportunities` → `animate` → `improve-animations` (audit, then applies the selected plans) → `animation-performance` → (`--m`: `mobile-native`) → `review-animations`
+- `up-design`: baseline screenshots (375/768/1440) → score 6 static dimensions against `CRITERIA.md` → you pick fixes → patch → re-screenshot, max 3 rounds; motion goes to `up-animate`
 - `up-seo`: `ai-seo` → `seo-audit` → `programmatic-seo`, and you pick fixes after each stage
 
 **Notes**
