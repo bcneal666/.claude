@@ -107,6 +107,7 @@ Personal global Claude Code configuration shared across projects: skills, slash 
 | `humanizer-zh`                 | Chinese counterpart: trim filler and template phrasing                           |
 | `improve-animations`           | Read-only motion audit with prioritized, self-contained plans                    |
 | `mobile-native`                | CSS and meta-tag fixes that make a web app feel native on a phone                |
+| `modern-web-guidance`          | Search modern web best practices first for HTML/CSS and client-side JS tasks     |
 | `programmatic-seo`             | Plan SEO pages generated at scale from templates and data                        |
 | `remove-animations`            | Remove motion the UI doesn't need; subtract-only, never adds or retunes          |
 | `review-animations`            | Review animation code against a high craft bar (manual only)                     |
