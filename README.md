@@ -133,12 +133,12 @@ Personal global Claude Code configuration shared across projects: skills, slash 
 
 | Name               | Purpose                                                                          |
 | ------------------ | -------------------------------------------------------------------------------- |
-| `ui-ux-tester`     | Drive documented UI flows like a frustrated user; report visual and UX defects   |
-| `test-runner`      | Run tests, lint, typecheck and build; report only a failure summary              |
-| `debugger`         | Reproduce the problem, trace the root cause, propose a minimal fix (no edits)    |
 | `code-reviewer`    | Read-only review of a diff in fresh context for correctness bugs and regressions |
+| `debugger`         | Reproduce the problem, trace the root cause, propose a minimal fix (no edits)    |
 | `researcher`       | Look up docs, APIs and error messages; return a short cited answer               |
 | `security-auditor` | Read-only scan for leaked secrets, injection, auth flaws and unsafe dependencies |
+| `test-runner`      | Run tests, lint, typecheck and build; report only a failure summary              |
+| `ui-ux-tester`     | Drive documented UI flows like a frustrated user; report visual and UX defects   |
 
 > [!NOTE]
 > All six subagents are read-only (no `Edit` / `Write` granted). Every one except `ui-ux-tester` has "Use proactively" in its description, so the main agent delegates to them automatically; `ui-ux-tester` runs when you ask for it. All six run on haiku: each file sets `model: haiku`, and `settings.json` forces it for every subagent.
@@ -188,7 +188,7 @@ The built-in system prompt gives only a date snapshot at session start, so this 
 | Model          | `model` is `opusplan` (Opus in plan mode, Sonnet when executing)                                                 |
 | Subagent model | `env` forces `CLAUDE_CODE_SUBAGENT_MODEL=haiku`, so every subagent runs on haiku                                 |
 | Output         | `outputStyle` is `Concise`; `language` is `traditional chinese`                                                  |
-| Start mode     | `permissions.defaultMode` is `auto`                                                                              |
+| Start mode     | `permissions.defaultMode` is `plan`                                                                              |
 | Permissions    | `permissions.allow` whitelists low-risk commands (list below the table)                                          |
 | Statusline     | Node only (`statusline-command.mjs`), no shell fallback; three lines (model, location, usage)                    |
 | Vim indicator  | `statusLine.hideVimModeIndicator: true` turns off the built-in `-- INSERT --` indicator in favor of a custom one |

@@ -26,7 +26,7 @@
       "Edit(~/.claude/commands/**)",
       "Skill(update-config)"
     ],
-    "defaultMode": "auto"
+    "defaultMode": "plan"
   },
   "model": "opusplan",
   "hooks": {
