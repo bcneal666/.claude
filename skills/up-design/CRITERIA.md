@@ -35,5 +35,10 @@ Score each dimension by evidence (screenshot region or `file:line`). A gap needs
 - Visual language consistent end to end; distinct from the stock hero + 3 cards + footer pattern.
 - Originality never trades off legibility, accessibility or AdSense policy.
 
+## shadcn audit (conditional: components.json + react)
+- Source: `npx -y @shadscan/cli --json`; categories foundation, interaction, states, accessibility, forms, production-polish.
+- Each work item → gap with rule id + file:line; severity maps to high/med/low.
+- Dedupe with the 6 dimensions above; motion items still go to `/up-animate`.
+
 ## Out of scope (delegate)
 - Motion, micro-interaction → `/up-animate`.

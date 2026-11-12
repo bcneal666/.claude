@@ -84,7 +84,7 @@ Personal global Claude Code configuration shared across projects: skills, slash 
 
 - Managed skills (global reads `~/.agents/.skill-lock.json`; project reads `<project root>/skills-lock.json`) are updated one by one with `npx skills update`
 - Unmanaged skills have their upstream inferred and are reinstalled after confirmation
-- Self-made skills listed in `skills/.up-skills-ignore` are skipped, and so are skills with uncommitted changes
+- Self-made skills listed in `skills/.up-skills-ignore` are skipped, and so are skills whose own directory has uncommitted changes (symlinked skills are not checked, since their content lives outside git)
 - Global mode also reports plugin, cloud-synced skills and CLI version status
 
 </details>
@@ -121,7 +121,7 @@ Personal global Claude Code configuration shared across projects: skills, slash 
 **Pipelines**
 
 - `up-animate`: `remove-animations` (you pick removals) → `find-animation-opportunities` → `animate` → `improve-animations` (audit, then applies the selected plans) → `animation-performance` → (`--m`: `mobile-native`) → `review-animations`
-- `up-design`: baseline screenshots (375/768/1440) → score 6 static dimensions against `CRITERIA.md` → you pick fixes → patch → re-screenshot, max 3 rounds; motion goes to `up-animate`
+- `up-design`: baseline screenshots (375/768/1440) → (shadcn projects with `components.json`: `npx -y @shadscan/cli --json` source audit) → score 6 static dimensions (+ shadcn audit) against `CRITERIA.md` → you pick fixes → patch → re-screenshot, max 3 rounds; motion goes to `up-animate`
 - `up-seo`: `ai-seo` → `seo-audit` → `programmatic-seo`, and you pick fixes after each stage
 
 **Notes**

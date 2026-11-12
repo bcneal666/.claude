@@ -47,7 +47,8 @@ Tag each skill D/A/B/C per table, **priority D > A > B > C**—name in both igno
 
 Run git drift check first, then build command arguments:
 
-- In git repo → per class-A skill run `git status --porcelain skills/<name>/` (`global`, cwd `~/.claude`) or `git status --porcelain .claude/skills/<name>/` (`project`, cwd project root); any output (uncommitted changes) → tag skill 「本地有未提交改動·已跳過」, exclude from argument list, advise commit first or add to `.up-skills-ignore` for permanent exclusion
+- In git repo → per class-A skill whose entry is a real directory run `git status --porcelain skills/<name>/` (`global`, cwd `~/.claude`) or `git status --porcelain .claude/skills/<name>/` (`project`, cwd project root); any output (uncommitted changes) → tag skill 「本地有未提交改動·已跳過」, exclude from argument list, advise commit first or add to `.up-skills-ignore` for permanent exclusion
+- Entry is a symlink into `~/.agents/skills/` → skip drift check, goes into argument list: content lives outside git, so nothing local to protect; git shows only the link's type change (`D`/`T`, common with `core.symlinks=false`), never a real edit
 - Not in git repo → skip check, one-line notice 「無 git 保護，更新將直接覆蓋」, all class A go into argument list
 
 Names classified A, passing drift check, and **actually present in target directory** → list one by one as command arguments:
