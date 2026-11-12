@@ -48,7 +48,7 @@ Tag each skill D/A/B/C per table, **priority D > A > B > C**—name in both igno
 Run git drift check first, then build command arguments:
 
 - In git repo → per class-A skill whose entry is a real directory run `git status --porcelain skills/<name>/` (`global`, cwd `~/.claude`) or `git status --porcelain .claude/skills/<name>/` (`project`, cwd project root); any output (uncommitted changes) → tag skill 「本地有未提交改動·已跳過」, exclude from argument list, advise commit first or add to `.up-skills-ignore` for permanent exclusion
-- Entry is a symlink into `~/.agents/skills/` → skip drift check, goes into argument list: content lives outside git, so nothing local to protect; git shows only the link's type change (`D`/`T`, common with `core.symlinks=false`), never a real edit
+- Entry is a legacy symlink into `~/.agents/skills/` (installed before `--copy`) → skip drift check, goes into argument list: content lives outside git, nothing local to protect; git shows only link type change (`D`/`T`, common with `core.symlinks=false`), never real edit. `update` keeps `--copy` installs as real directories
 - Not in git repo → skip check, one-line notice 「無 git 保護，更新將直接覆蓋」, all class A go into argument list
 
 Names classified A, passing drift check, and **actually present in target directory** → list one by one as command arguments:
@@ -71,8 +71,10 @@ Single skill update fails (non-zero exit) → record failure and stderr summary,
 Show full command to run one by one; execute only after confirmation:
 
 ```
-npx skills add <owner/repo> -s <skill> -g -y -a claude-code
+npx skills add <owner/repo> -s <skill> -g -y -a claude-code --copy
 ```
+
+Always add `--copy`: real directory, not symlink into `~/.agents/skills/`—symlinks hold machine-specific absolute paths, break on devices synced via git. Looping over several skills → `npx … < /dev/null`; `npx` eats loop stdin, later iterations never run.
 
 `project` mode omits `-g`; always add `-a claude-code` to avoid writing directories for other agents (amp, cursor, codex, etc.) listed in lockfile `lastSelectedAgents`. User declines → tag 「已略過」.
 

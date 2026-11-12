@@ -84,7 +84,7 @@ Personal global Claude Code configuration shared across projects: skills, slash 
 
 - Managed skills (global reads `~/.agents/.skill-lock.json`; project reads `<project root>/skills-lock.json`) are updated one by one with `npx skills update`
 - Unmanaged skills have their upstream inferred and are reinstalled after confirmation
-- Self-made skills listed in `skills/.up-skills-ignore` are skipped, and so are skills whose own directory has uncommitted changes (symlinked skills are not checked, since their content lives outside git)
+- Self-made skills listed in `skills/.up-skills-ignore` are skipped, and so are skills whose own directory has uncommitted changes (legacy symlinked skills are not checked, since their content lives outside git)
 - Global mode also reports plugin, cloud-synced skills and CLI version status
 
 </details>
@@ -126,7 +126,8 @@ Personal global Claude Code configuration shared across projects: skills, slash 
 
 **Notes**
 
-- Most third-party skills are symlinks to `~/.agents/skills/`, installed by the skills CLI
+- Third-party skills are installed with `npx skills add --copy`, so each is a real directory in `skills/` that syncs across devices via git; `/up-skills` still updates them in place from upstream
+- The update source list lives in `~/.agents/.skill-lock.json`, outside this repo; on a new device, run `npx skills add <owner/repo> -s <skill> -g -y -a claude-code --copy` once per skill to register it
 - `review-animations` is manual-only; `up-animate` reads it directly
 - `review-fix` auto-detects the dev command and port, runs the project's own `.claude/review-fix/` checks or throwaway scripts built on `scripts/lib.mjs`, then `/code-review` and fixes until it converges
 
