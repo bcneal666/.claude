@@ -55,3 +55,7 @@ skills/synced/
 
 # skills CLI 回收區
 skills/.trash/
+
+# 裝置金鑰與沙箱產生的巢狀 .claude/（本機專屬，不進版控）
+.device-keys.json
+.claude/
