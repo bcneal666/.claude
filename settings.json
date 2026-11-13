@@ -93,19 +93,22 @@
       "source": {
         "source": "github",
         "repo": "bradautomates/claude-video"
-      }
+      },
+      "autoUpdate": true
     },
     "mindful-claude": {
       "source": {
         "source": "github",
         "repo": "halluton/Mindful-Claude"
-      }
+      },
+      "autoUpdate": true
     },
     "claude-image-view": {
       "source": {
         "source": "github",
         "repo": "jarrodwatts/claude-image-view"
-      }
+      },
+      "autoUpdate": true
     }
   },
   "outputStyle": "Concise",

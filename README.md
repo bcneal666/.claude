@@ -114,7 +114,6 @@ Personal global Claude Code configuration shared across projects: skills, slash 
 | `review-animations`            | Review animation code against a high craft bar (manual only)                     |
 | `review-fix`                   | Functional test + review loop for the current project, max 3 rounds              |
 | `seo-audit`                    | Diagnose ranking, indexing and traffic problems                                  |
-| `skill-creator`                | Create, modify and optimize skills, and run evals                                |
 | `up-animate`                   | `/up-animate [--m] [@path ...]`: animation pipeline on the project's UI          |
 | `up-design`                    | `/up-design [@path ... \| url]`: screenshot-driven visual design review loop     |
 | `up-seo`                       | `/up-seo [url] [@path ...]`: SEO pipeline with shared context                    |
