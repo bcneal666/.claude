@@ -121,7 +121,7 @@ Personal global Claude Code configuration shared across projects: skills, slash 
 
 **Pipelines**
 
-- `up-animate`: `remove-animations` (you pick removals) → `find-animation-opportunities` → `animate` → `improve-animations` (audit, then applies the selected plans) → `animation-performance` → (`--m`: `mobile-native`) → `review-animations`
+- `up-animate`: `emil-design-eng` (rules) → `remove-animations` (you pick removals) → `find-animation-opportunities` → `animate` → `improve-animations` (audit, then applies the selected plans) → `animation-performance` → (`--m`: `mobile-native`) → `review-animations`
 - `up-design`: baseline screenshots (375/768/1440) → (shadcn projects with `components.json`: `npx -y @shadscan/cli --json` source audit) → score 6 static dimensions (+ shadcn audit) against `CRITERIA.md` → you pick fixes → patch → re-screenshot, max 3 rounds; motion goes to `up-animate`
 - `up-seo`: `ai-seo` → `seo-audit` → `programmatic-seo`, and you pick fixes after each stage
 
