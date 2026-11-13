@@ -18,6 +18,7 @@ Arguments: `$ARGUMENTS`
    - None → auto-detect UI dirs that exist: `app/`, `src/app/`, `pages/`, `src/pages/`, `components/`, `src/components/` (incl. `ui/`), `src/routes/`, `src/lib/components/`, else `src/**` (Vite/Astro/Svelte/Vue). Exclude API/server routes (`**/api/**`, `**/server/**`), `node_modules`, build output.
    - Keep UI files only: `*.tsx *.jsx *.vue *.svelte *.astro *.css *.scss *.html`.
    - Nothing detected → ask user for a path and stop. Otherwise print final file list.
+   - Read repo-root `DESIGN.md` if present (rules recorded by `/learn-taste`), especially its Motion and Interaction sections. Its durations, easings and "no animation here" rules override the defaults of the sub-skills in steps 3–8; pass them in each sub-skill's `args`.
 
 3. **Remove unneeded motion.** Subtract before adding, so later steps never tune an animation that should not exist.
    1. Call Skill `remove-animations` with `args` = scope + file list + task: "Audit these files and output Part 1 (removed/reduced), Part 2 (kept) and Part 3 now. Do NOT edit any file yet; list proposed deletions/reductions only." Never call with empty args (returns only its greeting).
@@ -47,10 +48,11 @@ Arguments: `$ARGUMENTS`
    - Unverifiable / likely false positive → list it and ask user.
    - Same finding survives two rounds → stop and escalate.
 
-10. **Summarize.** Scope, `--m` on/off, removals applied/kept, proposals taken/skipped, improve plans applied/left, performance fixes, mobile fixes (if `--m`), changes (`file:line`), review rounds, findings deliberately skipped and why.
+10. **Summarize.** Scope, `--m` on/off, removals applied/kept, proposals taken/skipped, improve plans applied/left, performance fixes, mobile fixes (if `--m`), changes (`file:line`), review rounds, findings deliberately skipped and why. Add one line suggesting `/learn-taste` only if this run showed correction signals (user edited a file this run changed, asked to undo/redo, deselected a proposal and gave a reason, or a finding was escalated after surviving two rounds); otherwise omit it.
 
 ## Rules
 
+- Project `CLAUDE.md`, `DESIGN.md` and design tokens outrank this skill and its sub-skills.
 - No `git commit` or `git push`.
 - No animation libraries. If `animate` decides CSS is insufficient → ask user first.
 - Edit only files in scope (plus plan files written by `improve-animations`).

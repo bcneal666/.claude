@@ -19,7 +19,7 @@ Bar: award-tier craft (Awwwards / Webby / FWA). Concrete checkpoints live in `${
    - Paths given → use them (folders expand to UI files).
    - None → auto-detect UI dirs: `app/`, `src/app/`, `pages/`, `src/pages/`, `components/`, `src/components/`, `src/routes/`, else `src/**`. Exclude `**/api/**`, `**/server/**`, `node_modules`, build output.
    - UI files only: `*.tsx *.jsx *.vue *.svelte *.astro *.css *.scss *.html`. Nothing detected → ask for a path and stop.
-   - Read project `CLAUDE.md` and design tokens (CSS vars / tailwind config). These are constraints, never overridden.
+   - Read project `CLAUDE.md`, repo-root `DESIGN.md` (if present; rules recorded by `/learn-taste`) and design tokens (CSS vars / tailwind config). These are constraints, never overridden.
 
 3. **Baseline screenshots.** Use skill `agent-browser`. No URL given → detect dev command/port (`package.json` scripts), start it in background, open it. Capture 375 / 768 / 1440 px widths, full page, saved to scratchpad. Cannot run → say so, fall back to code-only review and mark every finding "unverified visually".
 
@@ -31,6 +31,7 @@ Bar: award-tier craft (Awwwards / Webby / FWA). Concrete checkpoints live in `${
 5. **Load design rules.** Call Skill `frontend-design:frontend-design` and `emil-design-eng` with `args` = scope + task: "Use as reference for the review; do not build anything now." Never call with empty args.
 
 6. **Score.** For the 6 static dimensions in CRITERIA.md (typography, whitespace, visual hierarchy, color, responsive, originality) list concrete gaps: `file:line` or screenshot region, what is wrong, proposed fix with exact values, impact (high/med/low). No gap → write "no gap" with one-line evidence. Never invent gaps to fill a quota.
+   - A CRITERIA.md checkpoint, or a frontend-design / emil-design-eng default, that contradicts a `DESIGN.md` rule is not a gap: do not propose a fix, list the conflict in the summary.
    - If step 4 ran, add a 7th group "shadcn audit": each work item with rule id, `file:line`, fix; severity critical/high → high, medium → med, low → low. List an issue once if a static dimension already covers it (e.g. horizontal overflow).
    - Motion and micro-interaction are out of scope here → note "run `/up-animate`" in summary.
 
@@ -43,13 +44,13 @@ Bar: award-tier craft (Awwwards / Webby / FWA). Concrete checkpoints live in `${
    - Max 3 rounds. Same gap survives two rounds → stop, escalate to user.
    - Only low gaps or none → stop.
 
-10. **Summarize.** Scope, rounds run, gaps fixed (`file:line`), gaps skipped and why, unverified items, shadscan score before → after (or why skipped), reminder to run `/up-animate` for motion.
+10. **Summarize.** Scope, rounds run, gaps fixed (`file:line`), gaps skipped and why, unverified items, shadscan score before → after (or why skipped), reminder to run `/up-animate` for motion, `DESIGN.md` conflicts found. Add one line suggesting `/learn-taste` only if this run showed correction signals (user edited a file this run patched, asked to undo/redo, deselected a proposal and gave a reason, or a gap was escalated after surviving two rounds); otherwise omit it.
 
 ## Rules
 
 - No `git commit` or `git push`.
 - Edit only files in scope.
-- Project rules, design tokens and AdSense policy outrank this skill.
+- Project rules, `DESIGN.md`, design tokens and AdSense policy outrank this skill.
 - Do not touch animation/transition code; delegate to `/up-animate`.
 - shadscan only via `npx -y @shadscan/cli`; no `--apply`, no installing its hook, skill or MCP.
 - "Looks better" without screenshot evidence is not a verified fix.
