@@ -25,7 +25,7 @@ Personal global Claude Code configuration shared across projects: skills, slash 
 ├── settings.json               # Global Claude Code settings (permissions, env, hooks, statusLine…)
 ├── settings.local.json         # Machine-local overrides (gitignored, passed via `claude --settings`)
 ├── statusline-command.mjs      # Statusline script (single-process Node version)
-├── hooks/                      # Hook scripts (time injection, cross-platform Node)
+├── hooks/                      # Hook scripts (time injection, per-session browser cleanup; cross-platform Node)
 ├── commands/                   # Custom slash commands
 ├── agents/                     # Custom subagents (shared across projects)
 ├── skills/                     # Custom / third-party skills (`skills/synced/` is cloud-sync output)
@@ -149,11 +149,13 @@ Personal global Claude Code configuration shared across projects: skills, slash 
 
 ## 🪝 Hooks
 
-| Script                      | Event              | Purpose                                                                     |
-| --------------------------- | ------------------ | --------------------------------------------------------------------------- |
-| `hooks/inject-datetime.mjs` | `UserPromptSubmit` | Add an `Asia/Taipei` timestamp with time of day and weekday to every prompt |
+| Script                            | Event              | Purpose                                                                     |
+| --------------------------------- | ------------------ | --------------------------------------------------------------------------- |
+| `hooks/inject-datetime.mjs`       | `UserPromptSubmit` | Add an `Asia/Taipei` timestamp with time of day and weekday to every prompt |
+| `hooks/agent-browser-session.mjs` | `SessionStart`     | Give each Claude session its own `agent-browser` session name               |
+| `hooks/agent-browser-session.mjs` | `SessionEnd`       | Close that session's browser so no Chrome process is left behind            |
 
-The built-in system prompt gives only a date snapshot at session start, so this hook supplies the full time.
+The built-in system prompt gives only a date snapshot at session start, so `inject-datetime` supplies the full time. Cleanup details are under Settings.
 
 ## 🔌 Plugins
 
