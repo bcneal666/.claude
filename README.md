@@ -25,7 +25,7 @@ Personal global Claude Code configuration shared across projects: skills, slash 
 ├── settings.json               # Global Claude Code settings (permissions, env, hooks, statusLine…)
 ├── settings.local.json         # Machine-local overrides (gitignored, passed via `claude --settings`)
 ├── statusline-command.mjs      # Statusline script (single-process Node version)
-├── hooks/                      # Hook scripts (time injection, per-session browser cleanup; cross-platform Node)
+├── hooks/                      # Hook scripts (time injection, per-session browser cleanup, git secret guard; cross-platform Node)
 ├── commands/                   # Custom slash commands
 ├── agents/                     # Custom subagents (shared across projects)
 ├── skills/                     # Custom / third-party skills (`skills/synced/` is cloud-sync output)
@@ -154,8 +154,11 @@ Personal global Claude Code configuration shared across projects: skills, slash 
 | `hooks/inject-datetime.mjs`       | `UserPromptSubmit` | Add an `Asia/Taipei` timestamp with time of day and weekday to every prompt |
 | `hooks/agent-browser-session.mjs` | `SessionStart`     | Give each Claude session its own `agent-browser` session name               |
 | `hooks/agent-browser-session.mjs` | `SessionEnd`       | Close that session's browser so no Chrome process is left behind            |
+| `hooks/git-secret-guard.mjs`      | `PreToolUse`       | Block `git commit` / `git push` when the change contains secrets            |
 
 The built-in system prompt gives only a date snapshot at session start, so `inject-datetime` supplies the full time. Cleanup details are under Settings.
+
+`git-secret-guard` scans added lines (diff against upstream or `HEAD`) plus untracked files for private keys, common API tokens, hard-coded credentials and `.env` files (`.env.example` is allowed). It prints only the first 4 characters of a match. Add `secret-scan:allow` to a line to skip a false positive. It fails open: any internal error lets the command through.
 
 ## 🔌 Plugins
 
@@ -191,7 +194,7 @@ The built-in system prompt gives only a date snapshot at session start, so `inje
 
 | Item           | Details                                                                                                          |
 | -------------- | ---------------------------------------------------------------------------------------------------------------- |
-| Model          | `model` is `opusplan` (Opus in plan mode, Sonnet when executing)                                                 |
+| Model          | `model` is `opusplan[1m]` (Opus in plan mode, Sonnet when executing, both with 1M context)                       |
 | Subagent model | `env` forces `CLAUDE_CODE_SUBAGENT_MODEL=haiku`, so every subagent runs on haiku                                 |
 | Output         | `outputStyle` is `Concise`; `language` is `traditional chinese`                                                  |
 | Start mode     | `permissions.defaultMode` is `plan`                                                                              |

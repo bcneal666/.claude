@@ -28,8 +28,20 @@
     ],
     "defaultMode": "plan"
   },
-  "model": "opusplan",
+  "model": "opusplan[1m]",
   "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash|PowerShell",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node ~/.claude/hooks/git-secret-guard.mjs",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
     "SessionStart": [
       {
         "hooks": [

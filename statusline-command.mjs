@@ -185,9 +185,9 @@ function getPalette(theme) {
 // 只在 hideVimModeIndicator:true（見 settings.json）時才需要我們自己畫，
 // 否則畫面下方還會有內建的 `-- INSERT --` 重複一次。
 //
-// 圖示用 🔤（input latin letters）而非 ⌨（U+2328 鍵盤）：後者預設是「文字樣式」
-// 字符，多數終端機會用等寬字型畫窄版單色符號，跟其他全彩 emoji（🔥🚀📁🌿）基線
-// 對不齊；🔤 是 emoji-presentation-default，永遠畫成全彩符號，高度才會一致。
+// 圖示用 🔠（input latin letters uppercase）而非 ⌨（U+2328 鍵盤）：後者預設是「文字樣式」
+// 字符，多數終端機會用等寬字型畫窄版單色符號，跟其他全彩 emoji（🔥🚀🚩🔱）基線
+// 對不齊；🔠 是 emoji-presentation-default，永遠畫成全彩符號，高度才會一致。
 function vimModeTag(vimMode, { DIM, C_WARN, BOLD, C_MODEL, RESET }) {
   if (!vimMode) return "";
   let color;
@@ -195,7 +195,7 @@ function vimModeTag(vimMode, { DIM, C_WARN, BOLD, C_MODEL, RESET }) {
   else if (vimMode === "INSERT") color = C_WARN;
   else if (vimMode.startsWith("VISUAL")) color = BOLD + C_MODEL;
   else color = DIM;
-  return ` ${color}🔤 ${vimMode}${RESET}`;
+  return ` ${color}🔠 ${vimMode}${RESET}`;
 }
 
 // ---------- context window 大小格式化 ----------
@@ -322,7 +322,7 @@ function render(fields, theme) {
 
   const shortDir = shortenDir(dir);
   const branch = readBranchSafe(dir);
-  const branchSegment = branch ? ` ${C_SEP}|${RESET} ${C_BRANCH}🌿 ${branch}${RESET}` : "";
+  const branchSegment = branch ? ` ${C_SEP}|${RESET} ${C_BRANCH}🔱 ${branch}${RESET}` : "";
 
   const sep = `${C_SEP}|${RESET}`;
   const costFmt = `$${cost.toFixed(2)}`;
@@ -333,9 +333,9 @@ function render(fields, theme) {
 
   // 🔤 vim mode 放第一行（跟在 🔥 effort 之後）；cost 放第三行最右邊（bar/pct
   // 與 rate limits 之後），避免第三行把最常盯著看的 context bar 擠到中間
-  const line1 = `${C_MODEL}🤖 [${model}]${RESET} ${effortColor}🔥 ${effort}${RESET}${vimTag}`;
-  const line2 = `${C_DIR}📁 ${shortDir}${RESET}${branchSegment}`;
-  const line3 = `🧠 ${barColor}${bar}${RESET} ${pctFmt}${rateLimitsFmt}${costSegment}`;
+  const line1 = `${C_MODEL}💀 [${model}]${RESET} ${effortColor}🔥 ${effort}${RESET}${vimTag}`;
+  const line2 = `${C_DIR}🚩 ${shortDir}${RESET}${branchSegment}`;
+  const line3 = `🔋 ${barColor}${bar}${RESET} ${pctFmt}${rateLimitsFmt}${costSegment}`;
 
   return line1 + "\n" + line2 + "\n" + line3 + "\n";
 }
@@ -372,7 +372,7 @@ function main() {
       process.stdout.write(render(defaultFields(), theme));
     } catch {
       // 最壞情況（render 本身出錯）：純字面量輸出，不呼叫任何可能再度出錯的函式
-      process.stdout.write("🤖 [?] 🔥 medium\n📁 \n🧠 ░░░░░░░░░░ 0% | $0.00\n");
+      process.stdout.write("💀 [?] 🔥 medium\n🚩 \n🔋 ░░░░░░░░░░ 0% | $0.00\n");
     }
   }
 }
