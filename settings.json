@@ -107,7 +107,7 @@
       "effortLevel": "high"
     }
   },
-  "advisorModel": "opus",
+  "advisorModel": "fable",
   "theme": "dark",
   "editorMode": "vim",
   "vimInsertModeRemaps": {
