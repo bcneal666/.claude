@@ -207,7 +207,9 @@ Allowed: `git add`, `git commit -m`, `git push`, `WebSearch`, `Edit(~/.claude/ho
 
 - `AGENT_BROWSER_IDLE_TIMEOUT_MS=900000` shuts the browser and daemon down after 15 minutes of inactivity
 - `AGENT_BROWSER_SCREENSHOT_DIR` / `AGENT_BROWSER_DOWNLOAD_PATH` send screenshots and downloads to `/tmp/agent-browser/`, where the system's tmp cleanup removes them
-- An idle shutdown discards cookies, logins and open tabs, so `CLAUDE.md` tells Claude to use `--session <name> --restore` for login or multi-turn authenticated flows
+- `hooks/agent-browser-session.mjs` runs on `SessionStart` / `SessionEnd`: start writes `AGENT_BROWSER_SESSION=cc-<session_id>` into `CLAUDE_ENV_FILE` so each Claude session gets its own browser; end runs `agent-browser close --session cc-<session_id>` (other concurrent sessions are untouched). `SessionEnd` has `timeout: 10` because the default is 1.5s
+- On Windows, `CLAUDE_ENV_FILE` is only available to hooks run through Git Bash; without it the session variable is not set and cleanup falls back to the idle timeout
+- An idle shutdown discards cookies, logins and open tabs, so `CLAUDE.md` tells Claude to add `--restore` for login or multi-turn authenticated flows
 
 </details>
 
