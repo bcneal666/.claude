@@ -1,4 +1,3 @@
 - Always respond in Traditional Chinese (Taiwan).
 - Date/time ops: Asia/Taipei (UTC+8).
 - agent-browser: idle 15m → daemon exits, unsaved cookies/login/tabs lost. Login or multi-turn auth flows → always `--session <name> --restore`.
-- `skynet42.cc` subdomain sites share one AdSense account (`pub-4779881788299004`; one payee may hold only one account)—never apply for another. Any site violating AdSense policy can penalize whole account, hitting revenue of all sites; follow AdSense policy when planning content and ad placements. Each site manages other networks in own `/ads.txt`; root `skynet42.cc/ads.txt` points to them via `subdomain=`.
