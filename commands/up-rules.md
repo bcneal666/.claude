@@ -1,5 +1,5 @@
 ---
-description: 校正 CLAUDE.md 事實、按需分塊到 rules/、以 caveman full 極限壓縮規則文件（CLAUDE.md / .claude/rules / .claude/commands），只保 AI 可解析語意；同步檢查並維護專案根 README.md 供人類閱讀；`--audit` 時先以 prompt-audit 審查過時指令；`--lng` 指定所有檔案內容語言（預設英文）
+description: 校正 CLAUDE.md 事實、按需分塊到 rules/、以 caveman full 極限壓縮規則文件（CLAUDE.md / .claude/rules / .claude/commands），只保 AI 可解析語意；同步檢查並維護專案根 README.md 供人類閱讀（圖框一律經 mdxcn 官方 fence）；`--audit` 時先以 prompt-audit 審查過時指令；`--lng` 指定所有檔案內容語言（預設英文）
 argument-hint: "[--audit] [--lng <zh|ja|...>]"
 disable-model-invocation: true
 ---
@@ -39,7 +39,7 @@ Process only if exists; skip missing (`CLAUDE.local.md` absent on most machines�
 
 - `./README.md` (project root)—see "Step 8"
 
-Process only paths above; **do not** extend to `skills/`, `agents/`, `settings.json`. Exception: read-only inventory in "Inventory sync" (step 8)—never compress or modify those files.
+Process only paths above; **do not** extend to `skills/`, `agents/`, `settings.json`. Exceptions, both read-only—never compress or modify those files: inventory in "Inventory sync" (step 8); `skills/mdxcn/SKILL.md` loaded via `Skill` in step 8.
 
 ## Flow
 
@@ -162,7 +162,9 @@ Language check: target-file prose all in `--lng` language (excl. verbatim blocks
 
 Check project-root `./README.md` every run.
 
-**Exists** → read, compare refined rule files and actual directory structure, decide whether update needed: rule-file sections added/removed (incl. step-5 new `rules/*.md`) should reflect in README; command / skill / path / setting mentioned in README no longer exists or renamed. README language ≠ `--lng` language also counts as needs update; translate whole file to target (code blocks, paths, commands, proper nouns not translated). README clearly violating "Style guide" below also counts as needs update: paragraph over 3 sentences, parallel items crammed into one paragraph, keyed parallel bullet list that should be a table or table that should be a list (see "Writing"), table violating "Tables" (misaligned source, inconsistent headers, over-long cell), H2 without emoji, history wording ("Current state only"), over length budget or implementation detail ("Depth"). Restyle and trim to essentials; never add or alter facts—trimming detail is not a fact change. Inventory mismatch (below) also counts. No update needed → state 「README 已同步，未改動」; do not change for change's sake.
+**Figures via mdxcn** (both branches below, before writing any figure): call `Skill(skill: "mdxcn")`, then WebFetch `https://mdxcn.dev/llms.txt` and copy official fences from its `## MDX` section; swap labels only, keep frame. Host pinned to **README / plain Markdown**: never paste JSX, `::graph-*`, `graph_*`, even if project has MDX or Comark. Fetch fails or offline → no figure, use table or list, report 「圖框略過」. Never hand-draw ASCII, SVG or Mermaid. Section→figure mapping and rules: "Figures (mdxcn)" below.
+
+**Exists** → read, compare refined rule files and actual directory structure, decide whether update needed: rule-file sections added/removed (incl. step-5 new `rules/*.md`) should reflect in README; command / skill / path / setting mentioned in README no longer exists or renamed. README language ≠ `--lng` language also counts as needs update; translate whole file to target (code blocks, paths, commands, proper nouns not translated). README clearly violating "Style guide" below also counts as needs update: paragraph over 3 sentences, parallel items crammed into one paragraph, keyed parallel bullet list that should be a table or table that should be a list (see "Writing"), table violating "Tables" (misaligned source, inconsistent headers, over-long cell), H2 without emoji, history wording ("Current state only"), over length budget or implementation detail ("Depth"), Mermaid block, hand-drawn or non-official ASCII frame, directory tree not yet a `GraphTree` fence ("Figures (mdxcn)"). Restyle and trim to essentials; never add or alter facts—trimming detail is not a fact change. Inventory mismatch (below) also counts. No update needed → state 「README 已同步，未改動」; do not change for change's sake.
 
 **Missing** → create, same judgment for content, structured per Style guide; project-specific sections: directory tree (runtime artifacts noted as gitignored), inventory sections from "Inventory sync", key settings, maintenance conventions.
 
@@ -185,7 +187,7 @@ Run every time, whether README exists or not. Compare what actually exists with 
 - Output one table per category, per "Tables": columns `Name | Purpose` (Rules, Skills, Commands, Subagents, MCP, Plugins) or `Script | Event | Purpose` (Hooks); same headers and column order across runs. Purpose one line (≤ ~80 display width), taken from SKILL.md / rule / subagent `description` or first paragraph; never guess.
 - Report per category what was added or removed; all matched → 「清單已同步」.
 
-README is exempt from all caveman rules in step 6 (incl. fragment sentences and emoji ban)—readers are humans: full sentences, natural tone, lively but concise. New or updated content always in `--lng` language (default English), incl. directory-tree comments and table description columns.
+README is exempt from all caveman rules in step 6 (incl. fragment sentences and emoji ban)—readers are humans: full sentences, natural tone, lively but concise. New or updated content always in `--lng` language (default English), incl. table description columns and text outside figure frames. Text inside mdxcn frames always ASCII, ignores `--lng` (see "Figures (mdxcn)").
 
 #### Style guide
 
@@ -241,14 +243,33 @@ Distilled from standard-readme and well-known GitHub READMEs: clear identity fir
 - **Consistent structure**: same-kind tables (e.g. inventory categories) share header names and column order; headers short, in `--lng` language; one format per column (all code or all plain text, never mixed); left-aligned by default, numeric columns `---:`; ≤4 columns, more → split table or move detail to bullets under it
 - **Lean cells**: one short sentence per cell; no line breaks, no `<br>`, no lists inside; descriptions in same column similar length; too long → trim text, never widen column
 
+#### Figures (mdxcn)
+
+Figure only where it earns it: one-sentence content → no figure. Section→figure mapping fixed so runs stay stable:
+
+| README section                | Figure                                               |
+| ----------------------------- | ---------------------------------------------------- |
+| 📁 Structure directory tree   | `GraphTree` fence                                    |
+| Ordered flow of 3+ steps      | `Steps` fence; dated sequence → `GraphTimeline`      |
+| Punch list / status checklist | `GraphCheck` fence, only if README has one           |
+| 🚀 Quick start                | none, keep plain code block (frame breaks copy)      |
+| Inventory lists               | none, keep Markdown table (keeps links, inline code) |
+
+- Max 2 figures per README, max 1 per section, prose between. Tree comments shrink to ≤3-word labels; longer detail → bullets under the figure.
+- Frame labels ASCII only, regardless of `--lng` (official glyphs `├─ │ └ ●` stay): title 1–2 uppercase words, labels lowercase, paths and commands verbatim. Reason: CJK not reliably 2 cells wide in mono fonts, right border breaks. Prose outside frame follows `--lng`.
+- Every frame line equal width, `+` and `|` vertically aligned, ≤80 cols. Too wide → trim labels; never restyle frame.
+- Existing official fence whose facts still hold → leave byte-for-byte; no re-flow, no relabel. Otherwise 「README 已同步，未改動」 never fires.
+- Figure lines count toward 300-line budget.
+- No Mermaid, SVG, hand-drawn ASCII. Flows without fence (`GraphFlow`) → `Steps`/`GraphTimeline` fence or numbered list.
+
 **Markdown features**:
 
 - Callouts: `> [!NOTE]`, `> [!TIP]`, `> [!IMPORTANT]`, `> [!WARNING]`, `> [!CAUTION]`; ≤1 per section, never nested
 - Long reference (full lists, platform workarounds) → `<details><summary>…</summary>` with a blank line after `</summary>`, else inner Markdown does not render
-- Mermaid `flowchart` only for flows of 3+ steps where a diagram beats a list
-- Not translated under `--lng`: callout keywords, emoji, Mermaid syntax
+- Flows of 3+ steps where a figure beats a list → mdxcn `Steps` / `GraphTimeline` fence per "Figures (mdxcn)"; Mermaid forbidden
+- Not translated under `--lng`: callout keywords, emoji, mdxcn fence content
 
-**Self-check before writing**: skim headings + first line of each section; reader must learn what it is, how to start, where things live within 30 seconds. Check paragraph length, every list meets a "use a list instead" condition (else convert to table), every table's `|` aligned (full-width = 2) with consistent same-kind headers, no `<br>`, cell length, emoji uniqueness, callout syntax, line count within budget, zero history-wording hits (grep the words in "Current state only"), inventory categories match actual files, each feature ≤3 highlights.
+**Self-check before writing**: skim headings + first line of each section; reader must learn what it is, how to start, where things live within 30 seconds. Check paragraph length, every list meets a "use a list instead" condition (else convert to table), every table's `|` aligned (full-width = 2) with consistent same-kind headers, no `<br>`, cell length, emoji uniqueness, callout syntax, line count within budget, zero history-wording hits (grep the words in "Current state only"), inventory categories match actual files, each feature ≤3 highlights, every fence line equal width, frame labels ASCII only, figures ≤2 and each from official mdxcn fence, zero `mermaid` hits.
 
 ### 9. Write and report
 
@@ -262,6 +283,7 @@ Write files directly with Edit/Write, **no** automatic git commit; leave to `/no
 - Main edits (what merged, what filler removed)
 - README.md outcome (created / updated / restyled or trimmed / synced unchanged), lines before→after
 - Inventory sync (step 8): per category added/removed items, or 「清單已同步」
+- Figures (step 8): per figure added / kept / removed and its mdxcn component; llms.txt fetch failed → 「圖框略過」
 - Language outcome: language actually used (incl. notice when unrecognized `--lng` fell back to English), whether each file translated (source→target language)
 
 ## Self-compression reminder
@@ -278,6 +300,7 @@ Write files directly with Edit/Write, **no** automatic git commit; leave to `/no
 - Do not over-cut for ratio; prefer conservative over losing instructions. caveman full is style ceiling, not compression-rate metric.
 - Compression (step 6) must not reintroduce stale patterns `--audit` removed (all-caps emphasis MUST/CRITICAL, pressure tone, decorative step scripts).
 - Do not replace chunking with `@path` import—import loads at start, misses on-demand loading goal.
+- Do not hand-draw ASCII, Mermaid or SVG in README; only copy official mdxcn fences.
 - Do not converse or report in caveman style—command changes file content only; conversation and report stay normal Traditional Chinese, not following `--lng`.
 - Translation must not change semantics: no rules added or removed, no negation or qualifier weakened; ambiguous spot → keep original and flag warning in report, do not guess.
 - Do not compress so hard it needs rereading twice—AI comprehension cost is cost.

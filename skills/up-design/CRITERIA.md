@@ -38,7 +38,7 @@ Score each dimension by evidence (screenshot region or `file:line`). A gap needs
 ## shadcn audit (conditional: components.json + react)
 - Source: `npx -y @shadscan/cli --json`; categories foundation, interaction, states, accessibility, forms, production-polish.
 - Each work item → gap with rule id + file:line; severity maps to high/med/low.
-- Dedupe with the 6 dimensions above; motion items still go to `/up-animate`.
+- Dedupe with the 6 dimensions above; motion items are queued for Phase B (steps 12–13), not patched in Phase A.
 
-## Out of scope (delegate)
-- Motion, micro-interaction → `/up-animate`.
+## Out of scope for Phase A
+- Motion, micro-interaction → queued for Phase B; standards come from emil-design-eng and review-animations, not this file.

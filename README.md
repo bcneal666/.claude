@@ -19,17 +19,21 @@ Personal global Claude Code configuration shared across projects: skills, slash 
 ## 📁 Structure
 
 ```
-.
-├── CLAUDE.md                   # Global instructions (shared by all projects, version-controlled)
-├── README.md                   # This file
-├── settings.json               # Global Claude Code settings (permissions, env, hooks, statusLine…)
-├── settings.local.json         # Machine-local overrides (gitignored, passed via `claude --settings`)
-├── statusline-command.mjs      # Statusline script (single-process Node version)
-├── hooks/                      # Hook scripts (time injection, per-session browser cleanup, git secret guard; cross-platform Node)
-├── commands/                   # Custom slash commands
-├── agents/                     # Custom subagents (shared across projects)
-├── skills/                     # Custom / third-party skills (`skills/synced/` is cloud-sync output)
-└── notes/                      # Personal notes (not configuration, scratch only)
++------------------- [ LAYOUT ] -------------------+
+|                                                  |
+| ~/.claude                                        |
+| ├─ CLAUDE.md               global rules          |
+| ├─ README.md               this file             |
+| ├─ settings.json           global settings       |
+| ├─ settings.local.json     local overrides       |
+| ├─ statusline-command.mjs  statusline            |
+| ├─ hooks/                  hook scripts          |
+| ├─ commands/               slash commands        |
+| ├─ agents/                 subagents             |
+| ├─ skills/                 skills                |
+| └─ notes/                  scratch notes         |
+|                                                  |
++--------------------------------------------------+
 ```
 
 - `skills/synced/` holds skills synced down from the Claude account cloud (currently 16). The platform manages it, so do not edit it by hand; it is gitignored.
@@ -74,7 +78,7 @@ Personal global Claude Code configuration shared across projects: skills, slash 
   2. With `--audit`: audit for stale instructions via `claude-api` prompt-audit, then pick findings to apply
   3. Chunk path-specific content into `rules/<topic>.md` (loaded on demand via `paths` frontmatter)
   4. Compress `CLAUDE.md`, `.claude/rules/**/*.md` and `.claude/commands/**/*.md` at caveman full strength (drops filler only, never semantics, except hunks applied via `--audit`)
-  5. Check and sync this README
+  5. Check and sync this README; figures come from `mdxcn`'s official fences
 - The README is written for humans, so it is exempt from caveman compression and follows a style guide (structure, emoji, callouts, folding)
 
 </details>
@@ -107,6 +111,7 @@ Personal global Claude Code configuration shared across projects: skills, slash 
 | `humanizer-zh`                 | Chinese counterpart: trim filler and template phrasing                           |
 | `improve-animations`           | Read-only motion audit with prioritized, self-contained plans                    |
 | `learn-taste`                  | Turn a session's design corrections into `DESIGN.md` rules (manual only)         |
+| `mdxcn`                        | Paste official framed ASCII figures next to prose in READMEs, PRs and docs       |
 | `mobile-native`                | CSS and meta-tag fixes that make a web app feel native on a phone                |
 | `modern-web-guidance`          | Search modern web best practices first for HTML/CSS and client-side JS tasks     |
 | `programmatic-seo`             | Plan SEO pages generated at scale from templates and data                        |
@@ -114,22 +119,20 @@ Personal global Claude Code configuration shared across projects: skills, slash 
 | `review-animations`            | Review animation code against a high craft bar (manual only)                     |
 | `review-fix`                   | Functional test + review loop for the current project, max 3 rounds              |
 | `seo-audit`                    | Diagnose ranking, indexing and traffic problems                                  |
-| `up-animate`                   | `/up-animate [--m] [@path ...]`: animation pipeline on the project's UI          |
-| `up-design`                    | `/up-design [@path ... \| url]`: screenshot-driven visual design review loop     |
-| `up-seo`                       | `/up-seo [url] [@path ...]`: SEO pipeline with shared context                    |
+| `up-design`                    | Static design plus motion pipeline (usage under Pipelines)                       |
+| `up-seo`                       | SEO pipeline with shared context (usage under Pipelines)                         |
 
 **Pipelines**
 
-- `up-animate`: `emil-design-eng` (rules) → `remove-animations` (you pick removals) → `find-animation-opportunities` → `animate` → `improve-animations` (audit, then applies the selected plans) → `animation-performance` → (`--m`: `mobile-native`) → `review-animations`
-- `up-design`: baseline screenshots (375/768/1440) → (shadcn projects with `components.json`: `npx -y @shadscan/cli --json` source audit) → score 6 static dimensions (+ shadcn audit) against `CRITERIA.md` → you pick fixes → patch → re-screenshot, max 3 rounds; motion goes to `up-animate`
-- `up-seo`: `ai-seo` → `seo-audit` → `programmatic-seo`, and you pick fixes after each stage
+- `/up-design [--only design|motion] [--m] [@path ... | url]`: `emil-design-eng` rules once → **A static**: baseline screenshots (375/768/1440, reduced-motion) → (shadcn: `npx -y @shadscan/cli --json`) → score 6 dimensions against `CRITERIA.md` → you pick fixes → patch → (`--m`: `mobile-native`) → re-screenshot, max 3 rounds → **B motion**: `remove-animations` → `find-animation-opportunities` → `animate` → `improve-animations` (audit, then applies the selected plans) → `animation-performance` → **C verify**: `review-animations` on motion changes → final screenshots vs baseline. `--only design` / `--only motion` runs one half
+- `/up-seo [url] [@path ...]`: `ai-seo` → `seo-audit` → `programmatic-seo`, and you pick fixes after each stage
 
 **Notes**
 
 - Third-party skills are installed with `npx skills add --copy`, so each is a real directory in `skills/` that syncs across devices via git; `/up-skills` still updates them in place from upstream
 - The update source list lives in `~/.agents/.skill-lock.json`, outside this repo; on a new device, run `npx skills add <owner/repo> -s <skill> -g -y -a claude-code --copy` once per skill to register it
-- `review-animations` is manual-only; `up-animate` reads it directly
-- `learn-taste` is manual-only; run it at the end of a session where you corrected the agent. `up-design` and `up-animate` read the resulting `DESIGN.md` and suggest `/learn-taste` when a run shows correction signals
+- `review-animations` is manual-only; `up-design` reads it directly
+- `learn-taste` is manual-only; run it at the end of a session where you corrected the agent. `up-design` reads the resulting `DESIGN.md` and suggest `/learn-taste` when a run shows correction signals
 - `review-fix` auto-detects the dev command and port, runs the project's own `.claude/review-fix/` checks or throwaway scripts built on `scripts/lib.mjs`, then `/code-review` and fixes until it converges
 
 ## 🤖 Subagents
