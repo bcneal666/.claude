@@ -1,6 +1,6 @@
 ---
 name: up-design
-description: Full UI polish pass on the current project — Phase A static visual review (typography, whitespace, hierarchy, color, responsive, originality; screenshot loop scored against CRITERIA.md, shadscan for shadcn projects), Phase B motion (remove, find, animate, improve, performance), Phase C review and final screenshots. Optional --only design|motion, --m for mobile, @path or URL scope.
+description: Full UI polish pass on the current project — Phase A static visual review (typography, whitespace, hierarchy, color, responsive, originality; screenshot loop scored against CRITERIA.md, shadscan for shadcn projects), Phase B motion (remove, find, animate, improve, performance), Phase C review and final screenshots. Platform-feature fixes consult modern-web-guidance first. Optional --only design|motion, --m for mobile, @path or URL scope.
 argument-hint: "[--only design|motion] [--m] [@path ... | URL]"
 disable-model-invocation: true
 ---
@@ -32,8 +32,13 @@ Flow by flag:
 3. **Read constraints.** Project `CLAUDE.md`, repo-root `DESIGN.md` (if present; rules recorded by `/learn-taste`, including its Motion and Interaction sections) and design tokens (CSS vars / tailwind config). These are constraints, never overridden; pass the relevant rules in every sub-skill's `args`.
 
 4. **Load rules.** Call Skill `emil-design-eng` once, `args` = scope + file list + task: "Use as reference for the whole pass (static review and motion); do not build or edit anything now." If Phase A runs, also call `frontend-design:frontend-design` the same way. Never call with empty args. A default from either skill that contradicts a `DESIGN.md` rule loses: follow `DESIGN.md`, list the conflict in the summary.
+   - `modern-web-guidance` is a query tool, not a rule set: do not load it here. Call it per feature right before the code-writing steps 9, 12.3, 13.2, 14 (see "Modern web guidance" below).
 
 5. **Screenshot protocol** (used by steps 6, 11, 17; identical every time so comparisons are fair). Skill `agent-browser`. No URL given → detect dev command/port (`package.json` scripts), start it in background, open it. Capture 375 / 768 / 1440 px widths, full page, with `prefers-reduced-motion: reduce` emulated (or wait until animations settle) so entrance/scroll-reveal motion is not caught mid-flight. Save to scratchpad. Cannot run → say so, fall back to code-only review and mark every finding "unverified visually".
+
+## Modern web guidance (used by steps 9, 12.3, 13.2, 14)
+
+Before writing HTML/CSS/client JS for a fix that touches a platform feature (dialog/popover, container queries, dark mode, forms, scrollbars, images/LCP, a11y, view transitions, scroll-driven animations, reveals, `content-visibility`, CWV), call Skill `modern-web-guidance` with `args` = the feature + file list + task: "Search and retrieve guides for this feature now; do not edit any file." Then implement per the retrieved guide. One focused query per feature (2–5 words, no framework or app nouns). No relevant guide → implement as usual and note it. Pass the key points to sub-skills (`animate`) in their `args`. Skip for backend, tooling and copy-only changes.
 
 ## Phase A — Static design (skipped by `--only motion`, except step 6)
 
@@ -49,7 +54,7 @@ Flow by flag:
    - If step 7 ran, add a 7th group "shadcn audit": each item with rule id, `file:line`, fix; severity critical/high → high, medium → med, low → low. List an issue once if a static dimension already covers it.
    - **Motion findings are queued, not patched here.** Missing motion (e.g. shadscan interaction/states items) → queue for step 12 as extra proposals. Badly built existing motion → queue for step 13. Keep `file:line` for each.
 
-9. **Pick + patch.** AskUserQuestion (multiSelect, ≤4 options per question, "All" option), one option per static gap. None selected → skip. Implement selected fixes, in-scope files only, using existing tokens (no hardcoded colors if the project uses tokens). Ad placements: follow AdSense policy; never move or restyle ad units in a way that mimics content or encourages clicks. Do not touch animation/transition code.
+9. **Pick + patch.** AskUserQuestion (multiSelect, ≤4 options per question, "All" option), one option per static gap. None selected → skip. Run "Modern web guidance" for fixes that touch a platform feature. Implement selected fixes, in-scope files only, using existing tokens (no hardcoded colors if the project uses tokens). Ad placements: follow AdSense policy; never move or restyle ad units in a way that mimics content or encourages clicks. Do not touch animation/transition code.
 
 10. **Mobile (only `--m`).** Call Skill `mobile-native` with `args` = scope + file list + task: "Audit these files against your checklist now and apply the fixes." Mostly layout CSS (100vh, safe-area, input zoom, tap, overscroll), so it runs here and step 11's 375px shots verify it. Items needing real hardware → list in summary, never claim verified.
 
@@ -63,13 +68,13 @@ Flow by flag:
 12. **Remove, then add.** Subtract before adding so later steps never tune motion that should not exist.
     1. Call Skill `remove-animations` with `args` = scope + file list + task: "Audit these files and output Part 1 (removed/reduced), Part 2 (kept) and Part 3 now. Do NOT edit any file yet; list proposed deletions/reductions only." AskUserQuestion (multiSelect, ≤4 per question, "All"), one option per removal with `file:line` and reason. Apply selected ones yourself, subtract-only. Keep the skill's "kept but badly built" items for step 13. Nothing to remove → note it.
     2. Call Skill `find-animation-opportunities` with `args` = scope + file list + queued missing-motion items from step 8 + task: "Scan these files and output proposals with exact values now." Read-only. No proposals survive → note "no new animation needed", go to step 13.
-    3. AskUserQuestion (multiSelect, ≤4 per question, "All"), one option per proposal with location and values (property, easing, duration). Then call Skill `animate` with `args` = selected proposals (file, trigger, property, easing, duration) + task "Implement now." Respect project CLAUDE.md, tokens, `prefers-reduced-motion`, touch/responsive behavior.
+    3. AskUserQuestion (multiSelect, ≤4 per question, "All"), one option per proposal with location and values (property, easing, duration). Run "Modern web guidance" for proposals using view transitions, scroll-driven animation, reveals or `prefers-reduced-motion`. Then call Skill `animate` with `args` = selected proposals (file, trigger, property, easing, duration) + retrieved guide key points + task "Implement now." Respect project CLAUDE.md, tokens, `prefers-reduced-motion`, touch/responsive behavior.
 
 13. **Improve existing motion (audit + apply).** `improve-animations` is read-only: it only writes plans (to `plans/` or `animation-plans/`), never source.
     1. Call Skill `improve-animations` with `args` = scope + file list + "kept but badly built" items from step 12 + queued badly-built items from step 8 + task: "Audit existing animation/motion in these files only, including motion just added; output prioritized findings and implementation plans now."
-    2. Apply the plans yourself (no `improve-animations execute`). AskUserQuestion (multiSelect, ≤4 per question, "All") listing each finding with `file:line`, change and priority. Implement each selected plan exactly as specified, in-scope files only. None selected → leave plans on disk, say so in summary. Plans are never edited or deleted; mark applied ones in the summary.
+    2. Apply the plans yourself (no `improve-animations execute`). AskUserQuestion (multiSelect, ≤4 per question, "All") listing each finding with `file:line`, change and priority. Run "Modern web guidance" when a plan touches a platform feature. Implement each selected plan exactly as specified, in-scope files only; a retrieved guide only fills gaps, it never overrides the plan's values. None selected → leave plans on disk, say so in summary. Plans are never edited or deleted; mark applied ones in the summary.
 
-14. **Performance.** Call Skill `animation-performance` with `args` = scope + file list (include motion added or changed in steps 12–13) + task: "Audit for frame-budget issues (non-composite properties, will-change misuse, main-thread work, React per-frame state) and apply the fixes now." Fix real issues directly; ask first only when a fix changes the visual result. Nothing found → note it.
+14. **Performance.** Call Skill `animation-performance` with `args` = scope + file list (include motion added or changed in steps 12–13) + task: "Audit for frame-budget issues (non-composite properties, will-change misuse, main-thread work, React per-frame state) and apply the fixes now." For CWV (LCP/INP/CLS) or `content-visibility` fixes, run "Modern web guidance" first. Fix real issues directly; ask first only when a fix changes the visual result. Nothing found → note it.
 
 15. **Mobile when Phase A is skipped (only `--m` with `--only motion`).** Same call as step 10. Step 17 is its only visual check.
 
@@ -85,13 +90,14 @@ Flow by flag:
 ## Summary
 
 18. **Summarize.** Scope, flags (`--only`, `--m`), static rounds run, static gaps fixed (`file:line`), gaps skipped and why, shadscan score before → after (or why skipped), `DESIGN.md` conflicts, removals applied/kept, proposals taken/skipped, improve plans applied/left, performance fixes, mobile fixes and hardware-only items, review rounds, final-screenshot result, unverified items, findings deliberately skipped and why.
+    - If `modern-web-guidance` was consulted, end with its `### Modern Web Guidance` section per its Step 4 (one bullet per applied guide `<id>`, or one sentence on what was checked and why none applied).
     - With `--only design`: list every queued motion item from step 8 (`file:line`) and suggest `/up-design --only motion`.
     - With `--only motion`: note static design was not reviewed; suggest `/up-design --only design`.
     - Add one line suggesting `/learn-taste` only if this run showed correction signals (user edited a file this run changed, asked to undo/redo, deselected a proposal and gave a reason, or a gap/finding was escalated after surviving two rounds); otherwise omit it.
 
 ## Rules
 
-- Project `CLAUDE.md`, `DESIGN.md`, design tokens and AdSense policy outrank this skill and its sub-skills.
+- Project `CLAUDE.md`, `DESIGN.md`, design tokens and AdSense policy outrank this skill and its sub-skills. `modern-web-guidance` guides outrank sub-skill defaults but not those; list conflicts in the summary.
 - No `git commit` or `git push`.
 - Edit only files in scope (plus plan files written by `improve-animations`).
 - Phase A never touches animation/transition code; step 12.1 only subtracts, never adds or retunes motion.

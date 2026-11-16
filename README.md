@@ -124,7 +124,7 @@ Personal global Claude Code configuration shared across projects: skills, slash 
 
 **Pipelines**
 
-- `/up-design [--only design|motion] [--m] [@path ... | url]`: `emil-design-eng` rules once → **A static**: baseline screenshots (375/768/1440, reduced-motion) → (shadcn: `npx -y @shadscan/cli --json`) → score 6 dimensions against `CRITERIA.md` → you pick fixes → patch → (`--m`: `mobile-native`) → re-screenshot, max 3 rounds → **B motion**: `remove-animations` → `find-animation-opportunities` → `animate` → `improve-animations` (audit, then applies the selected plans) → `animation-performance` → **C verify**: `review-animations` on motion changes → final screenshots vs baseline. `--only design` / `--only motion` runs one half
+- `/up-design [--only design|motion] [--m] [@path ... | url]`: `emil-design-eng` rules once → **A static**: baseline screenshots (375/768/1440, reduced-motion) → (shadcn: `npx -y @shadscan/cli --json`) → score 6 dimensions against `CRITERIA.md` → you pick fixes → patch (platform-feature fixes consult `modern-web-guidance` first) → (`--m`: `mobile-native`) → re-screenshot, max 3 rounds → **B motion**: `remove-animations` → `find-animation-opportunities` → `animate` → `improve-animations` (audit, then applies the selected plans) → `animation-performance` → **C verify**: `review-animations` on motion changes → final screenshots vs baseline. `--only design` / `--only motion` runs one half
 - `/up-seo [url] [@path ...]`: `ai-seo` → `seo-audit` → `programmatic-seo`, and you pick fixes after each stage
 
 **Notes**
@@ -132,7 +132,7 @@ Personal global Claude Code configuration shared across projects: skills, slash 
 - Third-party skills are installed with `npx skills add --copy`, so each is a real directory in `skills/` that syncs across devices via git; `/up-skills` still updates them in place from upstream
 - The update source list lives in `~/.agents/.skill-lock.json`, outside this repo; on a new device, run `npx skills add <owner/repo> -s <skill> -g -y -a claude-code --copy` once per skill to register it
 - `review-animations` is manual-only; `up-design` reads it directly
-- `learn-taste` is manual-only; run it at the end of a session where you corrected the agent. `up-design` reads the resulting `DESIGN.md` and suggest `/learn-taste` when a run shows correction signals
+- `learn-taste` is manual-only; run it at the end of a session where you corrected the agent. `up-design` reads the resulting `DESIGN.md` and suggests `/learn-taste` when a run shows correction signals
 - `review-fix` auto-detects the dev command and port, runs the project's own `.claude/review-fix/` checks or throwaway scripts built on `scripts/lib.mjs`, then `/code-review` and fixes until it converges
 
 ## 🤖 Subagents
