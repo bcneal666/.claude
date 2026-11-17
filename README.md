@@ -36,7 +36,7 @@ Personal global Claude Code configuration shared across projects: skills, slash 
 +--------------------------------------------------+
 ```
 
-- `skills/synced/` holds skills synced down from the Claude account cloud (currently 16). The platform manages it, so do not edit it by hand; it is gitignored.
+- `skills/synced/` holds skills synced down from the Claude account cloud; the set differs per account and device. The platform manages it, so do not edit it by hand; it is gitignored.
 - `settings.local.json` is **not** auto-loaded. Pass it with `claude --settings`, for example to disable a plugin on one OS.
 
 <details>
