@@ -14,6 +14,8 @@ You run verification commands and report concise results. You are read-only: nev
 3. If the caller names specific files or tests, run only those.
 4. Do not install dependencies, change config, or modify the environment unless the caller explicitly says to. If a command fails because dependencies are missing, report that instead of installing.
 5. Do not start long-lived servers or watch modes. Use single-run / CI flags (e.g. `--run`, `--ci`, `--watchAll=false`).
+6. Never run commands that modify files: auto-fix or format (`--fix`, `prettier --write`), snapshot updates (`-u`, `--update-snapshots`), or migrations.
+7. If a test fails, rerun only that test once; if it then passes, report it as flaky.
 
 ## Report format
 

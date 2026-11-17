@@ -144,10 +144,10 @@ Personal global Claude Code configuration shared across projects: skills, slash 
 | `researcher`       | Look up docs, APIs and error messages; return a short cited answer               |
 | `security-auditor` | Read-only scan for leaked secrets, injection, auth flaws and unsafe dependencies |
 | `test-runner`      | Run tests, lint, typecheck and build; report only a failure summary              |
-| `ui-ux-tester`     | Drive documented UI flows like a frustrated user; report visual and UX defects   |
+| `ui-ux-tester`     | Test a running web app with agent-browser; report flow, visual and UX defects    |
 
 > [!NOTE]
-> All six subagents are read-only (no `Edit` / `Write` granted). Every one except `ui-ux-tester` has "Use proactively" in its description, so the main agent delegates to them automatically; `ui-ux-tester` runs when you ask for it. All six run on haiku: each file sets `model: haiku`, and `settings.json` defaults subagents to haiku via `CLAUDE_CODE_SUBAGENT_MODEL`.
+> All six subagents are read-only (no `Edit` / `Write` granted) and have "Use proactively" in their description, so the main agent delegates to them automatically. Each pins its own model: `code-reviewer`, `debugger` and `security-auditor` use opus; `researcher` and `ui-ux-tester` use sonnet; `test-runner` uses haiku. `ui-ux-tester` also preloads the `agent-browser` skill.
 
 ## 🪝 Hooks
 
@@ -197,8 +197,8 @@ The built-in system prompt gives only a date snapshot at session start, so `inje
 | Item           | Details                                                                                                          |
 | -------------- | ---------------------------------------------------------------------------------------------------------------- |
 | Model          | `model` is `opusplan[1m]` (Opus in plan mode, Sonnet when executing, both with 1M context)                       |
-| Effort         | `modelSettings` sets Opus to `xhigh` and Sonnet to `high`; top-level `effortLevel` is `high`                     |
-| Subagent model | `env` sets `CLAUDE_CODE_SUBAGENT_MODEL=haiku` as the default; custom agents also pin `model: haiku`              |
+| Effort         | `modelSettings`: Opus `xhigh`, Sonnet `high`; `opusplan` uses Sonnet entry for both phases (plan runs `high`)    |
+| Subagent model | `env` sets `CLAUDE_CODE_SUBAGENT_MODEL=haiku` as a fallback; custom agents pin their own `model`, which wins     |
 | Output         | `outputStyle` is `Concise`; `language` is `Traditional Chinese (Taiwan)`                                         |
 | Start mode     | `permissions.defaultMode` is `plan`                                                                              |
 | Permissions    | `permissions.allow` whitelists low-risk commands (list below the table)                                          |
