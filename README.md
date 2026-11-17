@@ -124,7 +124,7 @@ Personal global Claude Code configuration shared across projects: skills, slash 
 
 **Pipelines**
 
-- `/up-design [--only design|motion] [--m] [@path ... | url]`: `emil-design-eng` rules once → **A static**: baseline screenshots (375/768/1440, reduced-motion) → (shadcn: `npx -y @shadscan/cli --json`) → score 6 dimensions against `CRITERIA.md` → you pick fixes → patch (platform-feature fixes consult `modern-web-guidance` first) → (`--m`: `mobile-native`) → re-screenshot, max 3 rounds → **B motion**: `remove-animations` → `find-animation-opportunities` → `animate` → `improve-animations` (audit, then applies the selected plans) → `animation-performance` → **C verify**: `review-animations` on motion changes → final screenshots vs baseline. `--only design` / `--only motion` runs one half
+- `/up-design [--only design|motion] [--m] [@path ... | url]`: static design review (screenshots at 375/768/1440, scored against `CRITERIA.md`, you pick fixes), then motion (`remove-animations` → `find-animation-opportunities` → `animate` → `improve-animations` → `animation-performance`), then `review-animations` and final screenshots; `--only` runs one half; details: `skills/up-design/SKILL.md`
 - `/up-seo [url] [@path ...]`: `ai-seo` → `seo-audit` → `programmatic-seo`, and you pick fixes after each stage
 
 **Notes**
@@ -160,16 +160,16 @@ Personal global Claude Code configuration shared across projects: skills, slash 
 
 The built-in system prompt gives only a date snapshot at session start, so `inject-datetime` supplies the full time. Cleanup details are under Settings.
 
-`git-secret-guard` scans added lines (diff against upstream or `HEAD`) plus untracked files for private keys, common API tokens, hard-coded credentials and `.env` files (`.env.example` is allowed). It prints only the first 4 characters of a match. Add `secret-scan:allow` to a line to skip a false positive. It fails open: any internal error lets the command through.
+`git-secret-guard` scans added lines and untracked files for private keys, common API tokens, hard-coded credentials and `.env` files (`.env.example` is allowed). Add `secret-scan:allow` to a line to skip a false positive. It fails open: any internal error lets the command through.
 
 ## 🔌 Plugins
 
-| Name                                | Purpose                                                                                                       |
-| ----------------------------------- | ------------------------------------------------------------------------------------------------------------- |
-| `watch@claude-video`                | Add the `/watch` video analysis command (marketplace `bradautomates/claude-video`)                            |
-| `mindful-claude@mindful-claude`     | Show a breathing animation while Claude works; toggle with `/breathe` (marketplace `halluton/Mindful-Claude`) |
-| `image-view@claude-image-view`      | Show pasted-image thumbnails instead of bare `[Image #n]` tags (marketplace `jarrodwatts/claude-image-view`)  |
-| `cc-plugin-you-should-know@builtin` | From Claude Code's built-in marketplace, enabled under `enabledPlugins`                                       |
+| Name                                | Purpose                                                                 |
+| ----------------------------------- | ----------------------------------------------------------------------- |
+| `watch@claude-video`                | Add the `/watch` video analysis command                                 |
+| `mindful-claude@mindful-claude`     | Show a breathing animation while Claude works; toggle with `/breathe`   |
+| `image-view@claude-image-view`      | Show pasted-image thumbnails instead of bare `[Image #n]` tags          |
+| `cc-plugin-you-should-know@builtin` | From Claude Code's built-in marketplace, enabled under `enabledPlugins` |
 
 `cc-plugin-you-should-know` has no `extraKnownMarketplaces` entry because its marketplace ships with the CLI.
 
