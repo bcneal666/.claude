@@ -1,13 +1,15 @@
 #!/usr/bin/env node
-// UserPromptSubmit hook：每則 prompt 注入當前完整時間戳。
+// UserPromptSubmit hook: inject the full current timestamp into every prompt.
 //
-// 內建 system prompt 只給開場當下的日期快照（"Today's date is ..."），
-// 沒有時刻、星期、時區，且跨午夜或長 session 就會失準。這裡固定用
-// Asia/Taipei（CLAUDE.md 指定的時區），不依賴機器本身的時區設定，
-// 用 Intl.DateTimeFormat 取得，跨 Windows / macOS / Linux 一致。
+// The built-in system prompt only gives a date snapshot at session start
+// ("Today's date is ..."), with no time of day, weekday or timezone, and it
+// goes stale across midnight or in long sessions. This hook always uses
+// Asia/Taipei (the timezone set in CLAUDE.md), independent of the machine's
+// own timezone, via Intl.DateTimeFormat, so it behaves the same on
+// Windows / macOS / Linux.
 //
-// 硬性規則：任何情況都要 exit 0、不寫 stderr。suppressOutput: true
-// 避免每則 prompt 都在 transcript 留一行雜訊。
+// Hard rule: always exit 0 and never write to stderr. suppressOutput: true
+// keeps every prompt from leaving a noise line in the transcript.
 
 const WEEKDAYS = ["日", "一", "二", "三", "四", "五", "六"];
 
@@ -28,8 +30,9 @@ function buildContext() {
   const dateStr = `${get("year")}-${get("month")}-${get("day")}`;
   const timeStr = `${get("hour")}:${get("minute")}`;
 
-  // Intl 的 weekday（en-CA "Mon" 等）語系不穩定，改用 getDay 配台北時區
-  // 的 formatter 分開算，避免依賴特定語系縮寫格式。
+  // Intl's weekday output (en-CA "Mon" etc.) is locale-unstable, so compute it
+  // separately with getDay plus a Taipei-timezone formatter instead of
+  // relying on a specific locale abbreviation format.
   const weekdayIdx = new Date(
     new Intl.DateTimeFormat("en-US", { timeZone: "Asia/Taipei" }).format(now)
   ).getDay();
@@ -43,7 +46,7 @@ function main() {
   try {
     hookSpecificOutput.additionalContext = buildContext();
   } catch {
-    /* 取不到就不注入，仍要輸出合法 JSON */
+    /* if the context cannot be built, skip injection but still emit valid JSON */
   }
   process.stdout.write(
     JSON.stringify({ suppressOutput: true, hookSpecificOutput }) + "\n"

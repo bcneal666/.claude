@@ -1,5 +1,5 @@
 ---
-description: 批次更新 skills（<type> 可選 global|project，預設 global）；依 skills CLI lockfile 逐一指名更新，未納管者推斷上游後重裝納管，並回報 plugin / synced / CLI 內建的版本狀態
+description: Batch-update skills (<type> is global|project, default global); update each lockfile entry by name via the skills CLI, reinstall unmanaged skills after inferring their upstream, and report plugin / synced / CLI built-in version status
 argument-hint: "[<type>]"
 disable-model-invocation: true
 ---

@@ -18,22 +18,18 @@ Personal global Claude Code configuration shared across projects: skills, slash 
 
 ## 📁 Structure
 
-```
-+------------------- [ LAYOUT ] -------------------+
-|                                                  |
-| ~/.claude                                        |
-| ├─ CLAUDE.md               global rules          |
-| ├─ README.md               this file             |
-| ├─ settings.json           global settings       |
-| ├─ settings.local.json     local overrides       |
-| ├─ statusline-command.mjs  statusline            |
-| ├─ hooks/                  hook scripts          |
-| ├─ commands/               slash commands        |
-| ├─ agents/                 subagents             |
-| ├─ skills/                 skills                |
-| └─ notes/                  scratch notes         |
-|                                                  |
-+--------------------------------------------------+
+```text
+~/.claude
+├── CLAUDE.md                 # global rules
+├── README.md                 # this file
+├── settings.json             # global settings
+├── settings.local.json       # local overrides
+├── statusline-command.mjs    # statusline
+├── hooks/                    # hook scripts
+├── commands/                 # slash commands
+├── agents/                   # subagents
+├── skills/                   # skills
+└── notes/                    # scratch notes
 ```
 
 - `skills/synced/` holds skills synced down from the Claude account cloud; the set differs per account and device. The platform manages it, so do not edit it by hand; it is gitignored.
@@ -72,13 +68,13 @@ Personal global Claude Code configuration shared across projects: skills, slash 
 <details>
 <summary><code>/up-rules</code> details</summary>
 
-- `--lng <code>` sets the language of everything written (`zh` = Traditional Chinese, `ja`; absent = English); content in a different language is translated
+- `--lng <code>` sets the language of everything written, including `agents/` prose, `hooks/` comments and command descriptions (`zh` = Traditional Chinese, `ja`; absent = English); content in a different language is translated
 - Flow, in order:
   1. Fact-check `CLAUDE.md`
   2. With `--audit`: audit for stale instructions via `claude-api` prompt-audit, then pick findings to apply
   3. Chunk path-specific content into `rules/<topic>.md` (loaded on demand via `paths` frontmatter)
   4. Compress `CLAUDE.md`, `.claude/rules/**/*.md` and `.claude/commands/**/*.md` at caveman full strength (drops filler only, never semantics, except hunks applied via `--audit`)
-  5. Check and sync this README; figures come from `mdxcn`'s official fences
+  5. Check and sync this README
 - The README is written for humans, so it is exempt from caveman compression and follows a style guide (structure, emoji, callouts, folding)
 
 </details>
@@ -111,7 +107,6 @@ Personal global Claude Code configuration shared across projects: skills, slash 
 | `humanizer-zh`                 | Chinese counterpart: trim filler and template phrasing                           |
 | `improve-animations`           | Read-only motion audit with prioritized, self-contained plans                    |
 | `learn-taste`                  | Turn a session's design corrections into `DESIGN.md` rules (manual only)         |
-| `mdxcn`                        | Paste official framed ASCII figures next to prose in READMEs, PRs and docs       |
 | `mobile-native`                | CSS and meta-tag fixes that make a web app feel native on a phone                |
 | `modern-web-guidance`          | Search modern web best practices first for HTML/CSS and client-side JS tasks     |
 | `programmatic-seo`             | Plan SEO pages generated at scale from templates and data                        |
@@ -196,7 +191,7 @@ The built-in system prompt gives only a date snapshot at session start, so `inje
 
 | Item           | Details                                                                                                          |
 | -------------- | ---------------------------------------------------------------------------------------------------------------- |
-| Model          | `model` is `opusplan[1m]` (Opus in plan mode, Sonnet when executing, both with 1M context)                       |
+| Model          | `model` is `opusplan` (Opus in plan mode, Sonnet when executing)                                                 |
 | Effort         | `modelSettings`: Opus `xhigh`, Sonnet `high`; `opusplan` uses Sonnet entry for both phases (plan runs `high`)    |
 | Subagent model | `env` sets `CLAUDE_CODE_SUBAGENT_MODEL=haiku` as a fallback; custom agents pin their own `model`, which wins     |
 | Output         | `outputStyle` is `Concise`; `language` is `Traditional Chinese (Taiwan)`                                         |

@@ -1,5 +1,5 @@
 ---
-description: 自動執行 git add + commit + push，commit message 固定格式英文；--lng 指定語言、--pr 開 PR、--merge 開 PR 後等必要檢查通過再 squash merge 並刪分支回 main，並檢查更新 GitHub repo description
+description: Run git add + commit + push automatically with a fixed-format English commit message; --lng sets the language, --pr opens a PR, --merge opens a PR, waits for required checks, squash merges, deletes the branch and returns to the default branch; also checks and updates the GitHub repo description
 argument-hint: "[--lng <zh|ja|...>] [--pr] [--merge]"
 disable-model-invocation: true
 ---

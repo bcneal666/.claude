@@ -1,17 +1,21 @@
 #!/usr/bin/env node
-// SessionStart / SessionEnd hook：讓每個 Claude session 使用專屬的
-// agent-browser session（cc-<session_id>），並在 session 結束時關閉它，
-// 避免 AI 用完瀏覽器沒關而殘留 daemon 與 Chrome 佔用記憶體。
+// SessionStart / SessionEnd hook: give each Claude session its own
+// agent-browser session (cc-<session_id>) and close it when the session ends,
+// so a browser the AI left open does not leave a daemon and Chrome behind
+// holding memory.
 //
-// - SessionStart：把 AGENT_BROWSER_SESSION 寫進 CLAUDE_ENV_FILE，之後
-//   Bash 工具的指令都會帶上這個變數（agent-browser 等同 --session）。
-//   沒有 CLAUDE_ENV_FILE（例如 Windows 無 Git Bash）就略過，改用
-//   default session，由 AGENT_BROWSER_IDLE_TIMEOUT_MS 兜底。
-// - SessionEnd：只關自己的 session，不影響其他同時開著的 Claude session。
-//   SessionEnd 預設逾時 1.5 秒，settings.json 內須設較長的 timeout。
+// - SessionStart: write AGENT_BROWSER_SESSION into CLAUDE_ENV_FILE so every
+//   later Bash tool command carries this variable (agent-browser treats it
+//   like --session). Without CLAUDE_ENV_FILE (e.g. Windows without Git Bash)
+//   skip it; the default session is used and AGENT_BROWSER_IDLE_TIMEOUT_MS is
+//   the fallback.
+// - SessionEnd: close only this session's browser, leaving other concurrent
+//   Claude sessions untouched. SessionEnd's default timeout is 1.5 seconds,
+//   so settings.json must set a longer timeout.
 //
-// 硬性規則：任何情況都 exit 0、不寫 stderr、不輸出任何內容。
-// 不用 bash；Windows 上以 shell 執行才找得到 agent-browser.cmd。
+// Hard rule: always exit 0, never write to stderr, never print anything.
+// Does not use bash; on Windows it runs through a shell so agent-browser.cmd
+// can be found.
 
 import { appendFileSync, readFileSync } from "node:fs";
 import { spawnSync } from "node:child_process";
@@ -27,7 +31,7 @@ function readInput() {
 function main() {
   const input = readInput();
   const id = input.session_id;
-  // 只接受單純的 id，避免注入 export 行或 shell 指令
+  // accept plain ids only, to prevent injecting an export line or shell command
   if (typeof id !== "string" || !/^[A-Za-z0-9-]+$/.test(id)) return;
   const name = `cc-${id}`;
 
@@ -46,6 +50,6 @@ function main() {
 try {
   main();
 } catch {
-  /* 任何錯誤都吞掉，hook 不可影響 session */
+  /* swallow every error; the hook must never affect the session */
 }
 process.exit(0);

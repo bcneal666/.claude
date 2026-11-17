@@ -1,18 +1,22 @@
 #!/usr/bin/env node
-// PreToolUse hook（Bash / PowerShell）：git commit / git push 之前掃描
-// 即將進入歷史的內容，命中常見秘密格式就 deny。
+// PreToolUse hook (Bash / PowerShell): before git commit / git push, scan
+// the content about to enter history and deny on common secret formats.
 //
-// 為什麼需要：settings.json 把 git add / commit / push 放進 allow，
-// /now-push 也不經確認直接推，原本只靠模型自己看 diff。這裡補一道機械式防線。
+// Why it exists: settings.json puts git add / commit / push in allow, and
+// /now-push pushes without confirmation, so the only guard was the model
+// reading the diff itself. This adds a mechanical safeguard.
 //
-// 掃描範圍（PreToolUse 時 `git add` 可能還沒跑，所以不能只看 --cached）：
-//   - 與 upstream（沒有就與 HEAD）的差異，只看新增行
-//   - 未追蹤且未被 ignore 的檔案（`git add .` 會納入）
+// Scan scope (`git add` may not have run yet at PreToolUse, so --cached alone
+// is not enough):
+//   - added lines in the diff against upstream (HEAD if there is none)
+//   - untracked, non-ignored files (`git add .` would include them)
 //
-// 誤判逃生口：該行任意位置含 `secret-scan:allow` 即略過。
+// False-positive escape hatch: a line containing `secret-scan:allow`
+// anywhere is skipped.
 //
-// 硬性規則：fail open——任何錯誤都 exit 0、不寫 stderr。
-// 命中時只在 stdout 輸出 deny JSON，且不印完整秘密（僅前 4 字元）。
+// Hard rule: fail open — on any error exit 0 and never write to stderr.
+// On a hit, print only the deny JSON to stdout, and never print the full
+// secret (first 4 characters only).
 
 import { readFileSync, statSync } from "node:fs";
 import { spawnSync } from "node:child_process";
@@ -123,7 +127,7 @@ function scanUntracked(root, hits, files) {
         .split("\n")
         .forEach((text, i) => scanLine(rel, i + 1, text, hits));
     } catch {
-      // 讀不到就略過
+      // unreadable: skip
     }
   }
 }
