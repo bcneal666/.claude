@@ -196,7 +196,8 @@ The built-in system prompt gives only a date snapshot at session start, so `inje
 
 | Item           | Details                                                                                                          |
 | -------------- | ---------------------------------------------------------------------------------------------------------------- |
-| Model          | `model` is `opusplan[1m]` (Opus in plan mode, Sonnet when executing, both 1M); `modelSettings` sets Opus `xhigh`, Sonnet `high` |
+| Model          | `model` is `opusplan[1m]` (Opus in plan mode, Sonnet when executing, both with 1M context)                       |
+| Effort         | `modelSettings` sets Opus to `xhigh` and Sonnet to `high`; top-level `effortLevel` is `high`                     |
 | Subagent model | `env` sets `CLAUDE_CODE_SUBAGENT_MODEL=haiku` as the default; custom agents also pin `model: haiku`              |
 | Output         | `outputStyle` is `Concise`; `language` is `Traditional Chinese (Taiwan)`                                         |
 | Start mode     | `permissions.defaultMode` is `plan`                                                                              |
