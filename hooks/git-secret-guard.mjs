@@ -21,7 +21,7 @@
 import { readFileSync, statSync } from "node:fs";
 import { spawnSync } from "node:child_process";
 import { homedir } from "node:os";
-import { join, basename } from "node:path";
+import { join, basename, resolve } from "node:path";
 
 const ALLOW_MARKER = "secret-scan:allow";
 const MAX_FILE_BYTES = 1024 * 1024;
@@ -71,11 +71,18 @@ function stripQuotes(s) {
   return s.replace(/^(["'])(.*)\1$/, "$2");
 }
 
-function resolveDir(command, cwd) {
-  const m =
-    command.match(/\bgit\s+-C\s+("[^"]+"|'[^']+'|\S+)/) ||
-    command.match(/^\s*cd\s+("[^"]+"|'[^']+'|\S+)\s*(?:&&|;)/);
-  return m ? expandHome(stripQuotes(m[1])) : cwd;
+// Directory the commit/push will run in. `git -C X` wins; otherwise apply every
+// `cd X` that precedes the git commit/push (anywhere in the command, not only
+// at the start), resolving relative paths in order.
+function resolveDir(command, cwd, gitIndex) {
+  const c = command.match(/\bgit\s+-C\s+("[^"]+"|'[^']+'|\S+)/);
+  if (c) return resolve(cwd, expandHome(stripQuotes(c[1])));
+  const cdRe = /(?:^|[;&|(])\s*cd\s+("[^"]+"|'[^']+'|\S+?)\s*(?=&&|;|\|\||\n|$)/g;
+  let dir = cwd;
+  for (const m of command.slice(0, gitIndex).matchAll(cdRe)) {
+    dir = resolve(dir, expandHome(stripQuotes(m[1])));
+  }
+  return dir;
 }
 
 function redact(s) {
@@ -136,9 +143,10 @@ function main() {
   const input = readInput();
   const command = input.tool_input?.command;
   if (typeof command !== "string") return;
-  if (!/\bgit\b[^|;&\n]*\b(?:commit|push)\b/.test(command)) return;
+  const gm = command.match(/\bgit\b[^|;&\n]*\b(?:commit|push)\b/);
+  if (!gm) return;
 
-  const dir = resolveDir(command, input.cwd || process.cwd());
+  const dir = resolveDir(command, input.cwd || process.cwd(), gm.index);
   const top = git(dir, ["rev-parse", "--show-toplevel"]);
   if (top.status !== 0) return;
   const root = top.stdout.trim();
