@@ -25,8 +25,8 @@ Score each dimension by evidence (screenshot region or `file:line`). A gap needs
 - Colors come from tokens; dark mode (if supported) re-tuned, not inverted.
 - Avoid default-template palettes (generic purple gradient on white).
 
-## Responsive (375 / 768 / 1440)
-- No horizontal scroll; no clipped or overlapping content at any width.
+## Responsive (375 / 768 / 1024 / 1440, plus 320 reflow)
+- No horizontal scroll (also at 320px); no clipped or overlapping content at any width.
 - Layout reflows by design (not just shrinks); touch targets ≥44px; tap spacing ≥8px.
 - Images sized/cropped per breakpoint; line length stays in range; fixed elements don't eat viewport.
 
@@ -42,3 +42,4 @@ Score each dimension by evidence (screenshot region or `file:line`). A gap needs
 
 ## Out of scope for Phase A
 - Motion, micro-interaction → queued for Phase B; standards come from emil-design-eng and review-animations, not this file.
+- Interaction and behavior rules (overlays, touch, forms, loading, gestures, a11y) → `UX-RULES.md`, checked on every run by the "UX rules check".

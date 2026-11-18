@@ -73,7 +73,7 @@ Personal global Claude Code configuration shared across projects: skills, slash 
   1. Fact-check `CLAUDE.md`
   2. With `--audit`: audit for stale instructions via `claude-api` prompt-audit, then pick findings to apply
   3. Chunk path-specific content into `rules/<topic>.md` (loaded on demand via `paths` frontmatter)
-  4. Compress `CLAUDE.md`, `.claude/rules/**/*.md` and `.claude/commands/**/*.md` at caveman full strength (drops filler only, never semantics, except hunks applied via `--audit`)
+  4. Compress `CLAUDE.md`, `.claude/rules/**/*.md`, `.claude/commands/**/*.md` and the `.md` files of self-made skills listed in `skills/.up-skills-ignore` at caveman full strength (drops filler only, never semantics, except hunks applied via `--audit`)
   5. Check and sync this README
 - The README is written for humans, so it is exempt from caveman compression and follows a style guide (structure, emoji, callouts, folding)
 
@@ -114,12 +114,12 @@ Personal global Claude Code configuration shared across projects: skills, slash 
 | `review-animations`            | Review animation code against a high craft bar (manual only)                     |
 | `review-fix`                   | Functional test + review loop for the current project, max 3 rounds              |
 | `seo-audit`                    | Diagnose ranking, indexing and traffic problems                                  |
-| `up-design`                    | Static design plus motion pipeline (usage under Pipelines)                       |
+| `up-design`                    | UX rules check, static design plus motion pipeline (usage under Pipelines)       |
 | `up-seo`                       | SEO pipeline with shared context (usage under Pipelines)                         |
 
 **Pipelines**
 
-- `/up-design [--only design|motion] [--m] [@path ... | url]`: static design review (screenshots at 375/768/1440, scored against `CRITERIA.md`, you pick fixes), then motion (`remove-animations` → `find-animation-opportunities` → `animate` → `improve-animations` → `animation-performance`), then `review-animations` and final screenshots; `--only` runs one half; details: `skills/up-design/SKILL.md`
+- `/up-design [--only design|motion] [--m] [@path ... | url]`: a UX rules check on every run (`UX-RULES.md`, 13 sections, per-section verdict in the summary), static design review (screenshots at 375/768/1024/1440, scored against `CRITERIA.md`, you pick fixes), then motion (`remove-animations` → `find-animation-opportunities` → `animate` → `improve-animations` → `animation-performance`), then `review-animations` and final screenshots; `--only` runs one half; details: `skills/up-design/SKILL.md`
 - `/up-seo [url] [@path ...]`: `ai-seo` → `seo-audit` → `programmatic-seo`, and you pick fixes after each stage
 
 **Notes**
@@ -221,6 +221,6 @@ Allowed: `git add`, `git commit -m`, `git push`, `WebSearch`, `Edit(~/.claude/ho
 | Situation             | What to do                                                                                       |
 | --------------------- | ------------------------------------------------------------------------------------------------ |
 | Settings placement    | Shared in `settings.json`; machine- or OS-specific overrides in gitignored `settings.local.json` |
-| After editing rules   | Run `/up-rules` after changing `CLAUDE.md` or `commands/*.md`                                    |
+| After editing rules   | Run `/up-rules` after changing `CLAUDE.md`, `commands/*.md` or a self-made skill                 |
 | Suspect stale wording | Add `--audit` to audit first (for example emphatic tone aimed at older models)                   |
 | Ship it               | Push with `/now-push` once changes are done and confirmed                                        |
