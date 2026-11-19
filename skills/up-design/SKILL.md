@@ -1,6 +1,6 @@
 ---
 name: up-design
-description: Full UI polish pass on the current project — a mandatory UX rules check on every run (UX-RULES.md, 13 sections: mobile overlays as bottom Drawer, touch, forms, loading, gestures, a11y), Phase A static visual review (typography, whitespace, hierarchy, color, responsive, originality; screenshot loop scored against CRITERIA.md, shadscan for shadcn projects), Phase B motion (remove, find, animate, improve, performance), Phase C review and final screenshots. Platform-feature fixes consult modern-web-guidance first. Optional --only design|motion, --m for mobile, @path or URL scope.
+description: "Full UI polish pass on the current project — a mandatory UX rules check on every run (UX-RULES.md, 13 sections: mobile overlays as bottom Drawer, touch, forms, loading, gestures, a11y), Phase A static visual review (typography, whitespace, hierarchy, color, responsive, originality; screenshot loop scored against CRITERIA.md, shadscan for shadcn projects), Phase B motion (remove, find, animate, improve, performance), Phase C review and final screenshots. Platform-feature fixes consult modern-web-guidance first. Optional --only design|motion, --m for mobile, @path or URL scope."
 argument-hint: "[--only design|motion] [--m] [@path ... | URL]"
 disable-model-invocation: true
 ---

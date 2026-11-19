@@ -48,7 +48,7 @@ Tag each skill D/A/B/C per table, **priority D > A > B > C**—name in both igno
 Run git drift check first, then build command arguments:
 
 - In git repo → per class-A skill whose entry is a real directory run `git status --porcelain skills/<name>/` (`global`, cwd `~/.claude`) or `git status --porcelain .claude/skills/<name>/` (`project`, cwd project root); any output (uncommitted changes) → tag skill 「本地有未提交改動·已跳過」, exclude from argument list, advise commit first or add to `.up-skills-ignore` for permanent exclusion
-- Entry is a legacy symlink into `~/.agents/skills/` (installed before `--copy`) → skip drift check, goes into argument list: content lives outside git, nothing local to protect; git shows only link type change (`D`/`T`, common with `core.symlinks=false`), never real edit. `update` keeps `--copy` installs as real directories
+- Entry is a legacy symlink into `~/.agents/skills/` (installed before `--copy`) → skip drift check, goes into argument list: content lives outside git, nothing local to protect; git shows only link type change (`D`/`T`, common with `core.symlinks=false`), never real edit. `update` may swap a real directory for such a symlink (seen on `modern-web-guidance`: git then shows every file deleted plus an untracked link) → after the update, for each class-A skill that was a real directory and is now a symlink, run `rm <link> && cp -rL <target> <link>` so git-synced devices keep working
 - Not in git repo → skip check, one-line notice 「無 git 保護，更新將直接覆蓋」, all class A go into argument list
 
 Names classified A, passing drift check, and **actually present in target directory** → list one by one as command arguments:
@@ -85,11 +85,12 @@ List name and 「無法自動更新」 only; run no command.
 ### 8. Plugin layer
 
 1. `claude plugin marketplace update` (all marketplaces at once)
-2. `claude plugin list` for current versions
-3. Per enabled plugin (e.g. `watch@claude-video`) compare with new version; newer exists → run:
+2. `claude plugin list`; keep only enabled entries with `Scope: user` (skip disabled, project-scope, synced and skills-dir entries). `list` shows installed versions only, no newer-version indicator
+3. Per kept plugin (e.g. `watch@claude-video`) run:
    ```
    claude plugin update <plugin>@<marketplace> -y --json -s user
    ```
+   Read `updateOutcome` in the JSON (`up_to_date` or updated)
 4. Report 「更新後需重啟 session 才會生效」
 
 ### 9. Read-only report layer (no writes, no updates)
