@@ -26,7 +26,7 @@ Before judging, learn what the change is meant to do: the caller's description, 
 - API misuse and wrong assumptions about callers.
 - Missing tests for changed or new behavior, when the project has tests.
 
-Comment on style or naming only when it hides a bug. Note obvious security problems briefly; deep security review belongs to the `security-auditor` agent. Do not run tests; that is the `test-runner` agent's job.
+Comment on style or naming only when it hides a bug. Note obvious security problems briefly; deep security review belongs to the `security-auditor` agent. Do not run tests.
 
 ## Rules
 
