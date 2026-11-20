@@ -195,10 +195,12 @@ The built-in system prompt gives only a date snapshot at session start, so `inje
 | Output         | `outputStyle` is `Concise`; `language` is `Traditional Chinese (Taiwan)`                                         |
 | Start mode     | `permissions.defaultMode` is `plan`                                                                              |
 | Permissions    | `permissions.allow` whitelists low-risk commands (list below the table)                                          |
+| Deny           | `permissions.deny` blocks force pushes and reads of `~/.ssh` and `.env` files                                    |
+| Time zone      | `timeZone` is `Asia/Taipei`                                                                                      |
 | Statusline     | Node only (`statusline-command.mjs`), no shell fallback; three lines (model, location, usage)                    |
 | Vim indicator  | `statusLine.hideVimModeIndicator: true` turns off the built-in `-- INSERT --` indicator in favor of a custom one |
 
-Allowed: `git add`, `git commit -m`, `git push`, `WebSearch`, `agent-browser snapshot` / `wait`, `Edit(~/.claude/hooks/**)`, `Edit(~/.claude/commands/**)`, `Skill(update-config)`.
+Allowed: `git add`, `git commit -m`, `git push`, `WebSearch`, `agent-browser snapshot` / `wait`, `Edit(~/.claude/commands/**)`, `Skill(update-config)`.
 
 > [!TIP]
 > `git add` / `commit` / `push` are listed with both `Bash(...)` and `PowerShell(...)` prefixes. On Windows, PowerShell is a separate permission namespace and does not inherit `Bash(...)` rules.
