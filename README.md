@@ -57,6 +57,7 @@ Personal global Claude Code configuration shared across projects: skills, slash 
 <summary><code>/now-push</code> details</summary>
 
 - Runs `git add` + `commit` + `push` without asking for confirmation
+- Pushes every unpushed local commit on the current branch as-is, not just this run's; a clean tree with unpushed commits still pushes
 - Commit message is **English** by default and carries a `Co-Authored-By` trailer
 - `--lng <code>` switches the message language (`zh` = Traditional Chinese, `ja`, …)
 - `--pr` also opens a PR, auto-creating a new branch when on the default branch

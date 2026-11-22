@@ -32,12 +32,12 @@ List skill subdirectory names under target path (`global` excludes `synced/`; bo
 
 Tag each skill D/A/B/C per table, **priority D > A > B > C**—name in both ignore list and lockfile → always D:
 
-| Class | Criterion | Action |
-| --- | --- | --- |
-| D self-made/frozen | name listed in `.up-skills-ignore` | skip entirely: no lockfile comparison, no upstream scan, no commands |
-| A managed | name exists in both target directory and lockfile | step 5: `npx skills update` |
-| B inferable | not in lockfile, but SKILL.md/README contains `npx skills add …` command or GitHub repo URL | step 6: after confirmation `npx skills add` (reinstall makes CLI write lockfile automatically → next time class A; no hand-built mapping table) |
-| C no upstream | no upstream clue found, or installed via external binary | step 7: report only, run no command |
+| Class              | Criterion                                                                                   | Action                                                                                                                                          |
+| ------------------ | ------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| D self-made/frozen | name listed in `.up-skills-ignore`                                                          | skip entirely: no lockfile comparison, no upstream scan, no commands                                                                            |
+| A managed          | name exists in both target directory and lockfile                                           | step 5: `npx skills update`                                                                                                                     |
+| B inferable        | not in lockfile, but SKILL.md/README contains `npx skills add …` command or GitHub repo URL | step 6: after confirmation `npx skills add` (reinstall makes CLI write lockfile automatically → next time class A; no hand-built mapping table) |
+| C no upstream      | no upstream clue found, or installed via external binary                                    | step 7: report only, run no command                                                                                                             |
 
 `project` mode, lockfile `sourceType` is `node_modules`/`local` → not A, not B/C inference—local source, no upstream to update, legitimate state; tag 「本地來源·不適用」.
 
@@ -48,7 +48,7 @@ Tag each skill D/A/B/C per table, **priority D > A > B > C**—name in both igno
 Run git drift check first, then build command arguments:
 
 - In git repo → per class-A skill whose entry is a real directory run `git status --porcelain skills/<name>/` (`global`, cwd `~/.claude`) or `git status --porcelain .claude/skills/<name>/` (`project`, cwd project root); any output (uncommitted changes) → tag skill 「本地有未提交改動·已跳過」, exclude from argument list, advise commit first or add to `.up-skills-ignore` for permanent exclusion
-- Entry is a legacy symlink into `~/.agents/skills/` (installed before `--copy`) → skip drift check, goes into argument list: content lives outside git, nothing local to protect; git shows only link type change (`D`/`T`, common with `core.symlinks=false`), never real edit. `update` may swap a real directory for such a symlink (seen on `modern-web-guidance`: git then shows every file deleted plus an untracked link) → after the update, for each class-A skill that was a real directory and is now a symlink, run `rm <link> && cp -rL <target> <link>` so git-synced devices keep working
+- Entry is a legacy symlink into `~/.agents/skills/` (installed before `--copy`) → skip drift check, goes into argument list: content lives outside git, nothing local to protect; git shows only link type change (`D`/`T`, common with `core.symlinks=false`), never real edit. `update` may swap a real directory for such a symlink (git then shows every file deleted plus an untracked link) → after the update, for each class-A skill that was a real directory and is now a symlink, run `rm <link> && cp -rL <target> <link>` so git-synced devices keep working
 - Not in git repo → skip check, one-line notice 「無 git 保護，更新將直接覆蓋」, all class A go into argument list
 
 Names classified A, passing drift check, and **actually present in target directory** → list one by one as command arguments:

@@ -1,5 +1,5 @@
 ---
-description: Run git add + commit + push automatically with a fixed-format English commit message; --lng sets the language, --pr opens a PR, --merge opens a PR, waits for required checks, squash merges, deletes the branch and returns to the default branch; also checks and updates the GitHub repo description
+description: Run git add + commit + push automatically with a fixed-format English commit message, pushing every unpushed local commit on the current branch together; --lng sets the language, --pr opens a PR, --merge opens a PR, waits for required checks, squash merges, deletes the branch and returns to the default branch; also checks and updates the GitHub repo description
 argument-hint: "[--lng <zh|ja|...>] [--pr] [--merge]"
 disable-model-invocation: true
 ---
@@ -19,25 +19,30 @@ Execute in order immediately, no confirmation:
 
 ## Flow
 
-1. `git status`; clean tree → report 「無變更可推送」 and stop
-2. `git diff` + `git diff --staged`; read full changes
+1. `git status` + collect **unpushed commits** on current branch (probe commands exempt from the stop rule below):
+   - upstream = `git for-each-ref --format='%(upstream:short)' "$(git symbolic-ref -q HEAD)"` (exits 0; empty output = no upstream)
+   - has upstream → unpushed = `git log --oneline <upstream>..HEAD`
+   - no upstream → unpushed = `git log --oneline HEAD --not --remotes`
+   - clean tree **and** no unpushed commits → report 「無變更可推送」 and stop
+   - clean tree but unpushed commits exist → skip working-tree diff, commit message generation, `git add`, `git commit` (steps 2 working diff, 4, 6, 7); go to step 5 (existing commits are pushed as-is)
+2. `git diff` + `git diff --staged`; read full changes. Unpushed commits exist → also read `git diff <base>..HEAD` (base = upstream, else `origin/<default branch>`) for the secret check and PR content
 3. `git log -5 --oneline` for recent commit style
 4. Generate commit message in the **fixed format** below (before branching; branch name needs it)
-5. **`--pr`/`--merge`**: get default branch via `gh repo view --json defaultBranchRef -q .defaultBranchRef.name`; current branch == default → `git switch -c <type>/<slug>` (slug = scope + English subject keywords, kebab-case, ≤40 chars; English even when `--lng` is not English)
+5. **`--pr`/`--merge`**: get default branch via `gh repo view --json defaultBranchRef -q .defaultBranchRef.name`; current branch == default → `git switch -c <type>/<slug>` (slug = scope + English subject keywords, kebab-case, ≤40 chars; English even when `--lng` is not English; no new commit this run → use newest unpushed commit's header, or one summarizing header if several). After switching, if default branch had unpushed commits, `origin/<default>` exists and `git merge-base --is-ancestor origin/<default> <default>` succeeds → `git branch -f <default> origin/<default>` (commits stay on the new branch; without this the later `git pull --ff-only` diverges); otherwise skip
 6. `git add .`
 7. `git commit -m "<header>" -m "<body>" -m "Co-Authored-By: <當前模型全名> <noreply@anthropic.com>"` (exactly three `-m`; trailer mandatory; `<當前模型全名>` source: see footer)
-8. `git push`; current branch has no upstream → `git push -u origin HEAD`
-9. **`--pr`/`--merge`**: `gh pr view` on current branch; PR exists → report existing URL, do not recreate; none → `gh pr create --base <default branch> --title "<commit header>" --body "<body>"`; body = commit body bullets + blank line + `🤖 Generated with [Claude Code](https://claude.com/claude-code)`, language per `--lng`; report PR URL
+8. `git push` (always whole current branch, never a single sha or refspec); current branch has no upstream → `git push -u origin HEAD`. Report pushed commits (short sha + header; mark the one created this run)
+9. **`--pr`/`--merge`**: `gh pr view` on current branch; PR exists → report existing URL, do not recreate; none → `gh pr create --base <default branch> --title "<title>" --body "<body>"`; single commit → title/body = that commit's header/body; several commits → title = one summarizing fixed-format header, body = list of each commit header + merged key bullets; body ends with blank line + `🤖 Generated with [Claude Code](https://claude.com/claude-code)`, language per `--lng`; report PR URL
 10. **`--merge` only** (existing PR also merged):
     1. Wait for required checks: `gh pr checks <PR number> --required --watch --fail-fast` (Bash timeout 600000 ms). Checks not registered yet ("no checks reported") → wait ~10s, retry, ≤60s total; still none → repo has no required checks, continue. Any check fails → stop, report failing check name + URL + PR URL, stay on feature branch. Still pending at timeout → report PR URL, stay on feature branch
-    2. `gh pr merge <PR number> --squash --delete-branch --subject "<commit header>"`
+    2. `gh pr merge <PR number> --squash --delete-branch --subject "<PR title>"`
     3. `git switch <default branch>` (skip if `gh` already switched) + `git pull --ff-only`
     4. `git fetch --prune`; local branch still present → `git branch -D <branch>`
     5. report merged PR URL, deleted branch name, current branch `<default>` + HEAD short sha
     6. `gh run list --commit <HEAD sha> --json name,status,url` → report workflow runs the merge triggered (deploys etc.); runs may take a few seconds to appear, do not wait for them to finish
 11. Repo description check (next section)
 
-Steps 1–10: any non-zero exit → stop immediately, report full stderr, **do not attempt repair**. Step 10 merge blocked after checks passed (review / conflict / other policy) → report stderr + PR URL, stay on feature branch, no retry, no `--admin`/`--auto`. Step 11 failure (not GitHub, `gh` not logged in, no permission) → notice only, **not an overall failure**—commit/push already done.
+Steps 1–10 (except the step 1 probes and the step 5 `--is-ancestor` guard, whose non-zero exit just selects a branch): any non-zero exit → stop immediately, report full stderr, **do not attempt repair**. Step 10 merge blocked after checks passed (review / conflict / other policy) → report stderr + PR URL, stay on feature branch, no retry, no `--admin`/`--auto`. Step 11 failure (not GitHub, `gh` not logged in, no permission) → notice only, **not an overall failure**—commit/push already done.
 
 ## Repo Description Maintenance
 
@@ -67,19 +72,19 @@ Steps 1–10: any non-zero exit → stop immediately, report full stderr, **do n
 
 **type (required, lowercase English, pick one from table)**
 
-| type       | when to use                                                      |
-| ---------- | ---------------------------------------------------------------- |
-| `feat`     | new feature                                                      |
-| `fix`      | bug fix                                                          |
-| `docs`     | docs-only change (README, comments, JSDoc, etc.)                 |
-| `style`    | formatting, no logic change (whitespace, semicolons, layout)     |
-| `refactor` | restructure, external behavior unchanged                         |
-| `perf`     | performance optimization                                         |
-| `test`     | add or modify tests                                              |
+| type       | when to use                                                       |
+| ---------- | ----------------------------------------------------------------- |
+| `feat`     | new feature                                                       |
+| `fix`      | bug fix                                                           |
+| `docs`     | docs-only change (README, comments, JSDoc, etc.)                  |
+| `style`    | formatting, no logic change (whitespace, semicolons, layout)      |
+| `refactor` | restructure, external behavior unchanged                          |
+| `perf`     | performance optimization                                          |
+| `test`     | add or modify tests                                               |
 | `build`    | build system, dependency changes (package.json, Dockerfile, etc.) |
-| `ci`       | CI/CD config (GitHub Actions, GitLab CI, etc.)                   |
-| `chore`    | misc chores not touching src or tests                            |
-| `revert`   | revert earlier commit                                            |
+| `ci`       | CI/CD config (GitHub Actions, GitLab CI, etc.)                    |
+| `chore`    | misc chores not touching src or tests                             |
+| `revert`   | revert earlier commit                                             |
 
 **scope (optional, lowercase English)**
 
@@ -154,4 +159,5 @@ Co-Authored-By: <當前模型全名> <noreply@anthropic.com>
 - No filenames in subject (put in body or express via scope)
 - No force push
 - `--merge`: no `--admin` to bypass branch protection
-- Diff contains secret, API key, password or similar sensitive data → **stop immediately and warn user**; do not commit
+- Existing unpushed commits: push as-is; never amend, squash, reword or rewrite to fixed format
+- Diff (working tree **or** any unpushed commit) contains secret, API key, password or similar sensitive data → **stop immediately and warn user**; do not commit, do not push
