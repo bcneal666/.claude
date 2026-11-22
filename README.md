@@ -150,6 +150,7 @@ Personal global Claude Code configuration shared across projects: skills, slash 
 | `hooks/agent-browser-session.mjs` | `SessionStart`     | Give each Claude session its own `agent-browser` session name               |
 | `hooks/agent-browser-session.mjs` | `SessionEnd`       | Close that session's browser so no Chrome process is left behind            |
 | `hooks/git-secret-guard.mjs`      | `PreToolUse`       | Block `git commit` / `git push` when the change contains secrets            |
+| `settings.json` (inline command)  | `PostToolUse`      | Run `prettier --write` on every file Claude writes or edits                 |
 
 The built-in system prompt gives only a date snapshot at session start, so `inject-datetime` supplies the full time. Cleanup details are under Settings.
 
