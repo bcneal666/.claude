@@ -1,6 +1,6 @@
 ---
 name: up-design
-description: Run one UI diagnosis-and-polish pass on the current front-end project: find layout, mobile, performance and animation problems and write them into a report, fix them directly, then record the user's rules in lint, DESIGN.md or a project skill. Use when the user says up-design, run a UI pass, polish the interface, or check animation or front-end experience.
+description: "Run one UI diagnosis-and-polish pass on the current front-end project: find layout, mobile, performance and animation problems and write them into a report, fix them directly, then record the user's rules in lint, DESIGN.md or a project skill. Use when the user says up-design, run a UI pass, polish the interface, or check animation or front-end experience."
 argument-hint: "[--full] [--m]"
 ---
 
