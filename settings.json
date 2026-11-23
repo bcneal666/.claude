@@ -1,8 +1,6 @@
 {
   "$schema": "https://json.schemastore.org/claude-code-settings.json",
   "skillListingBudgetFraction": 0.02,
-  "tui": "fullscreen",
-  "timeZone": "Asia/Taipei",
   "env": {
     "CLAUDE_CODE_SUBAGENT_MODEL": "haiku",
     "CLAUDE_CODE_ENABLE_AWAY_SUMMARY": "1",
@@ -46,8 +44,8 @@
         "hooks": [
           {
             "type": "command",
-            "if": "Bash(*git*)",
             "command": "node ~/.claude/hooks/git-secret-guard.mjs",
+            "if": "Bash(*git*)",
             "timeout": 10
           }
         ]
@@ -57,8 +55,8 @@
         "hooks": [
           {
             "type": "command",
-            "if": "PowerShell(*git*)",
             "command": "node ~/.claude/hooks/git-secret-guard.mjs",
+            "if": "PowerShell(*git*)",
             "timeout": 10
           }
         ]
@@ -143,6 +141,13 @@
         "repo": "jarrodwatts/claude-image-view"
       },
       "autoUpdate": true
+    },
+    "cloudflare": {
+      "source": {
+        "source": "github",
+        "repo": "cloudflare/skills"
+      },
+      "autoUpdate": true
     }
   },
   "outputStyle": "Concise",
@@ -157,6 +162,8 @@
     }
   },
   "advisorModel": "fable",
+  "tui": "fullscreen",
+  "timeZone": "Asia/Taipei",
   "theme": "dark",
   "editorMode": "vim",
   "vimInsertModeRemaps": {
