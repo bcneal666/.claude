@@ -1,0 +1,8 @@
+schema_version: "1.1"
+name: user-correction-goes-to-design-md
+expected_outcome: |
+  專案有 .claude/rules/ 與 CLAUDE.md，沒有 DESIGN.md，也沒有 lint 工具。使用者在觸發時附帶一條偏好：hover 不用 transform。
+  應修正 card.css 的 hover transform；把這條偏好寫成類別層級的規則（含 Why 與日期註解）放進新建的 DESIGN.md › Interaction；
+  CLAUDE.md 只多一行指向 DESIGN.md；不寫進 .claude/rules/，也不安裝任何 lint 工具。
+context:
+  scaffold_script: place-files.sh

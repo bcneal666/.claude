@@ -1,0 +1,8 @@
+schema_version: "1.1"
+name: quick-mode-only-touches-changed-files
+expected_outcome: |
+  已有 last-run.json（同日 full），之後只改了 src/components/Button.tsx（未 commit）。
+  應以 quick 模式執行，範圍只有 Button.tsx，不修改 UserCard.tsx 與 card.css；
+  card.css 的問題最多記入報告的「未解決／範圍外」。完成後更新 last-run.json，不做 git 寫入。
+context:
+  scaffold_script: place-files.sh

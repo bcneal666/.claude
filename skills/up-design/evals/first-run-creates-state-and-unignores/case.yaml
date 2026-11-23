@@ -1,0 +1,10 @@
+schema_version: "1.1"
+name: first-run-creates-state-and-unignores
+expected_outcome: |
+  第一次執行，沒有 up-design/ 目錄，.gitignore 忽略了 up-design/。
+  應建立 up-design/（reports/、last-run.json），從 .gitignore 移除 up-design/ 規則，
+  以 full 模式處理全部 UI 檔案，報告依模板產出，直接修正 transition: all 等問題，
+  使用者沒表達任何偏好，所以不寫入任何規則，agent 發現的問題只列在報告的「建議規則（未寫入）」，
+  且沒有任何 git commit。
+context:
+  scaffold_script: place-files.sh

@@ -1,10 +1,10 @@
 # UX rules
 
-Cross-project interaction and layout rules: desktop/mobile presentation, touch and gestures, data display, loading feedback. Visuals (color, type size, radius) live in project `DESIGN.md` and `CRITERIA.md`.
+Cross-project interaction and layout rules: desktop/mobile presentation, touch and gestures, data display, loading feedback. Visuals (color, type size, radius) live in project `DESIGN.md` and `criteria.md`.
 
-Every `/up-design` run checks this file section by section; verdict per section: `pass` / `gap` / `N/A` / `unverified`.
+This file is a diagnostic baseline, like `emil-design-eng`: up-design checks the in-scope files against it section by section; verdict per section: `pass` / `gap` / `N/A` / `unverified`. A section the scope does not touch is `N/A（不在範圍）`. Project rules (lint, DESIGN.md, CLAUDE.md, tokens) outrank this file. Never copy these rules into the project's DESIGN.md; only the user's own preferences go there.
 
-Desktop Dialog / mobile Drawer: each project wraps its own. Switch `Dialog`/`Drawer` with the project's width media-query hook, extract content into a shared component, behavior per this file. Project has no Drawer component → ask user before adding one; do not hand-write gestures, do not add a bottom-sheet package for this. Component names follow the project's existing ones (`Combobox`, `Sidebar`, `Spinner`, `Kbd` etc. are generic; use project equivalent when it exists).
+Desktop Dialog / mobile Drawer: each project wraps its own. Switch `Dialog`/`Drawer` with the project's width media-query hook, extract content into a shared component, behavior per this file. Project has no Drawer component → do not add one: list it under 「未解決」 as a structural fix; do not hand-write gestures, do not add a bottom-sheet package for this. Component names follow the project's existing ones (`Combobox`, `Sidebar`, `Spinner`, `Kbd` etc. are generic; use project equivalent when it exists).
 
 ## 1. Breakpoints and decision principles
 
@@ -17,23 +17,24 @@ Desktop Dialog / mobile Drawer: each project wraps its own. Switch `Dialog`/`Dra
 
 Mobile keeps no floating dropdown, menu, Popover.
 
-| Component | Desktop `≥ md` | Mobile `< md` |
-| --- | --- | --- |
-| Short dialog (confirm, ≤ 3 fields) | centered `Dialog` | bottom `Drawer`, swipe down to close; primary button pinned at bottom with safe area padding |
-| Confirm box (only for irreversible actions: delete, discard unsaved changes) | `AlertDialog` | bottom `Drawer`; confirm on top, cancel below, both full width |
-| Long form (new record, many fields; judgment and routing in next subsection) | centered `Dialog` | full-screen page: route change, back button left in title bar, submit button sticky at bottom; form body extracted into a shared component used by both |
-| Form dropdown `Select` | floating list | `Drawer` + 48px option rows, closes on pick, current option checked; groups, icons, descriptions allowed |
-| List filter | dropdown pills | search box + "篩選" button (shows selected count) → panel lists each condition and "清除篩選"; tap a condition to stack a second-level option Drawer |
-| Date | `Popover` + `Calendar` | `Drawer` |
-| Multi-select dropdown (tags, assignees: "checklist shown on open") | `Combobox` multi-select (chips) | `Drawer` + 48px check rows, search box on top (required when options > 10), fixed bottom "確認" button (shows selected count); does not close on check |
-| Action menu `DropdownMenu`, avatar menu | dropdown (submenus allowed) | `Drawer`; submenus (theme, language) become segmented buttons that switch directly |
-| Help ⓘ, emoji and other small-panel `Popover` | `Popover` | `Drawer`; already inside a Drawer → expand in place |
-| Notification panel | `Popover` | full-height `Drawer` sliding right-to-left (`swipeDirection="right"`, swipe right to close) |
-| Sidebar | fixed 260px | left drawer (sidebar component handles it) |
+| Component                                                                    | Desktop `≥ md`                  | Mobile `< md`                                                                                                                                           |
+| ---------------------------------------------------------------------------- | ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Short dialog (confirm, ≤ 3 fields)                                           | centered `Dialog`               | bottom `Drawer`, swipe down to close; primary button pinned at bottom with safe area padding                                                            |
+| Confirm box (only for irreversible actions: delete, discard unsaved changes) | `AlertDialog`                   | bottom `Drawer`; confirm on top, cancel below, both full width                                                                                          |
+| Long form (new record, many fields; judgment and routing in next subsection) | centered `Dialog`               | full-screen page: route change, back button left in title bar, submit button sticky at bottom; form body extracted into a shared component used by both |
+| Form dropdown `Select`                                                       | floating list                   | `Drawer` + 48px option rows, closes on pick, current option checked; groups, icons, descriptions allowed                                                |
+| List filter                                                                  | dropdown pills                  | search box + "篩選" button (shows selected count) → panel lists each condition and "清除篩選"; tap a condition to stack a second-level option Drawer    |
+| Date                                                                         | `Popover` + `Calendar`          | `Drawer`                                                                                                                                                |
+| Multi-select dropdown (tags, assignees: "checklist shown on open")           | `Combobox` multi-select (chips) | `Drawer` + 48px check rows, search box on top (required when options > 10), fixed bottom "確認" button (shows selected count); does not close on check  |
+| Action menu `DropdownMenu`, avatar menu                                      | dropdown (submenus allowed)     | `Drawer`; submenus (theme, language) become segmented buttons that switch directly                                                                      |
+| Help ⓘ, emoji and other small-panel `Popover`                                | `Popover`                       | `Drawer`; already inside a Drawer → expand in place                                                                                                     |
+| Notification panel                                                           | `Popover`                       | full-height `Drawer` sliding right-to-left (`swipeDirection="right"`, swipe right to close)                                                             |
+| Sidebar                                                                      | fixed 260px                     | left drawer (sidebar component handles it)                                                                                                              |
 
 ### Short dialog or long form
 
 **All** conditions true = short dialog (mobile `Drawer`); any false = long form (mobile new page); unsure → treat as long form:
+
 - ≤ 3 fields, all short controls: single-line input, dropdown, date.
 - No `Textarea`, file upload, add/delete dynamic rows, multi-step flow.
 - On mobile (375×667) with soft keyboard open the content still fits, no scrolling inside `Drawer`.
@@ -61,13 +62,13 @@ Mobile keeps no floating dropdown, menu, Popover.
 
 ## 3. Narrow layouts
 
-| Layout | Desktop | Tablet | Mobile |
-| --- | --- | --- | --- |
-| Content panel | 16px margin all sides, 20px padding | same as desktop | full bleed, radius 0, 16px padding |
-| List/table | table + filter bar | table (horizontal scroll, first column fixed) | card list (title + status tag + two lines secondary info); filters go into "篩選" panel |
-| Three-column detail | list \| content \| properties | list \| content; properties open bottom Drawer | single column drill-in (list → detail, route change, back top-left); properties open bottom Drawer |
-| Toast | bottom-left | bottom-left | bottom-center, 16px left/right, clear of safe area |
-| Login/sign-up | two-column card | same as desktop | single column, illustration hidden |
+| Layout              | Desktop                             | Tablet                                         | Mobile                                                                                             |
+| ------------------- | ----------------------------------- | ---------------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| Content panel       | 16px margin all sides, 20px padding | same as desktop                                | full bleed, radius 0, 16px padding                                                                 |
+| List/table          | table + filter bar                  | table (horizontal scroll, first column fixed)  | card list (title + status tag + two lines secondary info); filters go into "篩選" panel            |
+| Three-column detail | list \| content \| properties       | list \| content; properties open bottom Drawer | single column drill-in (list → detail, route change, back top-left); properties open bottom Drawer |
+| Toast               | bottom-left                         | bottom-left                                    | bottom-center, 16px left/right, clear of safe area                                                 |
+| Login/sign-up       | two-column card                     | same as desktop                                | single column, illustration hidden                                                                 |
 
 ## 4. Data display
 
@@ -114,7 +115,7 @@ Field appearance and error components: see `DESIGN.md`; here behavior only.
 
 ## 7. Gestures
 
-- Drag and swipe-to-close use the project's existing `Drawer` component (must already handle finger-following drag, swipe close, backdrop fading with progress), no hand-written gestures; ask user before adding a gesture package.
+- Drag and swipe-to-close use the project's existing `Drawer` component (must already handle finger-following drag, swipe close, backdrop fading with progress), no hand-written gestures; do not add a gesture package, list it under 「未解決」 instead.
 - Leave the way you came: bottom Drawer down, right-side notification right, toast in its entry direction.
 - While finger holds, follow 1:1, no easing, no delay; mid-close can be grabbed back, do not wait for animation to finish.
 - Draggable area sets `touch-action`, handing only the drag direction to the gesture to avoid fighting page scroll; pressing buttons and inputs inside Drawer does not start a drag.

@@ -92,35 +92,40 @@ Personal global Claude Code configuration shared across projects: skills, slash 
 
 ## 🧩 Skills
 
-| Name                           | Purpose                                                                          |
-| ------------------------------ | -------------------------------------------------------------------------------- |
-| `agent-browser`                | Browser automation CLI: operate pages, fill forms, screenshot, scrape            |
-| `ai-seo`                       | Get content cited by AI search engines and LLMs (AEO / GEO, `llms.txt`)          |
-| `animate`                      | Build an animation from scratch, deciding purpose, tool, curve and exit in order |
-| `animation-performance`        | Fix dropped frames: composite-only properties, `will-change`, main-thread cost   |
-| `caveman`                      | Ultra-terse mode that cuts tokens while keeping technical accuracy               |
-| `design-md`                    | Distill a Stitch project into a `DESIGN.md` design-system document               |
-| `emil-design-eng`              | Emil Kowalski's UI polish, component and animation philosophy                    |
-| `find-animation-opportunities` | Read-only search for places that should animate, with exact values               |
-| `find-skills`                  | Discover and install skills from the open skills ecosystem                       |
-| `git-commit`                   | Conventional commit analysis and smart batched staging                           |
-| `humanizer`                    | Rewrite AI-sounding English so it reads like the writer                          |
-| `humanizer-zh`                 | Chinese counterpart: trim filler and template phrasing                           |
-| `improve-animations`           | Read-only motion audit with prioritized, self-contained plans                    |
-| `learn-taste`                  | Turn a session's design corrections into `DESIGN.md` rules (manual only)         |
-| `mobile-native`                | CSS and meta-tag fixes that make a web app feel native on a phone                |
-| `modern-web-guidance`          | Search modern web best practices first for HTML/CSS and client-side JS tasks     |
-| `programmatic-seo`             | Plan SEO pages generated at scale from templates and data                        |
-| `remove-animations`            | Remove motion the UI doesn't need; subtract-only, never adds or retunes          |
-| `review-animations`            | Review animation code against a high craft bar (manual only)                     |
-| `review-fix`                   | Functional test + review loop for the current project, max 3 rounds              |
-| `seo-audit`                    | Diagnose ranking, indexing and traffic problems                                  |
-| `up-design`                    | UX rules check, static design plus motion pipeline (usage under Pipelines)       |
-| `up-seo`                       | SEO pipeline with shared context (usage under Pipelines)                         |
+| Name                           | Purpose                                                                           |
+| ------------------------------ | --------------------------------------------------------------------------------- |
+| `agent-browser`                | Browser automation CLI: operate pages, fill forms, screenshot, scrape             |
+| `ai-seo`                       | Get content cited by AI search engines and LLMs (AEO / GEO, `llms.txt`)           |
+| `animate`                      | Build an animation from scratch, deciding purpose, tool, curve and exit in order  |
+| `animation-performance`        | Fix dropped frames: composite-only properties, `will-change`, main-thread cost    |
+| `apple-design`                 | Apple-style fluid, physical motion and interface design foundations for the web   |
+| `ask-sonner`                   | Wire up and troubleshoot Sonner toasts in React                                   |
+| `break-ui`                     | Stress-test UI with worst-case data and report what breaks                        |
+| `caveman`                      | Ultra-terse mode that cuts tokens while keeping technical accuracy                |
+| `choreograph`                  | Coordinate several elements animating together as one motion                      |
+| `design-md`                    | Distill a Stitch project into a `DESIGN.md` design-system document                |
+| `emil-design-eng`              | Emil Kowalski's UI polish, component and animation philosophy                     |
+| `find-animation-opportunities` | Read-only search for places that should animate, with exact values                |
+| `find-skills`                  | Discover and install skills from the open skills ecosystem                        |
+| `gestures`                     | Build drag, swipe and sheet interactions that track the finger                    |
+| `git-commit`                   | Conventional commit analysis and smart batched staging                            |
+| `humanizer`                    | Rewrite AI-sounding English so it reads like the writer                           |
+| `humanizer-zh`                 | Chinese counterpart: trim filler and template phrasing                            |
+| `improve-animations`           | Read-only motion audit with prioritized, self-contained plans                     |
+| `learn-taste`                  | Turn a session's design corrections into `DESIGN.md` rules (manual only)          |
+| `mobile-native`                | CSS and meta-tag fixes that make a web app feel native on a phone                 |
+| `modern-web-guidance`          | Search modern web best practices first for HTML/CSS and client-side JS tasks      |
+| `programmatic-seo`             | Plan SEO pages generated at scale from templates and data                         |
+| `remove-animations`            | Remove motion the UI doesn't need; subtract-only, never adds or retunes           |
+| `review-animations`            | Review animation code against a high craft bar (manual only)                      |
+| `review-fix`                   | Functional test + review loop for the current project, max 3 rounds               |
+| `seo-audit`                    | Diagnose ranking, indexing and traffic problems                                   |
+| `up-design`                    | Incremental UI diagnose-and-fix pass with state and rules (usage under Pipelines) |
+| `up-seo`                       | SEO pipeline with shared context (usage under Pipelines)                          |
 
 **Pipelines**
 
-- `/up-design [--only design|motion] [--m] [@path ... | url]`: a UX rules check on every run (`UX-RULES.md`, 13 sections, per-section verdict in the summary), static design review (screenshots at 375/768/1024/1440, scored against `CRITERIA.md`, you pick fixes), then motion (`remove-animations` → `find-animation-opportunities` → `animate` → `improve-animations` → `animation-performance`), then `review-animations` and final screenshots; `--only` runs one half; details: `skills/up-design/SKILL.md`
+- `/up-design [--full] [--m]`: diagnose (screenshots at 375/768/1024/1440, UX rules check over 13 sections, static design criteria, shadscan on shadcn projects, `break-ui`, motion audits) → fix directly with no prompts (structural changes and new dependencies go to the report as unresolved) → verify (`review-animations`, final screenshots, performance baseline, lint) → write the user's preferences into `DESIGN.md`/lint; quick mode (changed files since the last run) by default, `--full` forces the whole project; state lives in `./up-design/`; no git writes; details: `skills/up-design/SKILL.md`
 - `/up-seo [url] [@path ...]`: `ai-seo` → `seo-audit` → `programmatic-seo`, and you pick fixes after each stage
 
 **Notes**
