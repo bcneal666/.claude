@@ -113,6 +113,7 @@ Personal global Claude Code configuration shared across projects: skills, slash 
 | `humanizer-zh`                 | Chinese counterpart: trim filler and template phrasing                            |
 | `improve-animations`           | Read-only motion audit with prioritized, self-contained plans                     |
 | `learn-taste`                  | Turn a session's design corrections into `DESIGN.md` rules (manual only)          |
+| `migrate-to-vinext`            | Migrate a Next.js project to vinext (Vite), with Cloudflare Workers deploy        |
 | `mobile-native`                | CSS and meta-tag fixes that make a web app feel native on a phone                 |
 | `modern-web-guidance`          | Search modern web best practices first for HTML/CSS and client-side JS tasks      |
 | `programmatic-seo`             | Plan SEO pages generated at scale from templates and data                         |
