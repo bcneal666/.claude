@@ -11,7 +11,7 @@ Contents: Ground rules · A. Decision order · B. Choreography · C. Gestures ·
 - Use the project's easing and duration tokens; none fits → write the A5 literal in place, no parallel token set.
 - Springs only for drag or fling release. Click-opened or closed elements get a curve and no bounce: no force was applied, so overshoot reads as a glitch.
 - Reduced motion and hover gating ship with the animation.
-- `@starting-style`, view transitions, scroll-driven animation → query modern-web-guidance first (SKILL.md).
+- `@starting-style`, view transitions, scroll-driven animation → query modern-web-guidance first (`references/modern-web-guidance.md`).
 
 ## A. Decision order
 

@@ -1,8 +1,8 @@
 # Good vs bad tests
 
-Read this during self-review, or when unsure whether a test is worth keeping.
+For self-review, or when unsure a test is worth keeping.
 
-A test is worth keeping if it (a) fails when behavior breaks and (b) keeps passing when internals are refactored without changing behavior.
+Keep a test only if it (a) fails when behavior breaks and (b) keeps passing when internals are refactored without behavior change.
 
 ## 1. Existence-only assertions
 
@@ -62,7 +62,7 @@ test('total includes tax and shipping', () => {
 })
 ```
 
-Other signs of implementation coupling: testing private methods, reading state through a side channel (querying the DB directly instead of via the public API), asserting on intermediate variables.
+Other implementation-coupling signs: testing private methods, reading state through a side channel (querying DB directly, not via public API), asserting on intermediate variables.
 
 ## 4. Asserting on mocks instead of behavior
 
@@ -87,7 +87,7 @@ test('persists normalized user and returns id', async () => {
 
 ## 5. Missing edge cases
 
-For every function, ask: what happens with `''`, `[]`, `null`, `undefined`, `0`, a negative number, a huge input, a rejected dependency? AI-generated suites usually stop after 2–3 happy-path tests.
+Per function ask: what happens with `''`, `[]`, `null`, `undefined`, `0`, a negative number, a huge input, a rejected dependency? AI-generated suites usually stop after 2–3 happy-path tests.
 
 ## 6. Vacuous async
 
@@ -109,4 +109,4 @@ test('rejects for bad path', async () => {
 
 ## 7. Horizontal slicing (TDD)
 
-Writing ten tests up front, then all the implementation, tends to encode guesses about behavior. Write one failing test, make it pass, repeat — each test then reflects a behavior you actually implemented and observed.
+Ten tests up front, then all implementation, encodes guesses about behavior. Write one failing test, make it pass, repeat: each test then reflects behavior actually implemented and observed.

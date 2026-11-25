@@ -1,6 +1,28 @@
 {
   "$schema": "https://json.schemastore.org/claude-code-settings.json",
   "skillListingBudgetFraction": 0.02,
+  "syncClaudeAiPlugins": false,
+  "skillOverrides": {
+    "anthropic-skills:colorfigures-plus": "off",
+    "anthropic-skills:eli5-inter": "off",
+    "anthropic-skills:morning": "off",
+    "anthropic-skills:import-memory": "off",
+    "anthropic-skills:google-workspace": "off",
+    "anthropic-skills:skill-creator": "user-invocable-only",
+    "anthropic-skills:deep-research": "user-invocable-only",
+    "anthropic-skills:answer-me-with-html": "user-invocable-only",
+    "anthropic-skills:docs": "user-invocable-only",
+    "anthropic-skills:computer-use": "user-invocable-only",
+    "anthropic-skills:built-in-browser": "user-invocable-only",
+    "anthropic-skills:chrome-browser": "user-invocable-only",
+    "init": "user-invocable-only",
+    "security-review": "user-invocable-only",
+    "claude-approvals": "user-invocable-only",
+    "fewer-permission-prompts": "user-invocable-only",
+    "keybindings-help": "user-invocable-only",
+    "plugin-authoring": "user-invocable-only",
+    "claude-api": "user-invocable-only"
+  },
   "env": {
     "CLAUDE_CODE_SUBAGENT_MODEL": "sonnet",
     "CLAUDE_CODE_ENABLE_AWAY_SUMMARY": "1",

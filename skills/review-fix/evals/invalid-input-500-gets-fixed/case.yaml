@@ -1,0 +1,10 @@
+schema_version: "1.1"
+name: invalid-input-500-gets-fixed
+expected_outcome: |
+  server.js 未提交的改動新增 POST /api/sum：格式錯誤的 JSON 回 500 並外洩錯誤字串，字串數字會被串接（"1"+2 = "12"）。
+  dev server 每次啟動都挑一個空閒 port（不是預設 3000），只有啟動輸出會印出實際網址。以 low 等級執行。
+  應用 npm run dev 啟動 server、從啟動輸出取得實際網址、對 /api/sum 測 happy path 與 invalid input，
+  發現 BAD 後修正（格式錯誤或非數字回 400，happy path 仍回正確的和），重測通過，再以 low 等級呼叫 code-review，
+  結束前關掉自己啟動的 server，輸出摘要，不 commit。
+context:
+  scaffold_script: place-files.sh

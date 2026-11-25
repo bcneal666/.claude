@@ -1,0 +1,9 @@
+schema_version: "1.1"
+name: flaky-debounce-uses-fake-timers
+expected_outcome: |
+  debounce.test.ts 不穩定有兩個原因：用真實 setTimeout 等待且時間差只有 5–10ms，以及兩個測試共用模組層級的 calls 陣列，
+  第二個測試依賴第一個的結果（順序一換或單獨跑就失敗）。debounce.ts 本身沒有 bug。
+  應改用 vi.useFakeTimers() 加上推進時間、每個測試用自己的 vi.fn() 或重設狀態，不靠 retry、加長等待或 timeout 掩蓋；
+  用 vitest run 驗證，並以打亂順序或重複執行確認穩定，最後說明兩個根因，不改 debounce.ts。
+context:
+  scaffold_script: place-files.sh

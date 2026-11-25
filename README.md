@@ -49,7 +49,7 @@ Personal global Claude Code configuration shared across projects: skills, slash 
 | `/up-skills [global\|project]` | Batch-update skills |
 
 > [!NOTE]
-> It sets `disable-model-invocation: true` because reinstalling skills is a side effect. Claude cannot call it on its own; it runs only when you type it. The `now-push` and `up-rules` skills do the same (see Skills).
+> It sets `disable-model-invocation: true` because reinstalling skills is a side effect. Claude cannot call it on its own; it runs only when you type it. The self-written skills (`now-push`, `review-fix`, `up-design`, `up-rules`, `up-seo`, `vitest-test-writer`) do the same (see Skills).
 
 <details>
 <summary><code>/up-skills</code> details</summary>
@@ -63,25 +63,19 @@ Personal global Claude Code configuration shared across projects: skills, slash 
 
 ## 🧩 Skills
 
-| Name                  | Purpose                                                                           |
-| --------------------- | --------------------------------------------------------------------------------- |
-| `agent-browser`       | Browser automation CLI: operate pages, fill forms, screenshot, scrape             |
-| `design-md`           | Distill a Stitch project into a `DESIGN.md` design-system document                |
-| `find-skills`         | Discover and install skills from the open skills ecosystem                        |
-| `humanizer`           | Rewrite AI-sounding English so it reads like the writer                           |
-| `humanizer-zh`        | Chinese counterpart: trim filler and template phrasing                            |
-| `migrate-to-vinext`   | Migrate a Next.js project to vinext (Vite), with Cloudflare Workers deploy        |
-| `modern-web-guidance` | Search modern web best practices first for HTML/CSS and client-side JS tasks      |
-| `now-push`            | Commit and push in a fixed format, no confirmation; manual-only (usage below)     |
-| `review-fix`          | Functional test + review loop for the current project, max 3 rounds               |
-| `up-design`           | Incremental UI diagnose-and-fix pass with state and rules (usage under Pipelines) |
-| `up-rules`            | Route rules to lint, `rules/` or `CLAUDE.md`, compress them, sync this README     |
-| `up-seo`              | SEO pipeline with shared context (usage under Pipelines)                          |
-| `vitest-test-writer`  | Write, review and fix Vitest unit tests, including test-first red-green flow      |
+| Name                 | Purpose                                                                                        |
+| -------------------- | ---------------------------------------------------------------------------------------------- |
+| `design-md`          | Distill a Stitch project into a `DESIGN.md` design-system document                             |
+| `now-push`           | Commit and push in a fixed format, no confirmation; manual-only (usage below)                  |
+| `review-fix`         | Functional test + review loop for the current project, max 3 rounds; manual-only               |
+| `up-design`          | Incremental UI diagnose-and-fix pass with state and rules; manual-only (usage under Pipelines) |
+| `up-rules`           | Route rules to lint, `rules/` or `CLAUDE.md`, compress them, sync this README                  |
+| `up-seo`             | SEO pipeline with shared context; manual-only (usage under Pipelines)                          |
+| `vitest-test-writer` | Write, review, fix, de-flake or migrate Vitest tests, incl. TDD red-green; manual-only         |
 
 **Pipelines**
 
-- `/up-design [--full] [--m]`: diagnose (screenshots at 375/768/1024/1440, UX rules check over 13 sections, static design criteria, shadscan on shadcn projects, worst-case data, motion audits) → fix directly with no prompts (structural changes and new dependencies go to the report as unresolved) → verify (motion review, final screenshots, performance baseline, lint) → write the user's preferences into `DESIGN.md`/lint; quick mode (changed files since the last run) by default, `--full` forces the whole project; state lives in `./up-design/`; no git writes; self-contained, so the design, motion and rule-writing guidance ships in `skills/up-design/references/`; details: `skills/up-design/SKILL.md`
+- `/up-design [--full] [--m]`: diagnose (screenshots at 375/768/1024/1440, UX rules check over 13 sections, static design criteria, shadscan on shadcn projects, worst-case data, motion audits) → fix directly with no prompts (structural changes and new dependencies go to the report as unresolved) → verify (motion review, final screenshots, performance baseline, lint) → write the user's preferences into `DESIGN.md`/lint; quick mode (changed files since the last run) by default, `--full` forces the whole project; state lives in `./up-design/`; no git writes; self-contained, so the design, motion, rule-writing and Modern Web Guidance lookup steps ship in `skills/up-design/references/`; details: `skills/up-design/SKILL.md`
 - `/up-seo [url] [@path ...]`: AI-search visibility → technical and on-page audit → programmatic opportunities, with one shared context and you pick fixes after each stage; self-contained, the guidance ships in `skills/up-seo/references/`; details: `skills/up-seo/SKILL.md`
 
 <details>
@@ -120,7 +114,7 @@ Personal global Claude Code configuration shared across projects: skills, slash 
 - Third-party skills are installed with `npx skills add --copy`, so each is a real directory in `skills/` that syncs across devices via git; `/up-skills` still updates them in place from upstream
 - The update source list lives in `~/.agents/.skill-lock.json`, outside this repo; on a new device, run `npx skills add <owner/repo> -s <skill> -g -y -a claude-code --copy` once per skill to register it
 - `up-design` writes the user's design corrections into `DESIGN.md` / lint itself (rule-writing guidance: `skills/up-design/references/rule-routing.md`)
-- `review-fix` auto-detects the dev command and port, runs the project's own `.claude/review-fix/` checks or throwaway scripts built on `scripts/lib.mjs`, then `/code-review` and fixes until it converges
+- `/review-fix [low|medium|high|xhigh|max]` auto-detects the dev command and takes the URL the server prints, runs the project's own `.claude/review-fix/` checks or throwaway scripts built on `scripts/lib.mjs` plus its `typecheck`/`lint`/`test` scripts, then `/code-review` at the given level (default `high`) and fixes until it converges; `ultra` is billed and user-triggered, so it only tells you to run `/code-review ultra` yourself
 
 ## 🤖 Subagents
 
@@ -132,7 +126,7 @@ Personal global Claude Code configuration shared across projects: skills, slash 
 | `ui-ux-tester`     | Test a running web app with agent-browser; report flow, visual and UX defects    |
 
 > [!NOTE]
-> All four subagents are read-only (no `Edit` / `Write` granted) and have "Use proactively" in their description, so the main agent delegates to them automatically. Each pins its own model: `code-reviewer` and `security-auditor` use opus; `researcher` and `ui-ux-tester` use sonnet. `ui-ux-tester` also preloads the `agent-browser` skill.
+> All four subagents are read-only (no `Edit` / `Write` granted) and have "Use proactively" in their description, so the main agent delegates to them automatically. Each pins its own model: `code-reviewer` and `security-auditor` use opus; `researcher` and `ui-ux-tester` use sonnet. `ui-ux-tester` loads the `agent-browser` usage guide from the CLI itself (`agent-browser skills get core`).
 
 ## 🪝 Hooks
 
@@ -180,18 +174,20 @@ The built-in system prompt gives only a date snapshot at session start, so `inje
 
 ## ⚙️ Settings
 
-| Item           | Details                                                                                                          |
-| -------------- | ---------------------------------------------------------------------------------------------------------------- |
-| Model          | `model` is `opusplan` (Opus in plan mode, Sonnet when executing)                                                 |
-| Effort         | `modelSettings`: Opus `xhigh`, Sonnet `high`; `opusplan` uses Sonnet entry for both phases (plan runs `high`)    |
-| Subagent model | `env` sets `CLAUDE_CODE_SUBAGENT_MODEL=sonnet` as a fallback; custom agents pin their own `model`, which wins    |
-| Output         | `outputStyle` is `Concise`; `language` is `Traditional Chinese (Taiwan)`                                         |
-| Start mode     | `permissions.defaultMode` is `plan`                                                                              |
-| Permissions    | `permissions.allow` whitelists low-risk commands (list below the table)                                          |
-| Deny           | `permissions.deny` blocks force pushes and reads of `~/.ssh`                                                     |
-| Time zone      | `timeZone` is `Asia/Taipei`                                                                                      |
-| Statusline     | Node only (`statusline-command.mjs`), no shell fallback; three lines (model, location, usage)                    |
-| Vim indicator  | `statusLine.hideVimModeIndicator: true` turns off the built-in `-- INSERT --` indicator in favor of a custom one |
+| Item           | Details                                                                                                                                                                                                                                                                             |
+| -------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Model          | `model` is `opusplan` (Opus in plan mode, Sonnet when executing)                                                                                                                                                                                                                    |
+| Effort         | `modelSettings`: Opus `xhigh`, Sonnet `high`; `opusplan` uses Sonnet entry for both phases (plan runs `high`)                                                                                                                                                                       |
+| Subagent model | `env` sets `CLAUDE_CODE_SUBAGENT_MODEL=sonnet` as a fallback; custom agents pin their own `model`, which wins                                                                                                                                                                       |
+| Output         | `outputStyle` is `Concise`; `language` is `Traditional Chinese (Taiwan)`                                                                                                                                                                                                            |
+| Start mode     | `permissions.defaultMode` is `plan`                                                                                                                                                                                                                                                 |
+| Permissions    | `permissions.allow` whitelists low-risk commands (list below the table)                                                                                                                                                                                                             |
+| Deny           | `permissions.deny` blocks force pushes and reads of `~/.ssh`                                                                                                                                                                                                                        |
+| Skill listing  | `skillOverrides` hides claude.ai-synced skills: `off` for unused ones, `user-invocable-only` keeps `/name` without listing it; only `docx`/`pdf`/`pptx`/`xlsx` stay listed; rarely auto-needed built-ins (`init`, `security-review`, `claude-api`, …) are `user-invocable-only` too |
+| Synced plugins | `syncClaudeAiPlugins: false` stops claude.ai plugin sync (drops `logo-design`, `frontend-design`)                                                                                                                                                                                   |
+| Time zone      | `timeZone` is `Asia/Taipei`                                                                                                                                                                                                                                                         |
+| Statusline     | Node only (`statusline-command.mjs`), no shell fallback; three lines (model, location, usage)                                                                                                                                                                                       |
+| Vim indicator  | `statusLine.hideVimModeIndicator: true` turns off the built-in `-- INSERT --` indicator in favor of a custom one                                                                                                                                                                    |
 
 Allowed: `git add`, `git commit -m`, `git push`, `WebSearch`, `agent-browser snapshot` / `wait`, `Edit(~/.claude/commands/**)`, `Skill(update-config)`.
 

@@ -1,38 +1,43 @@
 ---
 name: vitest-test-writer
-description: Write, review, fix or test-drive Vitest unit tests for JavaScript/TypeScript code. Use this skill whenever the user asks to add tests, improve coverage, write tests first (TDD / red-green), fix failing or flaky Vitest tests, review AI-generated tests, or migrate Jest tests to Vitest — even if they only say "write tests for this" in a project that has vitest in package.json or a vitest/vite config.
+description: Write, review, fix, test-drive (TDD red-green), de-flake or migrate-from-Jest Vitest unit tests for JavaScript/TypeScript code.
+argument-hint: "[file, task or test description]"
+disable-model-invocation: true
 ---
 
 # Vitest Test Writer
 
-Based on the official Vitest guide "Writing Tests with AI" plus TDD discipline (vertical slices, independent expected values). The core idea: generated tests are only as good as the context you gather and the review you do afterwards. A vague approach produces shallow happy-path tests that assert nothing meaningful.
+Based on Vitest guide "Writing Tests with AI" (vitest.dev/guide/learn/writing-tests-with-ai) plus TDD discipline (vertical slices, independent expected values). Generated tests are only as good as context gathered and review done after; vague approach → shallow happy-path tests asserting nothing.
 
 ## Pick the mode
 
-- **Retrofit mode** — code already exists, user wants tests for it. Follow steps 1 → 2 → 4 → 5 → 6.
-- **TDD mode** — user wants a new feature or bug fix built test-first, or says "TDD", "red-green", "test first". Follow steps 1 → 3 → 5 → 6.
+- **Retrofit**: code exists, user wants tests. Steps 1 → 2 → 5 → 6 → 7.
+- **TDD**: new feature or bug fix built test-first ("TDD", "red-green", "test first"). Steps 1 → 3 → 5 → 6 → 7.
+- **Existing tests**: fix failing or flaky tests, review tests, migrate from Jest. Steps 1 → 4 → 5 → 6 → 7.
 
-If unclear, retrofit when the target code already exists; TDD when it doesn't.
+Unclear: existing test files are the subject → existing tests; target code exists → retrofit; else TDD.
 
 ## 1. Gather context before writing anything
 
-Tests written without context use the wrong conventions, wrong environment, and mocks of code the model never saw. So read, in this order:
+Without context, tests use wrong conventions, wrong environment, mocks of unseen code. Read in order:
 
-1. **The source under test** — the real file, including imports and types. Never test from a description.
-2. **Vitest config** (`vitest.config.*`, `vite.config.*`, or `test` field in `vitest.workspace`). Note `globals`, `environment`, `setupFiles`, `restoreMocks`, `include`. These decide whether you import `describe/test/expect`, whether DOM APIs exist, and whether mocks auto-reset.
-3. **1–2 existing test files** close to the target. Copy their conventions: `test` vs `it`, `describe` layout, `test.extend` fixtures vs `beforeEach`, file naming and location. An existing file is a better style spec than any description.
-4. **Dependencies that will need mocking** — at least their type signatures.
-5. **Project rules** — `AGENTS.md`, `CLAUDE.md`, `GLOSSARY.md`, contributing docs. Use the project's domain words in test names.
+1. **Source under test**: real file incl. imports and types. Never test from a description.
+2. **Vitest version**: installed `node_modules/vitest/package.json`, else `vitest` range in `package.json`. Not `npx vitest --version` before dependencies are installed: it fetches latest release instead. Mock reset, fake timers and some APIs differ between majors 3, 4, 5 (step 5); wrong-version rules give tests that pass vacuously or fail for wrong reason.
+3. **Vitest config** (`vitest.config.*`, else `vite.config.*`; per-package settings may sit under `test.projects`; only Vitest 3 still reads separate `vitest.workspace.*`). Note `globals`, `environment`, `setupFiles`, `restoreMocks` / `clearMocks` / `mockReset`, `include`: they decide whether to import `describe/test/expect`, whether DOM APIs exist, whether mocks reset between tests.
+4. **1–2 existing test files** near target. Copy conventions: `test` vs `it`, `describe` layout, `test.extend` fixtures vs `beforeEach`, file naming and location. Existing file beats any style description.
+5. **Dependencies needing mocks**: at least type signatures.
+6. **Project rules**: `AGENTS.md`, `CLAUDE.md`, `GLOSSARY.md`, contributing docs. Use project domain words in test names.
 
-If the project has no tests yet, default to: one `describe` per exported function/class, `test`, colocated `*.test.ts`.
+No tests yet → default: one `describe` per exported function/class, `test`, colocated `*.test.ts`.
 
 ## 2. Retrofit: write the tests
 
-Read `references/vitest-patterns.md` for API details and Jest→Vitest mapping when needed.
+API details for mocks, async, timers, parameterized tests: `references/vitest-patterns.md`.
 
-**Choose seams.** Test through public interfaces (exported functions, class public methods, HTTP handlers) — the points where behavior is observable. Do not test private helpers or internal call order; those tests break on correct refactors.
+**Seams.** Test through public interfaces (exported functions, public class methods, HTTP handlers), where behavior is observable. Not private helpers or internal call order: those tests break on correct refactors.
 
-**Cover these scenarios** where they apply, because AI-written tests reliably skip them:
+**Cover where applicable** (AI-written tests reliably skip these):
+
 - happy path
 - validation and error paths (thrown errors, rejected promises, error return values)
 - empty input: `''`, `[]`, `{}`
@@ -40,54 +45,82 @@ Read `references/vitest-patterns.md` for API details and Jest→Vitest mapping w
 - boundaries: 0, negative, max, off-by-one
 - async failure: network error, timeout, rejected dependency
 
-**Expected values must come from an independent source** — a hand-worked example, the spec, a known-good literal. Never recompute the expected value the same way the code does (`expect(add(a, b)).toBe(a + b)`); such a test is tautological and cannot fail. See `references/good-vs-bad-tests.md`.
+**Expected values from an independent source**: hand-worked example, spec, known-good literal. Never recompute expected value the way code does (`expect(add(a, b)).toBe(a + b)`): tautological, cannot fail. See `references/good-vs-bad-tests.md`.
 
-**Mock only I/O boundaries**: network, database, filesystem, time (`vi.useFakeTimers`), randomness. Do not mock the module under test or pure helpers it uses. AI tools over-mock by default; resist it.
+**Mock only I/O boundaries**: network, database, filesystem, time (`vi.useFakeTimers`), randomness. Not the module under test or pure helpers it uses. AI tools over-mock by default; resist.
 
 ## 3. TDD: red → green in vertical slices
 
-1. **Agree on seams first.** List the public interface and the seams you intend to test, each with one line on what it catches and what it misses. Confirm with the user before writing tests, because a wrong seam wastes every cycle after it.
-2. **One slice per cycle**: write *one* failing test at one seam → run it and see it fail for the right reason (red) → write the minimal code to pass (green) → run again.
-3. **Do not write all tests first.** Bulk-written tests verify imagined behavior instead of real behavior. Do not add speculative features or tests for future requirements.
-4. **Refactor after green**, as a separate step, with tests staying green. Tests that break during a behavior-preserving refactor were coupled to implementation — fix the test, not the refactor.
+1. **Agree on seams first.** List public interface and seams to test, each with one line on what it catches and misses. User already spelled out behaviors → state list and go on; otherwise confirm before writing tests, because a wrong seam wastes every later cycle.
+2. **One slice per cycle**: write _one_ failing test at one seam → run, see it fail for the right reason (red) → minimal code to pass (green) → run again.
+3. **Not all tests first.** Bulk-written tests verify imagined behavior, not real. No speculative features or tests for future requirements.
+4. **Refactor after green**, separate step, tests stay green. Tests breaking on behavior-preserving refactor were coupled to implementation: fix the test, not the refactor.
 
-The same coverage list and independent-expected-value rule from step 2 apply to each slice.
+Step 2 coverage list and independent-expected-value rule apply to each slice.
 
-## 4. Vitest-specific rules
+## 4. Existing tests: fix, de-flake, review, migrate
 
-- Vitest APIs only: `vi.fn`, `vi.mock`, `vi.spyOn`, `vi.useFakeTimers`. Never `jest.*` — models trained on Jest drift into it.
-- Imports: if `globals: true`, don't import test globals; otherwise `import { describe, test, expect, vi } from 'vitest'`.
-- Module mocks: prefer `vi.mock(import('./mod.js'))` over `vi.mock('./mod.js')` — type-safe and survives file renames.
-- Async: `async`/`await`, `await expect(p).resolves...` / `.rejects...`. Forgetting `await` on `.rejects` makes the test pass vacuously.
+- **Failing**: run file, read actual failure, decide whether test or source is wrong. Wrong test (stale expectation, wrong API, bad mock) → fix. Real source bug → report, never hide.
+- **Flaky**: reproduce before fixing; a fix never seen failing is a guess. Run shuffled (`vitest run <file> --sequence.shuffle`; `--sequence.seed=<n>` replays a failing order), repeated (`--repeats=<n>` on Vitest 5; earlier majors: loop the file), each test alone (`-t "<name>"`). Fake-timer and mock patterns: `references/vitest-patterns.md`. Usual causes:
+  - real time: `setTimeout` waits, `Date`, `performance.now()` → `vi.useFakeTimers()` and advance time
+  - state shared between tests: module-level variables, singletons, mocks and spies not reset, env vars (`vi.stubEnv` + `vi.unstubAllEnvs()`)
+  - un-awaited promises, real `Math.random()`, real network
+
+  Fix the cause. Retry, `repeats`, longer timeouts or waits only hide it: never the fix.
+
+- **Review**: run checker (step 6) and self-review list (step 7), report each problem with `file:line` and concrete fix. Report-only: change files only when user also asked for fixes.
+- **Jest migration**: mapping in `references/vitest-patterns.md`. `require` → ESM imports, `jest.*` → `vi.*`, `jest.mock('./m')` → top-level `vi.mock(import('./m.js'))`. Fix weak assertions found along the way; tell user which changed.
+
+## 5. Vitest-specific rules
+
+- Vitest APIs only: `vi.fn`, `vi.mock`, `vi.spyOn`, `vi.useFakeTimers`. Never `jest.*`: Jest-trained models drift into it.
+- Imports: `globals: true` → don't import test globals; else `import { describe, test, expect, vi } from 'vitest'`.
+- Module mocks: prefer `vi.mock(import('./mod.js'))` over `vi.mock('./mod.js')` (Vitest 2.1+): types `importOriginal` and factory, survives renames. `vi.mock` and `vi.hoisted` at file top level; Vitest 5 throws when nested.
+- Mocks called with `new` (Vitest 4+): `function` or `class` implementation, not arrow.
+- Async: `async`/`await`, `await expect(p).resolves...` / `.rejects...`. Missing `await` on `.rejects` passes vacuously before Vitest 5, fails in 5.
+- Test options in the middle: `test(name, { timeout: 10_000 }, fn)`. Third-argument options object removed in Vitest 4.
 - Many inputs → `test.for` / `test.each`, not copy-pasted tests.
-- Error messages → `toThrowErrorMatchingInlineSnapshot()` or an explicit message/regex.
-- Mock leakage → rely on `restoreMocks: true` in config, or `afterEach(() => vi.restoreAllMocks())`.
+- Error messages → `toThrowErrorMatchingInlineSnapshot()` or explicit message/regex.
+- Mock leakage between tests depends on major:
+
+  | Major | `restoreMocks: true` does                                             | Also needed                                                        |
+  | ----- | --------------------------------------------------------------------- | ------------------------------------------------------------------ |
+  | 3     | restores spies, clears call history, resets `vi.fn()` implementations | nothing                                                            |
+  | 4     | restores `vi.spyOn` spies only                                        | `clearMocks: true`, or `vi.fn()` call counts leak into later tests |
+  | 5     | restores `vi.spyOn` spies only                                        | nothing (`clearMocks` defaults to `true`)                          |
+
+  `restoreMocks: true` + `clearMocks: true` safe on every version. Config not changeable → `afterEach(() => { vi.restoreAllMocks(); vi.clearAllMocks() })` in the file.
+
 - Names: short, behavior-focused (`formats USD prices`, `throws for negative amounts`), not sentences describing implementation.
 
-## 5. Run and verify
+## 6. Run and verify
 
-Always run, never in watch mode (an agent waiting on watch mode never exits):
+Always run, never watch mode (agent waiting on watch never exits). Project package manager (`pnpm exec`, `yarn`, `bunx`, else `npx`):
 
 ```bash
 npx vitest run path/to/file.test.ts
 ```
 
-Then run the static checker bundled with this skill to catch common AI mistakes:
+Vitest 4.1+ run by an AI agent uses a minimal reporter hiding console output of passing tests; add `--reporter=default` to see logs.
+
+Then, from directory holding the Vitest config (package root in a monorepo), run bundled static checker for common AI mistakes:
 
 ```bash
-python3 <skill-dir>/scripts/check_tests.py path/to/file.test.ts [--config vitest.config.ts]
+node "${CLAUDE_SKILL_DIR}/scripts/check-tests.mjs" path/to/file.test.ts
 ```
 
-It flags `jest.*` usage, string-path `vi.mock`, tests whose only assertion is `toBeDefined`/`not.toThrow`, un-awaited `.rejects/.resolves`, tautological `toBe(a + b)` patterns, and missing `restoreMocks`. Fix what it reports unless the finding is a deliberate exception.
+Finds Vitest config and version itself (`--config <path>` overrides). Flags `jest.*`, `.only`, un-awaited `.rejects/.resolves` (also across lines), string-path `vi.mock`, tests whose only assertions are existence, no-throw or mock calls, tautological expected values, real-time waits, unpinned `Date`/`Math.random`, missing test-global imports, mock-reset settings that leak for installed major. Fix what it reports unless deliberate exception (review mode: report instead).
 
-Fix import errors, wrong APIs and nonexistent references until green. **If a test fails because the source has a real bug, report the bug to the user instead of weakening the assertion** — making the test pass by loosening it destroys the test's value.
+Fix import errors, wrong APIs, nonexistent references until green. **Test fails on a real source bug → report bug to user, never weaken the assertion**: loosening a test to pass destroys its value.
 
-## 6. Self-review, then report
+## 7. Self-review, then report
 
-Before finishing, reread each test and reject it if:
-- it only asserts existence (`toBeDefined`, `toBeTruthy`) or "doesn't throw"
-- it asserts on mocks instead of outputs or observable effects
-- it would fail after a correct refactor of internals
-- its expected value is computed by the same logic as the code
+Before finishing, reread each test; reject it if:
 
-Report to the user briefly: files added/changed, scenarios covered, gaps left on purpose, bugs found, and config suggestions (e.g. add `restoreMocks: true`).
+- only asserts existence (`toBeDefined`, `toBeTruthy`) or "doesn't throw"
+- asserts on mocks instead of outputs or observable effects
+- would fail after a correct refactor of internals
+- expected value computed by same logic as code
+- depends on another test having run first
+
+Report briefly: files added/changed, scenarios covered, gaps left on purpose, bugs found, root causes (flaky tests), config suggestions (e.g. mock-reset setting for their major).

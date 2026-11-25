@@ -1,7 +1,8 @@
 ---
 name: up-design
-description: "Run one UI diagnosis-and-polish pass on the current front-end project: find layout, mobile, performance and animation problems and write them into a report, fix them directly, then record the user's rules in lint, DESIGN.md or a project skill. Use when the user says up-design, run a UI pass, polish the interface, or check animation or front-end experience."
+description: "Run one UI diagnosis-and-polish pass on the current front-end project: find layout, mobile, performance and animation problems and write them into a report, fix them directly, then record the user's rules in lint, DESIGN.md or a project skill."
 argument-hint: "[--full] [--m]"
+disable-model-invocation: true
 ---
 
 # up-design
@@ -14,17 +15,18 @@ Order rationale: tuning animation on an unstable layout is wasted work, so **fix
 
 `<skill-dir>` = directory of this SKILL.md. Everything the run needs ships in this skill; read each file at the step that names it.
 
-| File                            | Read at            | Purpose                                                              |
-| ------------------------------- | ------------------ | -------------------------------------------------------------------- |
-| `references/design-judgment.md` | step 1.4           | Judgment baseline for the whole run                                  |
-| `references/ux-rules.md`        | step 1.6           | 13-section UX checklist (diagnostic baseline)                        |
-| `references/criteria.md`        | step 1.6           | Static design criteria                                               |
-| `references/stress-mobile.md`   | step 2.5–2.7       | Worst-case data, mobile fixes (`--m`), Sonner checks                 |
-| `references/motion-audit.md`    | step 2.8–2.11, 4.2 | Performance, removal, audit of existing motion, missing motion       |
-| `references/motion-build.md`    | step 3.3           | Implementing animation                                               |
-| `references/motion-review.md`   | step 4.1           | Reviewing this run's animation                                       |
-| `references/rule-routing.md`    | step 5             | Turning the user's corrections into lint / DESIGN.md / project skill |
-| `assets/*-template.md`          | as named           | Report, perf baseline, DESIGN.md, project skill skeletons            |
+| File                                | Read at                               | Purpose                                                              |
+| ----------------------------------- | ------------------------------------- | -------------------------------------------------------------------- |
+| `references/design-judgment.md`     | step 1.4                              | Judgment baseline for the whole run                                  |
+| `references/ux-rules.md`            | step 1.6                              | 13-section UX checklist (diagnostic baseline)                        |
+| `references/criteria.md`            | step 1.6                              | Static design criteria                                               |
+| `references/stress-mobile.md`       | step 2.5–2.7                          | Worst-case data, mobile fixes (`--m`), Sonner checks                 |
+| `references/motion-audit.md`        | step 2.8–2.11, 4.2                    | Performance, removal, audit of existing motion, missing motion       |
+| `references/motion-build.md`        | step 3.3                              | Implementing animation                                               |
+| `references/motion-review.md`       | step 4.1                              | Reviewing this run's animation                                       |
+| `references/rule-routing.md`        | step 5                                | Turning the user's corrections into lint / DESIGN.md / project skill |
+| `references/modern-web-guidance.md` | step 3, before platform-feature fixes | Search and retrieve current platform guides, report format           |
+| `assets/*-template.md`              | as named                              | Report, perf baseline, DESIGN.md, project skill skeletons            |
 
 Scripts use only Node.js 18+ built-ins; run on Windows and Linux from any directory inside the project. `scripts/scope.mjs` previews scope without creating files (`start_run.mjs` already includes its logic).
 
@@ -57,9 +59,9 @@ Natural-language equivalents count as arguments: 「全面檢查」 = `--full`, 
 5. Read existing project rules: lint config, `DESIGN.md`, `.claude/skills/design-*/`, `CLAUDE.md` / `AGENTS.md`, `.claude/rules/*.md`, design tokens (CSS variables, tailwind config). Follow them all run; on conflict with the references' defaults, project rules win because they are the user's explicit preference for this project.
 6. Read `references/ux-rules.md` and `references/criteria.md`. They are diagnostic baselines, not project rules (see Boundaries). Priority: project rules > ux-rules > modern-web-guidance > criteria and the other references; list conflicts in the report.
 
-**Screen verification** (step 2 baseline, step 4 final; same method so they compare): use `agent-browser`. Detect dev command and port (`package.json` scripts), start in background, open. Capture full-page at 375 / 768 / 1024 / 1440px with `prefers-reduced-motion: reduce` emulated (or wait for animation to stop) to avoid mid-animation shots. Also check 320px has no horizontal scroll (screenshot only on failure). At 375px open each overlay type the project has (Select, DropdownMenu, Dialog/AlertDialog, date, Popover, filter, notification, sidebar) and capture one each. Save screenshots to the scratchpad. Cannot start or overlay won't open → fall back to code only and mark affected items 「未驗證（無畫面）」. A "looks better" without screenshots is not a verified fix.
+**Screen verification** (step 2 baseline, step 4 final; same method so they compare): use the `agent-browser` CLI; run `agent-browser skills get core` once first for its current usage. Detect dev command and port (`package.json` scripts), start in background, open. Capture full-page at 375 / 768 / 1024 / 1440px with `prefers-reduced-motion: reduce` emulated (or wait for animation to stop) to avoid mid-animation shots. Also check 320px has no horizontal scroll (screenshot only on failure). At 375px open each overlay type the project has (Select, DropdownMenu, Dialog/AlertDialog, date, Popover, filter, notification, sidebar) and capture one each. Save screenshots to the scratchpad. Cannot start or overlay won't open → fall back to code only and mark affected items 「未驗證（無畫面）」. A "looks better" without screenshots is not a verified fix.
 
-**modern-web-guidance**: when a fix writes HTML / CSS / client JS involving platform features (dialog / popover, container query, dark mode, forms, scrollbar, images and LCP, accessibility, view transition, scroll-driven animation, `content-visibility`, CWV), first call Skill `modern-web-guidance`; `args` = feature + file list + task "Search and retrieve guides for this feature now; do not edit any file." Query once per feature, query terms 2–5 words with no framework or project nouns; implement per the returned guidance and carry key points into the animation work in step 3. No relevant guidance → implement normally and note it. Pure backend, tooling config, copy edits: skip. If used, append its `### Modern Web Guidance` section at the end of the report.
+**modern-web-guidance**: fixes writing HTML / CSS / client JS that uses a platform feature → first look up guides per `references/modern-web-guidance.md` (scope, skip cases, report section live there); carry key points into step 3 animation work.
 
 `file_count` is 0 → skip steps 2–4, go to step 5 rules check, then wrap up.
 

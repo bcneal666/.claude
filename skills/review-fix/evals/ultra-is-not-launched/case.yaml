@@ -1,0 +1,8 @@
+schema_version: "1.1"
+name: ultra-is-not-launched
+expected_outcome: |
+  server.js 有未提交的 POST /api/sum 改動，使用者以 ultra 等級執行。
+  ultra 是使用者自己觸發、要計費的雲端審查，skill 不能代為啟動：應告訴使用者自己輸入 /code-review ultra 後停止，
+  不呼叫 code-review（任何等級都不呼叫）、不啟動 dev server、不改檔案、不 commit。
+context:
+  scaffold_script: place-files.sh

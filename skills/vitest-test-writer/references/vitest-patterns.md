@@ -1,13 +1,14 @@
 # Vitest patterns and Jest → Vitest mapping
 
-Read this when writing mocks, async tests, parameterized tests, or migrating Jest code.
+For mocks, async tests, timers, parameterized tests, Jest migration. Version notes = Vitest major (3, 4, 5).
 
 ## Jest → Vitest
 
 | Jest | Vitest |
 |---|---|
+| `require('./m')` | `import { x } from './m.js'` (ESM) |
 | `jest.fn()` | `vi.fn()` |
-| `jest.mock('./m')` | `vi.mock(import('./m.js'))` |
+| `jest.mock('./m')` | `vi.mock(import('./m.js'))`, top level only; a factory must return every export the test uses |
 | `jest.spyOn(obj, 'k')` | `vi.spyOn(obj, 'k')` |
 | `jest.useFakeTimers()` | `vi.useFakeTimers()` |
 | `jest.advanceTimersByTime(n)` | `vi.advanceTimersByTime(n)` |
@@ -17,7 +18,7 @@ Read this when writing mocks, async tests, parameterized tests, or migrating Jes
 
 ## Module mocking
 
-Partial mock keeping the real implementation for everything else:
+Partial mock, real implementation for everything else:
 
 ```ts
 vi.mock(import('./api.js'), async (importOriginal) => {
@@ -26,7 +27,7 @@ vi.mock(import('./api.js'), async (importOriginal) => {
 })
 ```
 
-`vi.mock` is hoisted above imports. To reference variables in the factory, declare them with `vi.hoisted`:
+`vi.mock` hoists above imports. Variables used in the factory → declare with `vi.hoisted`:
 
 ```ts
 const { fetchUser } = vi.hoisted(() => ({ fetchUser: vi.fn() }))
@@ -40,13 +41,19 @@ const spy = vi.spyOn(console, 'error').mockImplementation(() => {})
 // ... with restoreMocks: true in config, no manual restore needed
 ```
 
-Recommended config:
+Recommended config, safe on every major (per-version behavior: SKILL.md step 5):
 
 ```ts
 // vitest.config.ts
 export default defineConfig({
-  test: { restoreMocks: true },
+  test: { restoreMocks: true, clearMocks: true },
 })
+```
+
+Mocks called with `new` (Vitest 4+) need `function` or `class` implementation:
+
+```ts
+const Client = vi.fn(function () { return { get: vi.fn() } })
 ```
 
 ## Async
@@ -57,7 +64,7 @@ test('rejects for unknown id', async () => {
 })
 ```
 
-Without `await`, the assertion runs after the test ends and the test passes no matter what.
+Without `await`, assertion runs after test ends; test passes no matter what.
 
 ## Fake timers
 
@@ -72,7 +79,7 @@ test('retries after 1s', async () => {
 })
 ```
 
-Fix the clock for date logic: `vi.setSystemTime(new Date('2026-01-01T00:00:00Z'))`.
+Fake timers also fake `Date` and `performance.now()` (not `process.nextTick` or `queueMicrotask`). Date logic: pin clock after `vi.useFakeTimers()`: `vi.setSystemTime(new Date('2026-01-01T00:00:00Z'))`.
 
 ## Parameterized tests
 
@@ -98,7 +105,7 @@ const test = baseTest.extend<{ db: Db }>({
 })
 ```
 
-Prefer fixtures over `beforeEach` when setup is only needed by some tests or needs teardown.
+Prefer fixtures over `beforeEach` when only some tests need the setup or it needs teardown.
 
 ## Errors
 
@@ -109,7 +116,7 @@ expect(() => parse('x')).toThrow(/invalid token/)
 
 ## Environment
 
-Per-file override when config default is `node` but the test needs DOM:
+Per-file override when config default is `node` but test needs DOM:
 
 ```ts
 // @vitest-environment jsdom
@@ -119,4 +126,6 @@ Per-file override when config default is `node` but the test needs DOM:
 
 - Single file: `npx vitest run src/foo.test.ts`
 - By name: `npx vitest run -t "formats USD"`
-- Never plain `vitest` in an agent: it enters watch mode and never exits. Use `vitest run` or `vitest --no-watch`.
+- Never plain `vitest` in an agent: enters watch mode, never exits. Use `vitest run` (or `vitest --run`).
+- Vitest 4.1+ run by an agent hides console output of passing tests; `--reporter=default` shows it.
+- Flaky hunting: `--sequence.shuffle` (replay an order with `--sequence.seed=<n>`), `--repeats=<n>` (Vitest 5; earlier majors: run the file in a loop), or one test alone with `-t`. For reproducing only; retry and repeats are not fixes.

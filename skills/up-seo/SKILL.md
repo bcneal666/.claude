@@ -1,7 +1,8 @@
 ---
 name: up-seo
-description: Run one SEO pass on the current project in three stages (AI-search visibility, technical and on-page audit, programmatic opportunities) with one shared context; the user picks what to fix after each stage. Use when the user says up-seo, run an SEO pass, or asks to audit SEO or AI visibility. Optional site URL or @path scope.
+description: Run one SEO pass on the current project in three stages (AI-search visibility, technical and on-page audit, programmatic opportunities) with one shared context; the user picks what to fix after each stage. Optional site URL or @path scope.
 argument-hint: "[url] [@path ...]"
+disable-model-invocation: true
 ---
 
 SEO pass over current project (cwd): AI visibility → technical/on-page audit → programmatic opportunities. Stay in the main conversation; do not fork, because the user's picks in one stage shape the next.

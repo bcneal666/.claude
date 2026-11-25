@@ -1,0 +1,8 @@
+schema_version: "1.1"
+name: docs-only-skips-functional-test
+expected_outcome: |
+  唯一的未提交改動是 README.md 多了一段使用說明。以 low 等級執行。
+  應說明只改了文件所以跳過功能測試（不啟動 dev server），接著以明確的 low 等級呼叫 code-review（不帶 --fix），
+  最後輸出摘要（等級、輪數、修了什麼、略過的發現），不 commit、不 push。
+context:
+  scaffold_script: place-files.sh

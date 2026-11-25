@@ -144,7 +144,7 @@ Input: §B's kept-but-poorly-done list and animation gaps queued so far (ux-rule
 
 **Vet**: re-read every cited `file:line`; drop by-design, documented, duplicate and exempt items (centered modal origin, long duration on a marketing page). "The motion here is already right" is a valid result.
 
-**Output**: a fix list, not plans or edits, by leverage (impact ÷ effort). Each item: `file:line` / severity / current value (verbatim) / exact target value / why (category + one clause). Flag feel-check items (spring bounce, crossfade) for step 4.1, platform features (`@starting-style`, view transitions) for modern-web-guidance, and anything needing a library or new component as 「未解決」.
+**Output**: a fix list, not plans or edits, by leverage (impact ÷ effort). Each item: `file:line` / severity / current value (verbatim) / exact target value / why (category + one clause). Flag feel-check items (spring bounce, crossfade) for step 4.1, platform features (`@starting-style`, view transitions) for modern-web-guidance (`references/modern-web-guidance.md`), and anything needing a library or new component as 「未解決」.
 
 ## D. Find opportunities (2.11; full mode only)
 

@@ -1,0 +1,1 @@
+{ "name": "debounce-demo", "type": "module", "scripts": { "test": "vitest" }, "devDependencies": { "vitest": "^5.0.0", "typescript": "^5.6.0" } }

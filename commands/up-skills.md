@@ -4,10 +4,12 @@ argument-hint: "[<type>]"
 disable-model-invocation: true
 ---
 
-## Scope argument `<type>` (positional `$1`, optional)
+## Scope argument `<type>` (optional)
 
-- `$1` empty or `global` → target `~/.claude/skills/` (exclude `synced/` subdirectory)
-- `$1` is `project` → target `./.claude/skills/`; missing → report 「找不到 `./.claude/skills/`」 then **stop**; do not create directory
+Given: `$ARGUMENTS` (blank = none).
+
+- Blank or `global` → target `~/.claude/skills/` (exclude `synced/` subdirectory)
+- `project` → target `./.claude/skills/`; missing → report 「找不到 `./.claude/skills/`」 then **stop**; do not create directory
 - Other value (unrecognized) → one-line notice, **fall back to `global`**, continue; do not abort
 
 ## Flow

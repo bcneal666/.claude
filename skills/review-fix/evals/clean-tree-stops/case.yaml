@@ -1,0 +1,7 @@
+schema_version: "1.1"
+name: clean-tree-stops
+expected_outcome: |
+  工作區乾淨（只有 init commit，沒有任何未提交或未追蹤的檔案）。
+  /review-fix 應回報沒有變更並停止：不啟動 dev server、不呼叫 code-review、不改任何檔案、不 commit。
+context:
+  scaffold_script: place-files.sh
