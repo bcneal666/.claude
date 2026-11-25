@@ -30,9 +30,7 @@
       "Bash(git push -f *)",
       "PowerShell(git push *--force*)",
       "PowerShell(git push -f *)",
-      "Read(~/.ssh/**)",
-      "Read(**/.env)",
-      "Read(**/.env.*)"
+      "Read(~/.ssh/**)"
     ],
     "defaultMode": "plan"
   },
@@ -170,5 +168,6 @@
     "jj": "<Esc>"
   },
   "agentPushNotifEnabled": true,
-  "skipAutoPermissionPrompt": true
+  "skipAutoPermissionPrompt": true,
+  "switchModelsOnFlag": false
 }
