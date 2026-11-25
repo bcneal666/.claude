@@ -74,7 +74,7 @@ Personal global Claude Code configuration shared across projects: skills, slash 
   1. Fact-check `CLAUDE.md`
   2. With `--audit`: audit for stale instructions via `claude-api` prompt-audit, then pick findings to apply
   3. Chunk path-specific content into `rules/<topic>.md` (loaded on demand via `paths` frontmatter)
-  4. Compress `CLAUDE.md`, `.claude/rules/**/*.md`, `.claude/commands/**/*.md` and the `.md` files of self-made skills listed in `skills/.up-skills-ignore` at caveman full strength (drops filler only, never semantics, except hunks applied via `--audit`)
+  4. Compress `CLAUDE.md`, `.claude/rules/**/*.md`, `.claude/commands/**/*.md` and the `.md` files of self-made skills listed in `skills/.up-skills-ignore` (plus, when `./up-design/` exists, its `.md` files, `DESIGN.md` and `.claude/skills/design-*/`; never translated) at caveman full strength (drops filler only, never semantics, except hunks applied via `--audit`)
   5. Check and sync this README
 - The README is written for humans, so it is exempt from caveman compression and follows a style guide (structure, emoji, callouts, folding)
 

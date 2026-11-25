@@ -1,5 +1,5 @@
 ---
-description: Fact-check CLAUDE.md, chunk on-demand content into rules/, compress rule files (CLAUDE.md / .claude/rules / .claude/commands, plus self-made skills listed in skills/.up-skills-ignore) at caveman full keeping only AI-parseable semantics; check and maintain the project-root README.md for humans; with `--audit` first audit stale instructions via prompt-audit; `--lng` sets the language of all file content (default English)
+description: Fact-check CLAUDE.md, chunk on-demand content into rules/, compress rule files (CLAUDE.md / .claude/rules / .claude/commands, plus self-made skills listed in skills/.up-skills-ignore, plus up-design artifacts when ./up-design/ exists) at caveman full keeping only AI-parseable semantics; check and maintain the project-root README.md for humans; with `--audit` first audit stale instructions via prompt-audit; `--lng` sets the language of all file content (default English)
 argument-hint: "[--audit] [--lng <zh|ja|...>]"
 disable-model-invocation: true
 ---
@@ -43,6 +43,19 @@ Process only if exists; skip missing (`CLAUDE.local.md` absent on most machines�
 - Skill not in list → never touch (upstream-managed, `/up-skills` overwrites it).
 - ⚠️ `skills/` in this repo is user-level, applies to all projects on machine; before modifying, confirm scope is not unique to this repo.
 
+### up-design artifacts (compression targets, caveman full)
+
+Only when project root has `./up-design/` directory; absent → skip all of this silently, no notice.
+
+- `./up-design/**/*.md` (`perf-baseline.md`, `reports/*.md`)
+- `DESIGN.md` (project root)
+- `./.claude/skills/design-*/**/*.md` (project root is itself `.claude` directory → `./skills/design-*/**/*.md`); treated like self-made skills (SKILL.md frontmatter verbatim except `description`, anchors unchanged), but listing in `.up-skills-ignore` not needed
+- Never touch `up-design/last-run.json` or any non-`.md` file—script-written, hand edit breaks quick/full mode decision.
+- **No translation, compression only**—`--lng` does not apply (incl. `description`): `/up-design` locates sections by fixed headings (report `診斷` / `修正結果` / `未解決` / `規則變更`, DESIGN.md `Surfaces` … `Copy`) and writes later reports in template language; translating breaks lookup and mixes languages.
+- Verbatim in addition to step 6 list: all headings, tables (headers, cells, `file:line`, numbers, verdicts pass/gap/N/A/未驗證), `<!-- date：「user words」 -->` comments, `Updated:` / `Source report:` lines. `Why:` lines: drop filler only, keep reason.
+- `reports/*.md` are history: no step 2 fact correction, no deleting, no merging reports; compress prose only.
+- Never chunk into `rules/` (step 5).
+
 ### Language-only targets (translate to `--lng`, never compress, never audit)
 
 - `./.claude/agents/**/*.md` (this repo → `./agents/**/*.md`): body prose and frontmatter `description` follow `--lng`; other frontmatter keys (`name`, `tools`, `model`, `skills`, …) verbatim. `description` drives auto-delegation → keep meaning of trigger phrases (e.g. "Use proactively …"); tool, skill, agent names verbatim
@@ -54,13 +67,13 @@ Process only if exists; skip missing (`CLAUDE.local.md` absent on most machines�
 
 - `./README.md` (project root)—see "Step 8"
 
-Process only paths above; **do not** extend to `settings.json`, or to `skills/` beyond the self-made skills above. Exception: read-only inventory in "Inventory sync" (step 8)—never compress or modify those files.
+Process only paths above; **do not** extend to `settings.json`, or to `skills/` beyond the self-made skills and up-design artifacts above. Exception: read-only inventory in "Inventory sync" (step 8)—never compress or modify those files.
 
 ## Flow
 
 ### 1. Gather context
 
-- Glob compression targets that actually exist (incl. `.claude/rules/**/*.md`, `.claude/commands/**/*.md`, self-made skill `.md` files per "Self-made skills"), read all; check whether `./README.md` exists.
+- Glob compression targets that actually exist (incl. `.claude/rules/**/*.md`, `.claude/commands/**/*.md`, self-made skill `.md` files per "Self-made skills", up-design artifacts per "up-design artifacts"), read all; check whether `./README.md` exists.
 - `git log --oneline -15` + `git diff` for recent direction. Find new rules **overlapping, duplicating or contradicting** existing content—first to merge or delete. Feed overlaps into later steps, not merely view them.
 
 ### 2. Update CLAUDE.md (fact correction)
@@ -69,6 +82,7 @@ Fix facts only; add no behavior rules.
 
 - Check every path, command/skill name, setting value, hook filename mentioned in CLAUDE.md (incl. `./.claude/CLAUDE.md`, `CLAUDE.local.md`, existing `rules/**/*.md`); verify still exists.
 - Self-made skill files: verify every sub-skill name, file path (incl. `${CLAUDE_SKILL_DIR}/…` and fallback paths) and command still exists; fix facts only.
+- up-design artifacts: `DESIGN.md` and `design-*` skill files get same fact check (paths, tokens, filenames, commands); `up-design/**` (reports, baseline) skipped—history and measurements.
 - `CLAUDE.local.md` overlaps or contradicts CLAUDE.md → report only, do not merge across files (local file is personal override; user decides).
 - Per step 1 git log/diff fix renamed, deleted, changed-value items; merge overlapping or contradicting rules found in step 1.
 - No correction needed → state 「CLAUDE.md 事實已同步，未改動」; do not change for change's sake.
@@ -80,7 +94,7 @@ Fix facts only; add no behavior rules.
 
 Has `--audit` →
 
-- Call `Skill(skill: "claude-api", args: "prompt-audit")`, scope limited to compression-target files gathered in step 1, incl. self-made skill files (excl. README.md, other `skills/`, `agents/`, `settings.json`); target model per prompt-audit's own Step 0 rule.
+- Call `Skill(skill: "claude-api", args: "prompt-audit")`, scope limited to compression-target files gathered in step 1, incl. self-made skill files, `DESIGN.md` and `design-*` skill files (excl. `up-design/**`—history and measurements, not instructions; README.md, other `skills/`, `agents/`, `settings.json`); target model per prompt-audit's own Step 0 rule.
 - After getting audit report and proposed diff, **pause**; list findings, ask user to pick hunks to apply one by one—do not use prompt-audit default "no asking, diff only"; this command is interactive.
 - Selected hunks → apply to files; unselected stay in report only, not applied.
 - Low-confidence/`flag` items report only, not offered as selectable hunks.
@@ -103,6 +117,7 @@ Criteria—move content to `rules/<topic>.md` only if **both** hold:
 - Topic not mappable to glob—rule without `paths` still loads at start like CLAUDE.md, saves no context; do not.
 - Multi-step flows/task-style workflows—rules unsuited; **suggest** in report rewriting as skill or command; do not convert automatically.
 - Self-made skill content—skills already load on demand; never move into `rules/`.
+- up-design artifacts (`up-design/**`, `DESIGN.md`, `design-*` skills)—`/up-design` reads them by fixed location; never move into `rules/`.
 
 **Execute**:
 
@@ -171,13 +186,13 @@ Test: **if compressed text has a second reasonable reading, do not compress.**
 
 ### 7. Verify no loss (after compression)
 
-Compare item by item with step 4 instruction list: confirm **every** item still exists after rewrite in union of CLAUDE.md ∪ `rules/**/*.md` (`CLAUDE.local.md` verified against itself, not in union—stays separate file; each self-made skill verified against union of its own directory's `.md` files, merging between them allowed, never against CLAUDE.md ∪ rules) (semantic equivalence enough, wording need not match). Skill anchors (step numbers, referenced headings, cross-referenced filenames) unchanged. Chunked items must land in a rule file whose `paths` covers original scope.
+Compare item by item with step 4 instruction list: confirm **every** item still exists after rewrite in union of CLAUDE.md ∪ `rules/**/*.md` (`CLAUDE.local.md` verified against itself, not in union—stays separate file; each self-made skill verified against union of its own directory's `.md` files, merging between them allowed, never against CLAUDE.md ∪ rules; `DESIGN.md`, each `up-design/**/*.md` file verified against itself; `design-*` skill like self-made skill) (semantic equivalence enough, wording need not match). Skill anchors (step numbers, referenced headings, cross-referenced filenames) unchanged. Chunked items must land in a rule file whose `paths` covers original scope.
 
 ⚠️ Casual "feels like nothing missing" is not verification—check list item by item, else edge rules get deleted silently while success is reported.
 
 Caveman readback check: order/conditions not misread after fragmenting; technical terms, code, error strings, `@path` imports untouched verbatim; no invented abbreviations.
 
-Language check: target-file prose all in `--lng` language (excl. verbatim blocks and proper nouns); translation changed no negation, qualifier, number, conditional branch; target language inside quotes of language rules untouched. Language-only targets: agents prose + `description`, hook comments, command `description` all in `--lng`; `git diff hooks/` shows only comment lines changed, `node --check` passes; frontmatter keys other than `description` untouched.
+Language check: target-file prose all in `--lng` language (excl. verbatim blocks and proper nouns); translation changed no negation, qualifier, number, conditional branch; target language inside quotes of language rules untouched. up-design artifacts excluded from language check (never translated); headings, tables, `last-run.json` unchanged (`git diff`). Language-only targets: agents prose + `description`, hook comments, command `description` all in `--lng`; `git diff hooks/` shows only comment lines changed, `node --check` passes; frontmatter keys other than `description` untouched.
 
 ### 8. README.md sync
 
@@ -191,15 +206,15 @@ Check project-root `./README.md` every run.
 
 Run every time, whether README exists or not. Compare what actually exists with what README lists; add missing, delete gone, order rows as actual.
 
-| Category | Actual source |
-| -------- | ------------- |
-| Rules | `./.claude/rules/**/*.md` (this repo: `./rules/**/*.md`) |
-| Skills | `./.claude/skills/*/SKILL.md` (incl. symlinks into `.agents/skills/`; name = directory name) (this repo: `./skills/*/SKILL.md`) |
-| Commands | `./.claude/commands/**/*.md` (this repo: `./commands/**/*.md`) |
-| Subagents | `./.claude/agents/**/*.md` (this repo: `./agents/**/*.md`); name = frontmatter `name`, else filename without `.md` |
-| Hooks | `hooks` events in `./.claude/settings.json` and the script files they call (this repo: `./settings.json`) |
-| MCP | `mcpServers` in `./.mcp.json` |
-| Plugins | `enabledPlugins` entries set `true` in `./.claude/settings.json` (this repo: `./settings.json`) |
+| Category  | Actual source                                                                                                                   |
+| --------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| Rules     | `./.claude/rules/**/*.md` (this repo: `./rules/**/*.md`)                                                                        |
+| Skills    | `./.claude/skills/*/SKILL.md` (incl. symlinks into `.agents/skills/`; name = directory name) (this repo: `./skills/*/SKILL.md`) |
+| Commands  | `./.claude/commands/**/*.md` (this repo: `./commands/**/*.md`)                                                                  |
+| Subagents | `./.claude/agents/**/*.md` (this repo: `./agents/**/*.md`); name = frontmatter `name`, else filename without `.md`              |
+| Hooks     | `hooks` events in `./.claude/settings.json` and the script files they call (this repo: `./settings.json`)                       |
+| MCP       | `mcpServers` in `./.mcp.json`                                                                                                   |
+| Plugins   | `enabledPlugins` entries set `true` in `./.claude/settings.json` (this repo: `./settings.json`)                                 |
 
 - List only items that exist in this project. Items from global `~/.claude/` not listed (exception: project root is itself `~/.claude`, e.g. this repo); never write "now provided globally" or similar.
 - Category has items but README lacks its section → add section. Category empty → no section.
@@ -229,7 +244,7 @@ Distilled from standard-readme and well-known GitHub READMEs: clear identity fir
   - any item's description exceeds 2 lines (~120 display width; CJK/full-width chars count 2, ≈60 CJK chars)—first trim per "Depth"; still too long → whole group as list, never mix table and list in one group
   - items have no natural key (plain sentences; table would be one column)
   - items are ordered steps → numbered list
-- List item: one concept per bullet, `- **Name** — description` or `` - `code` — description ``
+- List item: one concept per bullet, `- **Name** — description` or ``- `code` — description``
 - Table cell ≤ one short sentence (≤ ~120 display width); move detail to bullets under the table or `<details>`
 - Active voice, concrete verbs; say what it does, not how impressive it is
 - Bold only key terms, ≤2 per paragraph
@@ -284,6 +299,7 @@ Write files directly with Edit/Write, **no** automatic git commit; leave to `/no
 - Per-file instruction list, each item marked 「保留 ✓」
 - Per-file lines/chars before→after and compression ratio (**observation, not goal**)
 - Self-made skills (only when `.up-skills-ignore` exists): skills and files processed, lines/chars before→after per file, listed names without a directory
+- up-design artifacts (only when `./up-design/` exists): files processed, lines/chars before→after per file
 - Main edits (what merged, what filler removed)
 - README.md outcome (created / updated / restyled or trimmed / synced unchanged), lines before→after
 - Inventory sync (step 8): per category added/removed items, or 「清單已同步」
@@ -299,7 +315,8 @@ Write files directly with Edit/Write, **no** automatic git commit; leave to `/no
 ## Prohibited
 
 - Do not add rules or features not already present—applies to compression-target files only; README is supplementary, exempt. Fact correction (step 2) and chunk moving (step 5) not additions, only fix and move, semantics unchanged; hunks user selected under `--audit` (step 3) exempt, user-authorized semantic change.
-- Do not compress skills absent from `.up-skills-ignore`; do not touch non-`.md` skill files.
+- Do not compress skills absent from `.up-skills-ignore` (exception: `design-*` skills when `./up-design/` exists); do not touch non-`.md` skill files.
+- Do not touch `up-design/last-run.json`; do not translate up-design artifacts.
 - Do not delete a rule because it is "too long"—drop filler only, never semantics; hunks user selected under `--audit` exempt.
 - Do not over-cut for ratio; prefer conservative over losing instructions. caveman full is style ceiling, not compression-rate metric.
 - Compression (step 6) must not reintroduce stale patterns `--audit` removed (all-caps emphasis MUST/CRITICAL, pressure tone, decorative step scripts).
