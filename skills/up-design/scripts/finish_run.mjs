@@ -6,7 +6,7 @@
 //
 // Writes the current HEAD hash (null outside git or before the first commit),
 // the completion time, the mode, and last_full_at (carried over unless this run
-// was full). See references/scope-and-state.md.
+// was full).
 
 import { mkdirSync, writeFileSync } from "node:fs";
 import path from "node:path";

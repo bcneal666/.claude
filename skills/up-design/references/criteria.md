@@ -1,6 +1,6 @@
 # Static design criteria
 
-During diagnosis, score item by item with evidence (screenshot region or `file:line`). Every gap needs a fix with real numbers. Criteria are a diagnostic baseline, not project rules: **never write them to DESIGN.md**. When the project's own rules (lint, DESIGN.md, tokens, CLAUDE.md) conflict with a criterion, the project rule wins; list the conflict in the report.
+During diagnosis, score item by item with evidence (screenshot region or `file:line`). Every gap needs a fix with real numbers. When the project's own rules conflict with a criterion, the project rule wins; list the conflict in the report.
 
 Two handling classes:
 
@@ -40,7 +40,6 @@ Report-only (all taste):
 
 Auto-fix:
 
-- Text contrast ≥4.5:1 (large text ≥3:1), checked on every background, hover and disabled state.
 - Colors come from tokens, no hard-coded values; if dark mode is supported, it is re-tuned, not inverted.
 
 Report-only: ratio of 1 primary, 1 accent, neutrals (accent ≈10%); avoid default template palettes (white background with purple gradient).
@@ -50,7 +49,6 @@ Report-only: ratio of 1 primary, 1 accent, neutrals (accent ≈10%); avoid defau
 Auto-fix:
 
 - No horizontal scroll at any width (320px included); no clipped or overlapping content.
-- Touch targets ≥44px, tap spacing ≥8px.
 - Images crop per breakpoint; line length stays in range; fixed elements do not eat the viewport.
 
 Report-only: whether the layout is rearranged by design or merely shrunk.
@@ -62,15 +60,3 @@ Report-only:
 - At least one distinctive idea a template cannot produce (layout, type treatment, illustration, interaction concept).
 - Consistent visual language; not the common hero + three cards + footer layout.
 - Originality must not cost readability, accessibility or AdSense policy.
-
-## shadcn audit (conditional: project root has `components.json` and dependencies include `react`)
-
-- Source: `npx -y @shadscan/cli --json` (read-only; categories: foundation, interaction, states, accessibility, forms, production-polish).
-- Each item maps to one gap, with rule id and `file:line`; critical / high → high priority, medium → medium, low → low.
-- Items duplicating the dimensions above are listed once; animation items merge into animation fixes.
-- Never use `--apply`, `setup`, `mcp`; never install its hook, skill or MCP.
-
-## Outside these criteria
-
-- Motion and micro-interactions → judged by `emil-design-eng`, `review-animations`.
-- Interaction and behavior rules (overlay, touch, forms, loading, gestures, accessibility) → `ux-rules.md`.

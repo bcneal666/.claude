@@ -2,7 +2,7 @@
 
 Cross-project interaction and layout rules: desktop/mobile presentation, touch and gestures, data display, loading feedback. Visuals (color, type size, radius) live in project `DESIGN.md` and `criteria.md`.
 
-This file is a diagnostic baseline, like `emil-design-eng`: up-design checks the in-scope files against it section by section; verdict per section: `pass` / `gap` / `N/A` / `unverified`. A section the scope does not touch is `N/A（不在範圍）`. Project rules (lint, DESIGN.md, CLAUDE.md, tokens) outrank this file. Never copy these rules into the project's DESIGN.md; only the user's own preferences go there.
+This file is a diagnostic baseline, like `emil-design-eng`: up-design checks the in-scope files against it section by section; verdict per section: `pass` / `gap` / `N/A` / `未驗證`. A section the scope does not touch is `N/A（不在範圍）`. Project rules (lint, DESIGN.md, CLAUDE.md, tokens) outrank this file.
 
 Desktop Dialog / mobile Drawer: each project wraps its own. Switch `Dialog`/`Drawer` with the project's width media-query hook, extract content into a shared component, behavior per this file. Project has no Drawer component → do not add one: list it under 「未解決」 as a structural fix; do not hand-write gestures, do not add a bottom-sheet package for this. Component names follow the project's existing ones (`Combobox`, `Sidebar`, `Spinner`, `Kbd` etc. are generic; use project equivalent when it exists).
 
@@ -83,7 +83,7 @@ Mobile keeps no floating dropdown, menu, Popover.
 
 ## 5. Touch and input
 
-- Coarse pointer (`pointer-coarse:`): interactive targets ≥ 44px; visual may stay 40px, enlarge hit area with padding or `pointer-coarse:`. Mobile option rows 48px.
+- Coarse pointer (`pointer-coarse:`): interactive targets ≥ 44px with ≥ 8px spacing between adjacent targets; visual may stay 40px, enlarge hit area with padding or `pointer-coarse:`. Mobile option rows 48px.
 - Feedback on press (`:active`), not on release. Disable browser tap flash globally (`-webkit-tap-highlight-color: transparent`); components or project provide the pressed state.
 - Control text (buttons, tabs) `user-select: none` to avoid long-press text selection; body text and data must stay selectable, do not disable page-wide.
 - Hover-only actions (row •••, hover-revealed buttons) stay visible on touch devices or get another entry. Hover styles only for hover-capable devices (`@media (hover: hover)`) to avoid stuck hover after touch.
@@ -193,7 +193,7 @@ Every click gets an immediate reaction.
 - Every field has a label; errors linked with `aria-invalid` + `aria-describedby`; required not conveyed by color alone.
 - `Dialog`/`Drawer` have a title (may be `sr-only`), close on Esc, focus trap, focus returns to trigger on close.
 - Focus management: after page change focus moves to `h1` or `main`; after deleting a list item focus moves to next item (none → list heading); Esc closes only the topmost overlay; do not remove the `focus-visible` outline (show for keyboard, not for mouse click).
-- State not by color alone (also text or icon); text contrast ≥ 4.5:1 in both light and dark mode.
+- State not by color alone (also text or icon); text contrast ≥ 4.5:1 (large text ≥ 3:1) in both light and dark mode, checked on every background and in hover and disabled states.
 - Text enlargement: at 200% browser zoom or system large font, text must not be clipped by fixed height; containers wrapping multi-line text do not use fixed height.
 - Skeleton container `role="status"` + `aria-busy="true"` + `sr-only` loading text, skeleton body `aria-hidden`; toast, unread count and other dynamic updates use appropriate `aria-live` level.
 - Table headers use `th scope`, sortable columns add `aria-sort`; `<html lang>` per locale.

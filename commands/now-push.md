@@ -25,12 +25,12 @@ Execute in order immediately, no confirmation:
    - no upstream → unpushed = `git log --oneline HEAD --not --remotes`
    - clean tree **and** no unpushed commits → report 「無變更可推送」 and stop
    - clean tree but unpushed commits exist → skip working-tree diff, commit message generation, `git add`, `git commit` (steps 2 working diff, 4, 6, 7); go to step 5 (existing commits are pushed as-is)
-2. `git diff` + `git diff --staged`; read full changes. Unpushed commits exist → also read `git diff <base>..HEAD` (base = upstream, else `origin/<default branch>`) for the secret check and PR content
+2. `git diff` + `git diff --staged`; read full changes. Also list untracked files (`git ls-files --others --exclude-standard`) and read them—step 6 `git add -A` commits them, `git diff` does not show them. Unpushed commits exist → also read `git diff <base>..HEAD` (base = upstream, else `origin/<default branch>`) for the secret check and PR content
 3. `git log -5 --oneline` for recent commit style
 4. Generate commit message in the **fixed format** below (before branching; branch name needs it)
 5. **`--pr`/`--merge`**: get default branch via `gh repo view --json defaultBranchRef -q .defaultBranchRef.name`; current branch == default → `git switch -c <type>/<slug>` (slug = scope + English subject keywords, kebab-case, ≤40 chars; English even when `--lng` is not English; no new commit this run → use newest unpushed commit's header, or one summarizing header if several). After switching, if default branch had unpushed commits, `origin/<default>` exists and `git merge-base --is-ancestor origin/<default> <default>` succeeds → `git branch -f <default> origin/<default>` (commits stay on the new branch; without this the later `git pull --ff-only` diverges); otherwise skip
-6. `git add .`
-7. `git commit -m "<header>" -m "<body>" -m "Co-Authored-By: <當前模型全名> <noreply@anthropic.com>"` (exactly three `-m`; trailer mandatory; `<當前模型全名>` source: see footer)
+6. `git add -A`
+7. `git commit -m "<header>" -m "<body>" -m "Co-Authored-By: <當前模型全名> <noreply@anthropic.com>"` (exactly three `-m`; trailer per footer)
 8. `git push` (always whole current branch, never a single sha or refspec); current branch has no upstream → `git push -u origin HEAD`. Report pushed commits (short sha + header; mark the one created this run)
 9. **`--pr`/`--merge`**: `gh pr view` on current branch; PR exists → report existing URL, do not recreate; none → `gh pr create --base <default branch> --title "<title>" --body "<body>"`; single commit → title/body = that commit's header/body; several commits → title = one summarizing fixed-format header, body = list of each commit header + merged key bullets; body ends with blank line + `🤖 Generated with [Claude Code](https://claude.com/claude-code)`, language per `--lng`; report PR URL
 10. **`--merge` only** (existing PR also merged):
@@ -42,7 +42,7 @@ Execute in order immediately, no confirmation:
     6. `gh run list --commit <HEAD sha> --json name,status,url` → report workflow runs the merge triggered (deploys etc.); runs may take a few seconds to appear, do not wait for them to finish
 11. Repo description check (next section)
 
-Steps 1–10 (except the step 1 probes and the step 5 `--is-ancestor` guard, whose non-zero exit just selects a branch): any non-zero exit → stop immediately, report full stderr, **do not attempt repair**. Step 10 merge blocked after checks passed (review / conflict / other policy) → report stderr + PR URL, stay on feature branch, no retry, no `--admin`/`--auto`. Step 11 failure (not GitHub, `gh` not logged in, no permission) → notice only, **not an overall failure**—commit/push already done.
+Steps 1–10 (except the step 1 probes, the step 5 `--is-ancestor` guard, the step 9 `gh pr view` probe (exit 1 = no PR) and the step 10.1 "no checks reported" retry, whose non-zero exit just selects a branch): any non-zero exit → stop immediately, report full stderr, **do not attempt repair**. Step 10 merge blocked after checks passed (review / conflict / other policy) → report stderr + PR URL, stay on feature branch, no retry, no `--admin`/`--auto`. Step 11 failure (not GitHub, `gh` not logged in, no permission) → notice only, **not an overall failure**—commit/push already done.
 
 ## Repo Description Maintenance
 

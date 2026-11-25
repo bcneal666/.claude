@@ -85,7 +85,7 @@ List name and 「無法自動更新」 only; run no command.
 ### 8. Plugin layer
 
 1. `claude plugin marketplace update` (all marketplaces at once)
-2. `claude plugin list`; keep only enabled entries with `Scope: user` (skip disabled, project-scope, synced and skills-dir entries). `list` shows installed versions only, no newer-version indicator
+2. `claude plugin list --json`; keep only entries with `enabled` true and `scope` `user`, excluding marketplaces `builtin` and `skills-dir` (built-in and skills-dir plugins are not updatable here; project-scope, synced, managed entries excluded by `scope`). `list` shows installed versions only, no newer-version indicator
 3. Per kept plugin (e.g. `watch@claude-video`) run:
    ```
    claude plugin update <plugin>@<marketplace> -y --json -s user
@@ -122,14 +122,9 @@ After table add:
 
 ## Prohibited
 
-- No bare `npx skills update -g` (no arguments)—re-installs every removed lockfile skill into the directory
 - No `npx skills add … --all` or `-s '*'`
 - Never touch `skills/synced/` (platform-managed, gitignored)
 - Never auto-run `claude update` (replaces CLI itself)—recommend only
 - No `git commit`, no `git push`
-- Class B reinstall requires user confirmation first (source inferred, not from existing record)
-- Single skill update failure does not abort overall flow; only preflight failure aborts
-- Never update skills listed in `.up-skills-ignore`, even if name exists in lockfile
 - Never auto-add/remove `.up-skills-ignore` content—user maintains manually
-- Git drift check failed (skill directory has uncommitted changes) → do not force overwrite
 - Never add `--help` to `npx skills update`/`check`/`upgrade` to explore usage—none intercepts `--help`; they run the update directly; consult only this file or top-level `npx skills --help` for syntax

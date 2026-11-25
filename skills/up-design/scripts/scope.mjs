@@ -5,7 +5,7 @@
 // Usage:
 //   node scope.mjs [--full|full] [--m|m]
 //
-// Prints JSON to stdout. See references/scope-and-state.md for the format.
+// Prints JSON to stdout: project_root, is_git, head, mode, reason, mobile, uses_sonner, last_run, file_count, files.
 
 import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import path from "node:path";

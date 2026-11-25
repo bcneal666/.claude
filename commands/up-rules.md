@@ -39,7 +39,7 @@ Process only if exists; skip missing (`CLAUDE.local.md` absent on most machines�
 
 - List file: `./.claude/skills/.up-skills-ignore` (project root is itself `.claude` directory (e.g. this repo) → `./skills/.up-skills-ignore`). Parse like `/up-skills`: strip `#`-leading comments and trailing `# ...` comments, trim, drop empty lines → name set.
 - List file missing → project has no self-made skills; skip all of this silently, no notice.
-- Each name → every `<skills dir>/<name>/**/*.md` is a compression target (`SKILL.md` plus attachments such as `CRITERIA.md`); non-`.md` files (scripts etc.) untouched. Name without a real directory under skills dir → one-line notice, skip.
+- Each name → every `<skills dir>/<name>/**/*.md` is a compression target (`SKILL.md` plus attachments such as `CRITERIA.md`), except `evals/**` (test fixtures: prompts are user words, graders match exact strings; never touch); non-`.md` files (scripts etc.) untouched. Name without a real directory under skills dir → one-line notice, skip.
 - Skill not in list → never touch (upstream-managed, `/up-skills` overwrites it).
 - ⚠️ `skills/` in this repo is user-level, applies to all projects on machine; before modifying, confirm scope is not unique to this repo.
 
@@ -154,7 +154,7 @@ Rewrite together: merge overlapping/duplicate rules found in step 1; keep struct
 - Proper nouns and project codenames (e.g. `COSS`, hostnames, service names)
 - Paths, commands, environment variables, filenames
 - Rules **about language** themselves (e.g. 「以繁中回應」)—rule prose follows `--lng`, but target language named inside quotes must not change
-- Everything in "verbatim" list below—incl. command frontmatter block except `description`, so command `argument-hint` and other keys do not follow `--lng`
+- Everything in "verbatim" list below
 - User-facing output strings quoted in Chinese (e.g. 「CLAUDE.md 事實已同步，未改動」)—report language stays Traditional Chinese
 
 **Verbatim (byte-for-byte)**:
@@ -165,13 +165,14 @@ Rewrite together: merge overlapping/duplicate rules found in step 1; keep struct
 - Disambiguating good/bad examples (✅ 正確 / ❌ 錯誤)
 - `@path` import syntax (e.g. `@CLAUDE.local.md`)—functional syntax, rewrite breaks it
 - Frontmatter key names and values (`description:`, `name:`, `paths:`, etc.)
-- Command file frontmatter block verbatim (`argument-hint`, `allowed-tools`, `model`, `disable-model-invocation`); `description` is translate-only per "Language-only targets"—compressing lowers triggering accuracy
+- Command file frontmatter block verbatim (`argument-hint`, `allowed-tools`, `model`, `disable-model-invocation`) except `description` (translate-only per "Language-only targets")
 - Command argument placeholders `$ARGUMENTS`, `$1`–`$9`
 - Command `!`-prefixed bash execution syntax—functional syntax, rewrite breaks it
-- Skill `SKILL.md` frontmatter verbatim (`name`, `argument-hint`, `disable-model-invocation`, `allowed-tools`, `model`, …) except `description`, which is translate-only like command `description` (drives triggering)
+- Skill `SKILL.md` frontmatter verbatim (`name`, `argument-hint`, `disable-model-invocation`, `allowed-tools`, `model`, …) except `description` (translate-only like command `description`)
 - Skill placeholders `$ARGUMENTS`, `${CLAUDE_SKILL_DIR}`
 - Skill anchors: step numbers, headings other text or files refer to (e.g. "Modern web guidance"), filenames skill files reference each other by—renaming breaks cross-references
 - Quoted example strings (e.g. UI copy「確定」「建立工單」, sub-skill `args` task prompts in quotes)—they are content or prompts, not prose
+- Tokens other files or scripts match exactly: verdict values (`pass` / `gap` / `N/A` / `未驗證`), report section names, `{{PLACEHOLDER}}` template tokens—translating or rewording breaks matching
 
 Compress only **prose around** these blocks; blocks themselves untouched.
 
@@ -186,7 +187,15 @@ Test: **if compressed text has a second reasonable reading, do not compress.**
 
 ### 7. Verify no loss (after compression)
 
-Compare item by item with step 4 instruction list: confirm **every** item still exists after rewrite in union of CLAUDE.md ∪ `rules/**/*.md` (`CLAUDE.local.md` verified against itself, not in union—stays separate file; each self-made skill verified against union of its own directory's `.md` files, merging between them allowed, never against CLAUDE.md ∪ rules; `DESIGN.md`, each `up-design/**/*.md` file verified against itself; `design-*` skill like self-made skill) (semantic equivalence enough, wording need not match). Skill anchors (step numbers, referenced headings, cross-referenced filenames) unchanged. Chunked items must land in a rule file whose `paths` covers original scope.
+Compare item by item with step 4 instruction list: confirm **every** item still exists after rewrite (semantic equivalence enough, wording need not match) in its file's verification set:
+
+- `CLAUDE.md` and `rules/**/*.md`: union of both (chunked items must land in a rule file whose `paths` covers original scope)
+- `CLAUDE.local.md`: itself (stays separate file)
+- self-made skill: union of its own directory's `.md` files (merging between them allowed); never against CLAUDE.md ∪ rules
+- `design-*` skill: same as self-made skill
+- `DESIGN.md`, each `up-design/**/*.md`: itself
+
+Skill anchors (step numbers, referenced headings, cross-referenced filenames) unchanged.
 
 ⚠️ Casual "feels like nothing missing" is not verification—check list item by item, else edge rules get deleted silently while success is reported.
 
@@ -198,7 +207,7 @@ Language check: target-file prose all in `--lng` language (excl. verbatim blocks
 
 Check project-root `./README.md` every run.
 
-**Exists** → read, compare refined rule files and actual directory structure, decide whether update needed: rule-file sections added/removed (incl. step-5 new `rules/*.md`) should reflect in README; command / skill / path / setting mentioned in README no longer exists or renamed. README language ≠ `--lng` language also counts as needs update; translate whole file to target (code blocks, paths, commands, proper nouns not translated). README clearly violating "Style guide" below also counts as needs update: paragraph over 3 sentences, parallel items crammed into one paragraph, keyed parallel bullet list that should be a table or table that should be a list (see "Writing"), table violating "Tables" (misaligned source, inconsistent headers, over-long cell), H2 without emoji, bare URL (not `[text](url)` / `<url>`, see "Writing"), history wording ("Current state only"), over length budget or implementation detail ("Depth"), Mermaid, SVG or framed ASCII figure, directory tree not a plain text tree (see "Markdown features"). Restyle and trim to essentials; never add or alter facts—trimming detail is not a fact change. Inventory mismatch (below) also counts. No update needed → state 「README 已同步，未改動」; do not change for change's sake.
+**Exists** → read, compare refined rule files and actual directory structure, decide whether update needed: rule-file sections added/removed (incl. step-5 new `rules/*.md`) should reflect in README; command / skill / path / setting mentioned in README no longer exists or renamed. README language ≠ `--lng` language also counts as needs update; translate whole file to target (code blocks, paths, commands, proper nouns not translated). README violating any "Style guide" rule below also counts as needs update (paragraph length, table-vs-list choice, table alignment, emoji, bare URLs, history wording, length and depth budget, figures). Inventory mismatch (below) also counts. Restyle and trim to essentials; never add or alter facts—trimming detail is not a fact change. No update needed → state 「README 已同步，未改動」; do not change for change's sake.
 
 **Missing** → create, same judgment for content, structured per Style guide; project-specific sections: directory tree (runtime artifacts noted as gitignored), inventory sections from "Inventory sync", key settings, maintenance conventions.
 
@@ -224,8 +233,6 @@ Run every time, whether README exists or not. Compare what actually exists with 
 README is exempt from all caveman rules in step 6 (incl. fragment sentences and emoji ban)—readers are humans: full sentences, natural tone, lively but concise. New or updated content always in `--lng` language (default English), incl. directory-tree comments and table description columns.
 
 #### Style guide
-
-Distilled from standard-readme and well-known GitHub READMEs: clear identity first, fast path to action, scannable structure, long reference folded away.
 
 **Structure** (top to bottom, skip what does not apply):
 
@@ -287,7 +294,7 @@ Distilled from standard-readme and well-known GitHub READMEs: clear identity fir
 - No figures: no Mermaid, SVG or framed ASCII
 - Not translated under `--lng`: callout keywords, emoji, paths in directory tree
 
-**Self-check before writing**: skim headings + first line of each section; reader must learn what it is, how to start, where things live within 30 seconds. Check paragraph length, every list meets a "use a list instead" condition (else convert to table), every table's `|` aligned (full-width = 2) with consistent same-kind headers, no `<br>`, cell length, emoji uniqueness, callout syntax, line count within budget, zero history-wording hits (grep the words in "Current state only"), inventory categories match actual files, each feature ≤3 highlights, zero `mermaid` / framed-figure hits, zero bare URLs outside code (every `http(s)://` preceded by `(` or `<`).
+**Self-check before writing**: skim headings + first line of each section; reader must learn what it is, how to start, where things live within 30 seconds. Then mechanical checks: every table's `|` aligned (full-width = 2) with consistent same-kind headers; line count within budget; zero history-wording hits (grep the words in "Current state only"); zero `mermaid` / framed-figure hits; zero bare URLs outside code (every `http(s)://` preceded by `(` or `<`); inventory categories match actual files.
 
 ### 9. Write and report
 
@@ -315,13 +322,9 @@ Write files directly with Edit/Write, **no** automatic git commit; leave to `/no
 ## Prohibited
 
 - Do not add rules or features not already present—applies to compression-target files only; README is supplementary, exempt. Fact correction (step 2) and chunk moving (step 5) not additions, only fix and move, semantics unchanged; hunks user selected under `--audit` (step 3) exempt, user-authorized semantic change.
-- Do not compress skills absent from `.up-skills-ignore` (exception: `design-*` skills when `./up-design/` exists); do not touch non-`.md` skill files.
-- Do not touch `up-design/last-run.json`; do not translate up-design artifacts.
 - Do not delete a rule because it is "too long"—drop filler only, never semantics; hunks user selected under `--audit` exempt.
 - Do not over-cut for ratio; prefer conservative over losing instructions. caveman full is style ceiling, not compression-rate metric.
 - Compression (step 6) must not reintroduce stale patterns `--audit` removed (all-caps emphasis MUST/CRITICAL, pressure tone, decorative step scripts).
-- Do not replace chunking with `@path` import—import loads at start, misses on-demand loading goal.
-- Do not put Mermaid, SVG or framed ASCII figures in README; directory tree as plain text tree, flows as numbered list.
 - Do not converse or report in caveman style—command changes file content only; conversation and report stay normal Traditional Chinese, not following `--lng`.
 - Translation must not change semantics: no rules added or removed, no negation or qualifier weakened; ambiguous spot → keep original and flag warning in report, do not guess.
 - Do not compress so hard it needs rereading twice—AI comprehension cost is cost.
