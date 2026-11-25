@@ -1,0 +1,10 @@
+schema_version: "1.1"
+name: mobile-flag-checks-overlays
+expected_outcome: |
+  以 --m 執行。page.css 的 hero 用 100vh、驗證碼 input 缺 inputmode/autocomplete、
+  Country 下拉是浮動選單沒有手機 Drawer 分支。
+  應把 100vh 改成 dvh（或 svh）、補上 inputmode 與 autocomplete="one-time-code"；
+  浮動選單改 Drawer 屬於結構性修正，不新增元件或套件，只列入報告「未解決」並附建議做法。
+  需要實機才能確認的項目標為「未驗證」，不聲稱通過。
+context:
+  scaffold_script: place-files.sh

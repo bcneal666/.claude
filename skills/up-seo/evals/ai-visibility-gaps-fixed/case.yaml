@@ -1,0 +1,9 @@
+schema_version: "1.1"
+name: ai-visibility-gaps-fixed
+expected_outcome: |
+  robots.txt 擋掉 OAI-SearchBot、PerplexityBot（搜尋用）與 GPTBot（訓練用）、沒有 sitemap 行、沒有 llms.txt、頁面沒有結構化資料。
+  階段 1 應找出這些問題；使用者挑選全部後，應解除對搜尋用 AI 爬蟲的封鎖（GPTBot 是否封鎖屬使用者決定）並加上 Sitemap 行、
+  新增 public/llms.txt（標題加頁面連結清單）、加入 Organization 或 LocalBusiness 的 JSON-LD。
+  不新增套件、不 commit，並說明 AI 引用是否成功無法在本機確認。
+context:
+  scaffold_script: place-files.sh

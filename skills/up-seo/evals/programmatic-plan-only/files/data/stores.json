@@ -1,0 +1,146 @@
+[
+  {
+    "slug": "heping",
+    "name": "Heping",
+    "city": "Taipei",
+    "address": "12 Heping Road",
+    "hours": "06:00-20:00",
+    "specialties": [
+      "sourdough",
+      "milk bun"
+    ],
+    "about": "Original shop since 2012; the only branch with a wood-fired oven."
+  },
+  {
+    "slug": "xinyi",
+    "name": "Xinyi",
+    "city": "Taipei",
+    "address": "88 Songren Road",
+    "hours": "07:00-22:00",
+    "specialties": [
+      "pineapple bun",
+      "coffee"
+    ],
+    "about": "Late-night branch near the 101 tower; popular for after-work pickup."
+  },
+  {
+    "slug": "banqiao",
+    "name": "Banqiao",
+    "city": "New Taipei",
+    "address": "5 Wenhua Road",
+    "hours": "06:30-19:00",
+    "specialties": [
+      "sourdough",
+      "cakes"
+    ],
+    "about": "Large kitchen branch; custom cake orders with 48h notice."
+  },
+  {
+    "slug": "zhongli",
+    "name": "Zhongli",
+    "city": "Taoyuan",
+    "address": "31 Zhongzheng Road",
+    "hours": "06:00-20:00",
+    "specialties": [
+      "milk bun",
+      "toast"
+    ],
+    "about": "Opened 2019; delivers to the nearby university dorms."
+  },
+  {
+    "slug": "hsinchu",
+    "name": "Hsinchu",
+    "city": "Hsinchu",
+    "address": "9 Guangfu Road",
+    "hours": "07:00-19:00",
+    "specialties": [
+      "sourdough",
+      "bagels"
+    ],
+    "about": "Bagel specialist next to the science park."
+  },
+  {
+    "slug": "taichung",
+    "name": "Taichung",
+    "city": "Taichung",
+    "address": "66 Ziyou Road",
+    "hours": "06:30-21:00",
+    "specialties": [
+      "cakes",
+      "coffee"
+    ],
+    "about": "Two-floor cafe branch with 30 seats."
+  },
+  {
+    "slug": "changhua",
+    "name": "Changhua",
+    "city": "Changhua",
+    "address": "14 Zhongshan Road",
+    "hours": "06:00-18:00",
+    "specialties": [
+      "toast",
+      "milk bun"
+    ],
+    "about": "Wholesale supplier to local breakfast shops."
+  },
+  {
+    "slug": "tainan",
+    "name": "Tainan",
+    "city": "Tainan",
+    "address": "3 Minzu Road",
+    "hours": "07:00-20:00",
+    "specialties": [
+      "pineapple bun",
+      "mochi bread"
+    ],
+    "about": "Only branch selling mochi bread, a Tainan-only recipe."
+  },
+  {
+    "slug": "kaohsiung",
+    "name": "Kaohsiung",
+    "city": "Kaohsiung",
+    "address": "77 Zhongshan Road",
+    "hours": "06:30-21:30",
+    "specialties": [
+      "sourdough",
+      "coffee"
+    ],
+    "about": "Harbour-side branch with outdoor seating."
+  },
+  {
+    "slug": "pingtung",
+    "name": "Pingtung",
+    "city": "Pingtung",
+    "address": "21 Jianguo Road",
+    "hours": "07:00-18:00",
+    "specialties": [
+      "toast",
+      "cakes"
+    ],
+    "about": "Smallest branch; takeaway only."
+  },
+  {
+    "slug": "hualien",
+    "name": "Hualien",
+    "city": "Hualien",
+    "address": "40 Zhongmei Road",
+    "hours": "07:00-19:30",
+    "specialties": [
+      "sourdough",
+      "bagels"
+    ],
+    "about": "Uses local Hualien flour; closed on Tuesdays."
+  },
+  {
+    "slug": "taitung",
+    "name": "Taitung",
+    "city": "Taitung",
+    "address": "8 Zhengqi Road",
+    "hours": "07:30-18:30",
+    "specialties": [
+      "milk bun",
+      "coffee"
+    ],
+    "about": "Opened 2021 near the railway art village."
+  }
+]

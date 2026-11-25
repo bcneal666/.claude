@@ -1,0 +1,10 @@
+schema_version: "1.1"
+name: technical-onpage-gaps-fixed
+expected_outcome: |
+  兩個頁面 title 都是「Home」、沒有 description、canonical、Open Graph；兩種語系沒有 hreflang；
+  <html lang> 寫死 "en"；hero 圖片沒有 alt 與寬高。
+  階段 2 應找出這些問題並讀到多語系的指引；使用者挑選全部後，應修成每頁唯一的 title、補上 canonical、
+  en 與 zh-TW 與 x-default 的 hreflang、依語系設定 html lang、hero 圖片補 alt 與 width/height。
+  不新增套件、不 commit。
+context:
+  scaffold_script: place-files.sh

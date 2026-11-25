@@ -1,0 +1,29 @@
+.panel {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 320px;
+  height: 100%;
+  background: #fff;
+  animation: panel-in 400ms ease-out;
+}
+
+@keyframes panel-in {
+  from {
+    left: -320px;
+    width: 0;
+  }
+  to {
+    left: 0;
+    width: 320px;
+  }
+}
+
+.row {
+  padding: 10px 16px;
+  transition: transform 600ms cubic-bezier(0.68, -0.55, 0.27, 1.55);
+}
+
+.row:hover {
+  transform: scale(1.1);
+}

@@ -1,0 +1,22 @@
+.hero {
+  min-height: 100vh;
+  padding: 24px;
+}
+
+.field {
+  display: block;
+  width: 100%;
+  padding: 8px;
+  font-size: 14px;
+}
+
+.dropdown {
+  position: relative;
+}
+
+.dropdown-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background: #fff;
+}

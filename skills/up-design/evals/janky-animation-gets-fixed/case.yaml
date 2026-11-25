@@ -1,0 +1,9 @@
+schema_version: "1.1"
+name: janky-animation-gets-fixed
+expected_outcome: |
+  panel.css 的側欄進場動畫用 left/width（會觸發 layout），列表 row 的 hover 有 600ms 彈跳放大
+  （高頻、無功能目的），且沒有 prefers-reduced-motion。
+  應把進場改成 transform/opacity、刪掉 row 的 hover 彈跳、補上 prefers-reduced-motion，
+  不新增任何相依套件，報告「修正結果」寫明每項改了什麼與原因。
+context:
+  scaffold_script: place-files.sh

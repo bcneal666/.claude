@@ -95,47 +95,29 @@ Personal global Claude Code configuration shared across projects: skills, slash 
 | Name                           | Purpose                                                                           |
 | ------------------------------ | --------------------------------------------------------------------------------- |
 | `agent-browser`                | Browser automation CLI: operate pages, fill forms, screenshot, scrape             |
-| `ai-seo`                       | Get content cited by AI search engines and LLMs (AEO / GEO, `llms.txt`)           |
-| `animate`                      | Build an animation from scratch, deciding purpose, tool, curve and exit in order  |
-| `animation-performance`        | Fix dropped frames: composite-only properties, `will-change`, main-thread cost    |
-| `apple-design`                 | Apple-style fluid, physical motion and interface design foundations for the web   |
-| `ask-sonner`                   | Wire up and troubleshoot Sonner toasts in React                                   |
-| `break-ui`                     | Stress-test UI with worst-case data and report what breaks                        |
 | `caveman`                      | Ultra-terse mode that cuts tokens while keeping technical accuracy                |
-| `choreograph`                  | Coordinate several elements animating together as one motion                      |
 | `design-md`                    | Distill a Stitch project into a `DESIGN.md` design-system document                |
-| `emil-design-eng`              | Emil Kowalski's UI polish, component and animation philosophy                     |
-| `find-animation-opportunities` | Read-only search for places that should animate, with exact values                |
 | `find-skills`                  | Discover and install skills from the open skills ecosystem                        |
-| `gestures`                     | Build drag, swipe and sheet interactions that track the finger                    |
 | `git-commit`                   | Conventional commit analysis and smart batched staging                            |
 | `humanizer`                    | Rewrite AI-sounding English so it reads like the writer                           |
 | `humanizer-zh`                 | Chinese counterpart: trim filler and template phrasing                            |
-| `improve-animations`           | Read-only motion audit with prioritized, self-contained plans                     |
-| `learn-taste`                  | Turn a session's design corrections into `DESIGN.md` rules (manual only)          |
 | `migrate-to-vinext`            | Migrate a Next.js project to vinext (Vite), with Cloudflare Workers deploy        |
-| `mobile-native`                | CSS and meta-tag fixes that make a web app feel native on a phone                 |
 | `modern-web-guidance`          | Search modern web best practices first for HTML/CSS and client-side JS tasks      |
-| `programmatic-seo`             | Plan SEO pages generated at scale from templates and data                         |
-| `remove-animations`            | Remove motion the UI doesn't need; subtract-only, never adds or retunes           |
-| `review-animations`            | Review animation code against a high craft bar (manual only)                      |
 | `review-fix`                   | Functional test + review loop for the current project, max 3 rounds               |
-| `seo-audit`                    | Diagnose ranking, indexing and traffic problems                                   |
 | `up-design`                    | Incremental UI diagnose-and-fix pass with state and rules (usage under Pipelines) |
 | `up-seo`                       | SEO pipeline with shared context (usage under Pipelines)                          |
 | `vitest-test-writer`           | Write, review and fix Vitest unit tests, including test-first red-green flow      |
 
 **Pipelines**
 
-- `/up-design [--full] [--m]`: diagnose (screenshots at 375/768/1024/1440, UX rules check over 13 sections, static design criteria, shadscan on shadcn projects, `break-ui`, motion audits) → fix directly with no prompts (structural changes and new dependencies go to the report as unresolved) → verify (`review-animations`, final screenshots, performance baseline, lint) → write the user's preferences into `DESIGN.md`/lint; quick mode (changed files since the last run) by default, `--full` forces the whole project; state lives in `./up-design/`; no git writes; details: `skills/up-design/SKILL.md`
-- `/up-seo [url] [@path ...]`: `ai-seo` → `seo-audit` → `programmatic-seo`, and you pick fixes after each stage
+- `/up-design [--full] [--m]`: diagnose (screenshots at 375/768/1024/1440, UX rules check over 13 sections, static design criteria, shadscan on shadcn projects, worst-case data, motion audits) → fix directly with no prompts (structural changes and new dependencies go to the report as unresolved) → verify (motion review, final screenshots, performance baseline, lint) → write the user's preferences into `DESIGN.md`/lint; quick mode (changed files since the last run) by default, `--full` forces the whole project; state lives in `./up-design/`; no git writes; self-contained, so the design, motion and rule-writing guidance ships in `skills/up-design/references/`; details: `skills/up-design/SKILL.md`
+- `/up-seo [url] [@path ...]`: AI-search visibility → technical and on-page audit → programmatic opportunities, with one shared context and you pick fixes after each stage; self-contained, the guidance ships in `skills/up-seo/references/`; details: `skills/up-seo/SKILL.md`
 
 **Notes**
 
 - Third-party skills are installed with `npx skills add --copy`, so each is a real directory in `skills/` that syncs across devices via git; `/up-skills` still updates them in place from upstream
 - The update source list lives in `~/.agents/.skill-lock.json`, outside this repo; on a new device, run `npx skills add <owner/repo> -s <skill> -g -y -a claude-code --copy` once per skill to register it
-- `review-animations` is manual-only; `up-design` reads it directly
-- `learn-taste` is manual-only; run it at the end of a session where you corrected the agent. `up-design` reads the resulting `DESIGN.md` and suggests `/learn-taste` when a run shows correction signals
+- `up-design` writes the user's design corrections into `DESIGN.md` / lint itself (rule-writing guidance: `skills/up-design/references/rule-routing.md`); there is no separate `learn-taste` skill
 - `review-fix` auto-detects the dev command and port, runs the project's own `.claude/review-fix/` checks or throwaway scripts built on `scripts/lib.mjs`, then `/code-review` and fixes until it converges
 
 ## 🤖 Subagents

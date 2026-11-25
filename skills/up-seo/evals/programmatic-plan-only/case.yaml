@@ -1,0 +1,9 @@
+schema_version: "1.1"
+name: programmatic-plan-only
+expected_outcome: |
+  data/stores.json 有 12 間門市，每間都有獨特的地址、營業時間、招牌商品與介紹。
+  階段 3 應評估門市頁這個 playbook 適合，給出計畫（模式、URL 結構、模板、每頁獨特價值、品質防護），
+  使用者挑選後只建立路由與模板加一個很小的 pilot（不超過 3 頁），不一次產生全部頁面，
+  遵守 CLAUDE.md 的 AdSense 政策（不做薄頁面），不修改 data/stores.json、不新增套件、不 commit。
+context:
+  scaffold_script: place-files.sh

@@ -1,10 +1,10 @@
 # Rule writing
 
-Write locations follow `learn-taste`: **lint, DESIGN.md, project skill**. Difference: up-design is automatic and does not stop for user approval (section 1).
+Turn the user's design corrections into rules the next agent will read: a **lint check, DESIGN.md, or a project skill**. up-design writes them directly without stopping for approval; every change is listed in the report so the user can inspect or revert it.
 
 ## Contents
 
-1. Differences from learn-taste
+1. Principles
 2. Collect, filter, generalize
 3. Choose the write location
 4. DESIGN.md format
@@ -13,31 +13,50 @@ Write locations follow `learn-taste`: **lint, DESIGN.md, project skill**. Differ
 7. Lint detection, writing and checking
 8. Examples
 
-## 1. Differences from learn-taste
+## 1. Principles
 
-`learn-taste` sets `disable-model-invocation: true`; the agent cannot call it. Locate its SKILL.md with `scripts/find_skill.mjs learn-taste`, read it, **follow its Phase 1–4**, but where the table below differs, up-design wins:
+Every correction the user makes is taste the agent lacked. Unwritten, the next session repeats the mistake. This step only writes rules; it never changes component code (lint fixes of in-scope files are the exception, see the table).
 
-| Item                                       | learn-taste                                              | up-design                                                                                                                                            |
-| ------------------------------------------ | -------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
-| When to write                              | Proposes, stops; writes only after user says `write all` | Writes directly; result listed in report section 「規則變更」                                                                                        |
-| Rule source                                | Only preferences the user expressed                      | Same. Problems the agent finds itself (`review-animations` block reasons, recurring problems) are not written; listed only in 「建議規則（未寫入）」 |
-| Unknown why                                | Mark _inferred_, ask user                                | Mark `*推論*`, write directly, list in report for later user confirmation                                                                            |
-| Lint finds violations in existing code     | Report count and ask                                     | In-scope: fix; out-of-scope: set rule to warn, record in report                                                                                      |
-| CLAUDE.md / AGENTS.md pointer to DESIGN.md | Proposes adding                                          | Adds directly (section 6)                                                                                                                            |
+1. **Write only the user's taste.** A rule must trace to something the user said, edited or confirmed. A rule the agent thinks is "good practice" is not written, even when it comes from a review block or a problem that recurred this run: that is the agent's taste, and the user is the one correcting it. List such candidates in 「建議規則（未寫入）」 with suggested location and content; the user adopts them later.
+2. **Never invent a why.** The user's reason goes in their words. With none, write your best candidate marked `*推論*` and list it in the report for later confirmation. A wrong why is worse than none: the next agent extends the reasoning to cases it does not fit.
+3. **A check beats a sentence.** A violation that matching code can catch (a banned value, a raw hex instead of a token, a forbidden property) becomes a lint rule, because machine checks run every time while a sentence in a long file is skipped when context is full. Keep a one-line rule in DESIGN.md too, so the why is recorded.
+4. **Write for an agent that was not here.** No "like we discussed" or "the card from earlier"; name the component class, the value, the token, the file.
+5. **No preference expressed → no rule.** A run where the user expressed no design preference writes nothing; that is a normal result, not a failure.
 
-**Write only the user's taste.** Every written rule must trace to something the user said, changed or confirmed. A rule the agent thinks is "good practice" is not written even when it comes from a review block or a problem recurring this run: that is the agent's taste, and the user is correcting the agent's taste. Put such candidates in 「建議規則（未寫入）」 with suggested location and content; the user adopts them later, or says so on the next trigger.
-
-A run where the user expressed no design preference writes no rule; that is a normal result, not a failure.
+Handling when a lint rule finds violations in existing code: in-scope files → fix them; out-of-scope → set the rule to warn and record the count in the report. The CLAUDE.md / AGENTS.md pointer to DESIGN.md is added directly (section 6).
 
 ## 2. Collect, filter, generalize
 
-Per learn-taste Phase 1–3:
+**Collect.** Read this conversation from the first turn. Explicit corrections are the minority; look for all five signals:
 
-- **Collect**: explicit corrections, files the user edited themselves, repeated tweaks, reverts or rejections, non-obvious choices the user confirmed. Preferences attached to the up-design trigger count too (e.g. 「跑 up-design，另外 hover 不要用 transform」).
-- **Filter**: would a new agent make the same mistake on a different component? No → skip. Existing rule already covers it but was still violated → the rule is too weak; rewrite it stricter, do not add a duplicate. Contradicts an existing rule → rewrite the old rule to this run's conclusion and list it in the report as 「衝突」.
-- **Generalize**: write at the category level. E.g. "raised surfaces (card, popover, menu) use `shadow-raised`, not a solid border" — not tied to one component, not "never use borders".
-- Use this codebase's actual values and token names; use 「一律」「不要」, not 「盡量」「建議」.
+| Signal                       | Example                                                                                                                        | Tells you                                                       |
+| ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------- |
+| Explicit correction          | "No, semi-transparent shadow, not a border"                                                                                    | The rule, often with the why                                    |
+| Silent edit                  | User changed `duration: 400` to `200` in a file you wrote (notice of an outside change, or a diff against what you last wrote) | Your default was wrong; their value is the rule                 |
+| Repeated nudge               | "Smaller." → "Still too big." → "Ok"                                                                                           | Record where they landed, not the steps                         |
+| Revert or rejection          | "Undo that", picking variant B over A                                                                                          | What not to do; the why is usually missing, so mark it `*推論*` |
+| Confirmed non-obvious choice | "Yes, keep the icon outside the button"                                                                                        | Record only if a fresh agent would plausibly do otherwise       |
 
+Preferences attached to the up-design trigger count too (e.g. 「跑 up-design，另外 hover 不要用 transform」). Capture the exact words or the diff, what you did, what they wanted, and any reason given. Skip what is not taste: functional bugs, one-screen content ("the headline should say Pricing"), corrections to your understanding of the task.
+
+**Filter.** Would a fresh agent building a _different_ component in this repo make the same mistake?
+
+- No (one-off: this campaign's color, this page's layout) → skip.
+- An existing rule (DESIGN.md, CLAUDE.md / AGENTS.md, project skills) says the same thing but was still violated → the rule is too weak; rewrite it stricter (a number, a token, 「一律」) instead of adding a duplicate.
+- It contradicts an existing rule → rewrite the old rule to this run's conclusion and list it in the report as 「衝突」.
+- Otherwise it becomes a rule; if matching code can catch it, also a lint check.
+
+**Generalize.** Pick the narrowest level that would have prevented the mistake on the next, different component:
+
+| Level     | Example                                                                           | Verdict                                    |
+| --------- | --------------------------------------------------------------------------------- | ------------------------------------------ |
+| Instance  | "The pricing card gets a shadow, not a border"                                    | Too narrow: protects one card              |
+| Class     | "Raised surfaces (card, popover, menu) use `shadow-raised`, never a solid border" | Write this                                 |
+| Universal | "Never use borders"                                                               | Too broad: breaks inputs, dividers, tables |
+
+The same correction on two or more different components is evidence for the class level. Use this codebase's actual values and token names; use 「一律」「不要」, not 「盡量」「建議」 (softer wording only when the user framed it as a preference).
+
+**Self-test before writing:** read only the rule and its why and picture the original task. If an agent that knows nothing else could still produce the wrong version, the rule is too vague; add the value, the token or the exception.
 ## 3. Choose the write location
 
 ```
@@ -167,7 +186,7 @@ User says: 「hover 不要用 transform，手機點完會卡住」
 → CLAUDE.md has no pointer to DESIGN.md → add `Before building or changing UI, read DESIGN.md.`
 
 **Example 4: problem the agent found itself**
-review-animations blocked a modal's `ease-in` three times, but the user said nothing related
+motion-review blocked a modal's `ease-in` three times, but the user said nothing related
 → Fix the code; write no rule. List in 「建議規則（未寫入）」: 「Modal 進場使用 ease-out」, suggested location DESIGN.md › Motion
 
 **Example 5: section too long**
