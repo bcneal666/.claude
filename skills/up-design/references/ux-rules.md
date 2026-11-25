@@ -2,7 +2,7 @@
 
 Cross-project interaction and layout rules: desktop/mobile presentation, touch and gestures, data display, loading feedback. Visuals (color, type size, radius) live in project `DESIGN.md` and `criteria.md`.
 
-This file is a diagnostic baseline, like `emil-design-eng`: up-design checks the in-scope files against it section by section; verdict per section: `pass` / `gap` / `N/A` / `未驗證`. A section the scope does not touch is `N/A（不在範圍）`. Project rules (lint, DESIGN.md, CLAUDE.md, tokens) outrank this file.
+This file is a diagnostic baseline: up-design checks the in-scope files against it section by section; verdict per section: `pass` / `gap` / `N/A` / `未驗證`. A section the scope does not touch is `N/A（不在範圍）`. Project rules (lint, DESIGN.md, CLAUDE.md, tokens) outrank this file.
 
 Desktop Dialog / mobile Drawer: each project wraps its own. Switch `Dialog`/`Drawer` with the project's width media-query hook, extract content into a shared component, behavior per this file. Project has no Drawer component → do not add one: list it under 「未解決」 as a structural fix; do not hand-write gestures, do not add a bottom-sheet package for this. Component names follow the project's existing ones (`Combobox`, `Sidebar`, `Spinner`, `Kbd` etc. are generic; use project equivalent when it exists).
 

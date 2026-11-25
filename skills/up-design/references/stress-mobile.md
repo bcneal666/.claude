@@ -1,8 +1,7 @@
 # Stress, mobile and toast checks
 
-This file is for DIAGNOSIS: list each finding with `file:line` and its fix, and edit nothing.
-Fixing while still diagnosing breaks the fix order up-design relies on (stability → removal → performance → motion).
-The fix is applied later, in step 3.
+This file is for DIAGNOSIS only: list each finding with `file:line` and its fix; edit nothing.
+Fixing mid-diagnosis breaks the fix order up-design relies on (stability → removal → performance → motion); fixes are applied in step 3.
 
 Serves Diagnose steps 2.5–2.7. A skipped section gets one line in the report saying why. A finding that repeats a step 2.2 ux-rules gap is listed once, under that section.
 

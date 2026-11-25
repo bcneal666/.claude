@@ -26,7 +26,7 @@ Order rationale: tuning animation on an unstable layout is wasted work, so **fix
 | `references/rule-routing.md`    | step 5             | Turning the user's corrections into lint / DESIGN.md / project skill |
 | `assets/*-template.md`          | as named           | Report, perf baseline, DESIGN.md, project skill skeletons            |
 
-Scripts use only Node.js 18+ built-ins, run on Windows and Linux, and run from any directory inside the project. `scripts/scope.mjs` previews scope without creating files (`start_run.mjs` already includes its logic).
+Scripts use only Node.js 18+ built-ins; run on Windows and Linux from any directory inside the project. `scripts/scope.mjs` previews scope without creating files (`start_run.mjs` already includes its logic).
 
 ## Arguments
 
@@ -37,7 +37,7 @@ Any order, space-separated, e.g. `/up-design m`, `/up-design --full --m`. Pass t
 | `--full` | Force whole-project check, no incremental                                                                                      | `full` |
 | `--m`    | Project has mobile needs: apply the mobile section of `stress-mobile.md`, consider touch and small screens in every other step | `m`    |
 
-Natural-language equivalents count as arguments: 「全面檢查」 = `--full`, 「要顧手機版」 = `--m`. Without `--m`/`m`, assume no mobile need; do not guess, because a wrong guess does wasted work on a desktop project or silently misses mobile problems.
+Natural-language equivalents count as arguments: 「全面檢查」 = `--full`, 「要顧手機版」 = `--m`. Without `--m`/`m`, assume no mobile need; do not guess: a wrong guess wastes work on a desktop project or silently misses mobile problems.
 
 ## Flow
 
@@ -65,7 +65,7 @@ Natural-language equivalents count as arguments: 「全面檢查」 = `--full`, 
 
 ### 2. Diagnose
 
-Find problems only; edit no file. Look at everything before acting so the fix order is sensible and nothing gets edited right before turning out to be deletable. The references named below are written for diagnosis: they list findings and fixes, they do not apply them.
+Find problems only; edit no file. Survey everything before acting so fix order is sensible and nothing is edited just before proving deletable. References named below are diagnosis-only: they list findings and fixes, never apply them.
 
 1. Screen baseline: capture per "Screen verification", the baseline for step 4.
 2. **UX rules check**: per the 13 sections of `references/ux-rules.md`, check **in-scope files only**; one verdict per section:
@@ -91,7 +91,7 @@ Find problems only; edit no file. Look at everything before acting so the fix or
 
 ### 3. Fix and optimize
 
-Run right after the diagnosis sections are written; do not ask the user. They want a one-shot flow; the report is a record for later inspection, not a request for approval.
+Run right after the diagnosis sections are written; do not ask the user: they want a one-shot flow, and the report is a record for later inspection, not an approval request.
 
 1. Execute in list order: stability (UX rule gaps, static-design auto-fix items, non-animation shadscan items) → remove animations → performance → adjust and add animations. Edit in-scope files only; use the project's existing tokens (project uses tokens → no hard-coded colors). Fixes involving platform features first consult "modern-web-guidance".
 2. Stability fixes do not touch animation or transition code; removal only subtracts and does not add or retune motion, so each phase stays inspectable on its own. Items needing an animation library, new dependency, new route or new component are not done; list in 「未解決」. Follow AdSense policy for ad slots: do not move or disguise ad blocks as content or bait clicks.

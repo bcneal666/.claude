@@ -1,0 +1,8 @@
+schema_version: "1.1"
+name: path-rules-chunk-to-rules-dir
+expected_outcome: |
+  沒有 linter；CLAUDE.md 有兩條全域規則與兩條路徑專屬規則（src/components 與 db/migrations）。
+  /up-rules 應把路徑規則各自移到 .claude/rules/<topic>.md，frontmatter 只有加雙引號的 paths 且能比對到現有檔案，
+  從 CLAUDE.md 完整移除（不留 @import），全域規則與所有原因保留。
+context:
+  scaffold_script: place-files.sh

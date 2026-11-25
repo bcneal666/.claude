@@ -2,16 +2,16 @@
 
 Personal global Claude Code configuration shared across projects: skills, slash commands, statusline and settings.
 
-| Highlight   | Details                                                                           |
-| ----------- | --------------------------------------------------------------------------------- |
-| 🧩 Skills   | Custom and third-party **skills**, plus `/up-*` workflows that chain them         |
-| ⚡ Commands | Manual-only **slash commands** for committing, rule maintenance and skill updates |
-| ⚙️ Settings | Version-controlled **settings**, hooks and a single-process Node statusline       |
+| Highlight   | Details                                                                       |
+| ----------- | ----------------------------------------------------------------------------- |
+| 🧩 Skills   | Custom and third-party **skills**, including self-contained `/up-*` workflows |
+| ⚡ Commands | A manual-only **slash command** for skill updates                             |
+| ⚙️ Settings | Version-controlled **settings**, hooks and a single-process Node statusline   |
 
 ## 🚀 Quick start
 
 ```text
-/up-rules --audit            # fact-check and compress rule files, sync this README
+/up-rules --audit            # route rules to lint/rules/CLAUDE.md, compress, sync this README
 /up-skills                   # batch-update skills
 /now-push --pr --merge       # commit, push, open a PR and squash merge
 ```
@@ -44,41 +44,12 @@ Personal global Claude Code configuration shared across projects: skills, slash 
 
 ## ⚡ Commands
 
-| Name                                        | Purpose                                                          |
-| ------------------------------------------- | ---------------------------------------------------------------- |
-| `/now-push [--lng <code>] [--pr] [--merge]` | Commit and push in a fixed format, no confirmation               |
-| `/up-rules [--audit] [--lng <code>]`        | Fact-check, chunk and compress rule files, then sync this README |
-| `/up-skills [global\|project]`              | Batch-update skills                                              |
+| Name                           | Purpose             |
+| ------------------------------ | ------------------- |
+| `/up-skills [global\|project]` | Batch-update skills |
 
 > [!NOTE]
-> All three set `disable-model-invocation: true` because each has side effects (pushing, rewriting rule files, reinstalling skills). Claude cannot call them on its own; they run only when you type them.
-
-<details>
-<summary><code>/now-push</code> details</summary>
-
-- Runs `git add` + `commit` + `push` without asking for confirmation
-- Pushes every unpushed local commit on the current branch as-is, not just this run's; a clean tree with unpushed commits still pushes
-- Commit message is **English** by default and carries a `Co-Authored-By` trailer
-- `--lng <code>` switches the message language (`zh` = Traditional Chinese, `ja`, …)
-- `--pr` also opens a PR, auto-creating a new branch when on the default branch
-- `--merge` implies `--pr`, waits for required checks, squash-merges, deletes the branch locally and remotely, then returns to the default branch
-- Every run checks the GitHub repo description and updates it to match the language
-
-</details>
-
-<details>
-<summary><code>/up-rules</code> details</summary>
-
-- `--lng <code>` sets the language of everything written, including `agents/` prose, `hooks/` comments and command descriptions (`zh` = Traditional Chinese, `ja`; absent = English); content in a different language is translated
-- Flow, in order:
-  1. Fact-check `CLAUDE.md`
-  2. With `--audit`: audit for stale instructions via `claude-api` prompt-audit, then pick findings to apply
-  3. Chunk path-specific content into `rules/<topic>.md` (loaded on demand via `paths` frontmatter)
-  4. Compress `CLAUDE.md`, `.claude/rules/**/*.md`, `.claude/commands/**/*.md` and the `.md` files of self-made skills listed in `skills/.up-skills-ignore` (plus, when `./up-design/` exists, its `.md` files, `DESIGN.md` and `.claude/skills/design-*/`; never translated) at caveman full strength (drops filler only, never semantics, except hunks applied via `--audit`)
-  5. Check and sync this README
-- The README is written for humans, so it is exempt from caveman compression and follows a style guide (structure, emoji, callouts, folding)
-
-</details>
+> It sets `disable-model-invocation: true` because reinstalling skills is a side effect. Claude cannot call it on its own; it runs only when you type it. The `now-push` and `up-rules` skills do the same (see Skills).
 
 <details>
 <summary><code>/up-skills</code> details</summary>
@@ -92,32 +63,63 @@ Personal global Claude Code configuration shared across projects: skills, slash 
 
 ## 🧩 Skills
 
-| Name                           | Purpose                                                                           |
-| ------------------------------ | --------------------------------------------------------------------------------- |
-| `agent-browser`                | Browser automation CLI: operate pages, fill forms, screenshot, scrape             |
-| `caveman`                      | Ultra-terse mode that cuts tokens while keeping technical accuracy                |
-| `design-md`                    | Distill a Stitch project into a `DESIGN.md` design-system document                |
-| `find-skills`                  | Discover and install skills from the open skills ecosystem                        |
-| `git-commit`                   | Conventional commit analysis and smart batched staging                            |
-| `humanizer`                    | Rewrite AI-sounding English so it reads like the writer                           |
-| `humanizer-zh`                 | Chinese counterpart: trim filler and template phrasing                            |
-| `migrate-to-vinext`            | Migrate a Next.js project to vinext (Vite), with Cloudflare Workers deploy        |
-| `modern-web-guidance`          | Search modern web best practices first for HTML/CSS and client-side JS tasks      |
-| `review-fix`                   | Functional test + review loop for the current project, max 3 rounds               |
-| `up-design`                    | Incremental UI diagnose-and-fix pass with state and rules (usage under Pipelines) |
-| `up-seo`                       | SEO pipeline with shared context (usage under Pipelines)                          |
-| `vitest-test-writer`           | Write, review and fix Vitest unit tests, including test-first red-green flow      |
+| Name                  | Purpose                                                                           |
+| --------------------- | --------------------------------------------------------------------------------- |
+| `agent-browser`       | Browser automation CLI: operate pages, fill forms, screenshot, scrape             |
+| `design-md`           | Distill a Stitch project into a `DESIGN.md` design-system document                |
+| `find-skills`         | Discover and install skills from the open skills ecosystem                        |
+| `humanizer`           | Rewrite AI-sounding English so it reads like the writer                           |
+| `humanizer-zh`        | Chinese counterpart: trim filler and template phrasing                            |
+| `migrate-to-vinext`   | Migrate a Next.js project to vinext (Vite), with Cloudflare Workers deploy        |
+| `modern-web-guidance` | Search modern web best practices first for HTML/CSS and client-side JS tasks      |
+| `now-push`            | Commit and push in a fixed format, no confirmation; manual-only (usage below)     |
+| `review-fix`          | Functional test + review loop for the current project, max 3 rounds               |
+| `up-design`           | Incremental UI diagnose-and-fix pass with state and rules (usage under Pipelines) |
+| `up-rules`            | Route rules to lint, `rules/` or `CLAUDE.md`, compress them, sync this README     |
+| `up-seo`              | SEO pipeline with shared context (usage under Pipelines)                          |
+| `vitest-test-writer`  | Write, review and fix Vitest unit tests, including test-first red-green flow      |
 
 **Pipelines**
 
 - `/up-design [--full] [--m]`: diagnose (screenshots at 375/768/1024/1440, UX rules check over 13 sections, static design criteria, shadscan on shadcn projects, worst-case data, motion audits) → fix directly with no prompts (structural changes and new dependencies go to the report as unresolved) → verify (motion review, final screenshots, performance baseline, lint) → write the user's preferences into `DESIGN.md`/lint; quick mode (changed files since the last run) by default, `--full` forces the whole project; state lives in `./up-design/`; no git writes; self-contained, so the design, motion and rule-writing guidance ships in `skills/up-design/references/`; details: `skills/up-design/SKILL.md`
 - `/up-seo [url] [@path ...]`: AI-search visibility → technical and on-page audit → programmatic opportunities, with one shared context and you pick fixes after each stage; self-contained, the guidance ships in `skills/up-seo/references/`; details: `skills/up-seo/SKILL.md`
 
+<details>
+<summary><code>/now-push</code> details</summary>
+
+- Runs `git add` + `commit` + `push` without asking for confirmation; `disable-model-invocation: true`, so it runs only when you type `/now-push [--lng <code>] [--pr] [--merge]`
+- Stops without committing when a merge, rebase, cherry-pick or revert is in progress or files are unmerged, and when the diff contains a secret
+- Pushes every unpushed local commit on the current branch as-is, not just this run's; a clean tree with unpushed commits still pushes
+- Commit message is **English** by default and carries a `Co-Authored-By` trailer
+- `--lng <code>` switches the message language (`zh` = Traditional Chinese, `ja`, …)
+- `--pr` also opens a PR, auto-creating a new branch when on the default branch
+- `--merge` implies `--pr`, waits for required checks, squash-merges, deletes the branch locally and remotely, then returns to the default branch
+- Every run checks the GitHub repo description and updates it to match the language
+- Self-contained: the commit format and the PR/merge steps ship in `skills/now-push/references/`
+
+</details>
+
+<details>
+<summary><code>/up-rules</code> details</summary>
+
+- Runs only when you type `/up-rules [--audit] [--lng <code>]` (`disable-model-invocation: true`)
+- `--lng <code>` sets the language of everything written, including `agents/` prose, `hooks/` comments, command descriptions and lint messages (`zh` = Traditional Chinese, `ja`; absent = English); content in a different language is translated
+- Flow, in order:
+  1. Fact-check `CLAUDE.md`
+  2. With `--audit`: audit for stale instructions, then pick findings to apply
+  3. Route each rule to the cheapest place that still enforces it: a lint rule in the project's existing linter (the reason goes in the lint message), then `rules/<topic>.md` loaded on demand via `paths`, then `CLAUDE.md`
+  4. Compress `CLAUDE.md`, `.claude/rules/**/*.md`, `.claude/commands/**/*.md` and the `.md` files of self-made skills listed in `skills/.up-skills-ignore` (plus, when `./up-design/` exists, its `.md` files, `DESIGN.md` and `.claude/skills/design-*/`; never translated) in terse style (drops filler only, never semantics, except hunks applied via `--audit`)
+  5. Check and sync this README
+- Never installs a linter or edits source code; a new lint rule stays an error, and only files that already break it are downgraded to warn and counted in the report
+- The README is written for humans, so it is exempt from terse compression and follows a style guide (structure, emoji, callouts, folding)
+
+</details>
+
 **Notes**
 
 - Third-party skills are installed with `npx skills add --copy`, so each is a real directory in `skills/` that syncs across devices via git; `/up-skills` still updates them in place from upstream
 - The update source list lives in `~/.agents/.skill-lock.json`, outside this repo; on a new device, run `npx skills add <owner/repo> -s <skill> -g -y -a claude-code --copy` once per skill to register it
-- `up-design` writes the user's design corrections into `DESIGN.md` / lint itself (rule-writing guidance: `skills/up-design/references/rule-routing.md`); there is no separate `learn-taste` skill
+- `up-design` writes the user's design corrections into `DESIGN.md` / lint itself (rule-writing guidance: `skills/up-design/references/rule-routing.md`)
 - `review-fix` auto-detects the dev command and port, runs the project's own `.claude/review-fix/` checks or throwaway scripts built on `scripts/lib.mjs`, then `/code-review` and fixes until it converges
 
 ## 🤖 Subagents
@@ -182,11 +184,11 @@ The built-in system prompt gives only a date snapshot at session start, so `inje
 | -------------- | ---------------------------------------------------------------------------------------------------------------- |
 | Model          | `model` is `opusplan` (Opus in plan mode, Sonnet when executing)                                                 |
 | Effort         | `modelSettings`: Opus `xhigh`, Sonnet `high`; `opusplan` uses Sonnet entry for both phases (plan runs `high`)    |
-| Subagent model | `env` sets `CLAUDE_CODE_SUBAGENT_MODEL=haiku` as a fallback; custom agents pin their own `model`, which wins     |
+| Subagent model | `env` sets `CLAUDE_CODE_SUBAGENT_MODEL=sonnet` as a fallback; custom agents pin their own `model`, which wins    |
 | Output         | `outputStyle` is `Concise`; `language` is `Traditional Chinese (Taiwan)`                                         |
 | Start mode     | `permissions.defaultMode` is `plan`                                                                              |
 | Permissions    | `permissions.allow` whitelists low-risk commands (list below the table)                                          |
-| Deny           | `permissions.deny` blocks force pushes and reads of `~/.ssh` and `.env` files                                    |
+| Deny           | `permissions.deny` blocks force pushes and reads of `~/.ssh`                                                     |
 | Time zone      | `timeZone` is `Asia/Taipei`                                                                                      |
 | Statusline     | Node only (`statusline-command.mjs`), no shell fallback; three lines (model, location, usage)                    |
 | Vim indicator  | `statusLine.hideVimModeIndicator: true` turns off the built-in `-- INSERT --` indicator in favor of a custom one |

@@ -1,0 +1,10 @@
+schema_version: "1.1"
+name: lintable-rules-move-to-eslint
+expected_outcome: |
+  專案已安裝 ESLint 10（flat config），CLAUDE.md 有兩條可機器檢查的規則（禁止 import lodash、禁止 console.log）、
+  一條含判斷例外的規則、一條 src/api 的路徑規則與兩條全域規則；src/legacy/report.js 已經 import lodash。
+  /up-rules 應把 lodash 與 console.log 寫成 ESLint 規則（原因放在 message 或註解），lodash 規則維持 error，只對已違規的 src/legacy/report.js 用 per-file override 降為 warn 並回報數量，
+  從 CLAUDE.md 刪掉這兩句，補一行要求跑 npm run lint；判斷型規則與全域規則留在 CLAUDE.md；
+  不改 src/、不動 package.json、不裝套件，npm run lint 仍能執行。
+context:
+  scaffold_script: place-files.sh

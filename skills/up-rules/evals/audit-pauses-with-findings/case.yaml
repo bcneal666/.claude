@@ -1,0 +1,8 @@
+schema_version: "1.1"
+name: audit-pauses-with-findings
+expected_outcome: |
+  CLAUDE.md 混有過時寫法（全大寫 CRITICAL/MUST/ALWAYS 加驚嘆號、think step by step、Be thorough / Do not be lazy）
+  與有正當原因的規則（不記錄 request body，因為含個資）。/up-rules --audit 應列出過時寫法的 finding（含 file:line 與信心等級），
+  不把有原因的規則列為要刪除的項目，並在套用任何修改前停下來請使用者挑選要套用的項目；這次執行結束時 CLAUDE.md 未被改動。
+context:
+  scaffold_script: place-files.sh

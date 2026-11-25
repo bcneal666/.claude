@@ -1,0 +1,8 @@
+schema_version: "1.1"
+name: dirty-tree-commits-and-pushes
+expected_outcome: |
+  工作區有改動的 src/cart.js（新增 applyDiscount）和未追蹤的 test/cart.test.js，origin 是本機 bare repo。
+  /now-push 不加旗標：用 git add -A 做出一個固定格式的英文 commit（type(scope): subject、條列 body、
+  Co-Authored-By trailer），推到 origin/main，不開分支、不開 PR；gh 不可用時 description 檢查只給一行提示，不算失敗。
+context:
+  scaffold_script: place-files.sh

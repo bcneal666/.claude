@@ -1,0 +1,7 @@
+schema_version: "1.1"
+name: clean-tree-pushes-unpushed-as-is
+expected_outcome: |
+  工作區乾淨，但 main 上有兩個尚未推送、不符固定格式的 commit（"wip stuff"、"Update README."）。
+  /now-push 應跳過產生 commit，原樣推送這兩個 commit（不 amend、不 reword、不 squash），回報兩個被推送的 commit。
+context:
+  scaffold_script: place-files.sh

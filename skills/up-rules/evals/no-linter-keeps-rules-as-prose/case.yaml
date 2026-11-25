@@ -1,0 +1,7 @@
+schema_version: "1.1"
+name: no-linter-keeps-rules-as-prose
+expected_outcome: |
+  與上一案相同的 CLAUDE.md，但專案沒有任何 linter。/up-rules 不建立 lint 設定、不安裝 ESLint、不改 package.json，
+  lodash 與 console.log 兩條規則仍以文字留在 CLAUDE.md 或 rules/，報告說明沒有 linter，可附建議設定並標「未驗證」。
+context:
+  scaffold_script: place-files.sh

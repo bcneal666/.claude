@@ -8,7 +8,6 @@ history.jsonl
 # MCP needs auth cache
 mcp-needs-auth-cache.json
 bash.exe.stackdump
-.caveman-active
 .last-cleanup
 .last-update-result.json
 policy-limits.json*
