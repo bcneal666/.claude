@@ -118,15 +118,13 @@ Personal global Claude Code configuration shared across projects: skills, slash 
 
 ## 🤖 Subagents
 
-| Name               | Purpose                                                                          |
-| ------------------ | -------------------------------------------------------------------------------- |
-| `code-reviewer`    | Read-only review of a diff in fresh context for correctness bugs and regressions |
-| `researcher`       | Look up docs, APIs and error messages; return a short cited answer               |
-| `security-auditor` | Read-only scan for leaked secrets, injection, auth flaws and unsafe dependencies |
-| `ui-ux-tester`     | Test a running web app with agent-browser; report flow, visual and UX defects    |
+| Name           | Purpose                                                                       |
+| -------------- | ----------------------------------------------------------------------------- |
+| `researcher`   | Look up docs, APIs and error messages; return a short cited answer            |
+| `ui-ux-tester` | Test a running web app with agent-browser; report flow, visual and UX defects |
 
 > [!NOTE]
-> All four subagents are read-only (no `Edit` / `Write` granted) and have "Use proactively" in their description, so the main agent delegates to them automatically. Each pins its own model: `code-reviewer` and `security-auditor` use opus; `researcher` and `ui-ux-tester` use sonnet. `ui-ux-tester` loads the `agent-browser` usage guide from the CLI itself (`agent-browser skills get core`).
+> Both subagents are read-only (no `Edit` / `Write` granted) and have "Use proactively" in their description, so the main agent delegates to them automatically. Both pin `model: sonnet`. `ui-ux-tester` loads the `agent-browser` usage guide from the CLI itself (`agent-browser skills get core`).
 
 ## 🪝 Hooks
 
