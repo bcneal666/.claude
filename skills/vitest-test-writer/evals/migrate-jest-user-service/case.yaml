@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: migrate-jest-user-service
+expected_outcome: |
+  Test file uses vi.* instead of jest.*, uses vi.mock with import() form, awaits async assertions, replaces existence-only assertions with real value checks, and the agent reports the quality problems it fixed.
+context:
+  scaffold_script: place-files.sh

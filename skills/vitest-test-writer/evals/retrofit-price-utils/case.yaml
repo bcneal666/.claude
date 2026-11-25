@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: retrofit-price-utils
+expected_outcome: |
+  A src/price.test.ts covering formatPrice and applyDiscount including edge cases (0, negative, invalid rate), with literal expected values, run via vitest run.
+context:
+  scaffold_script: place-files.sh

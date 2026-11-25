@@ -123,6 +123,7 @@ Personal global Claude Code configuration shared across projects: skills, slash 
 | `seo-audit`                    | Diagnose ranking, indexing and traffic problems                                   |
 | `up-design`                    | Incremental UI diagnose-and-fix pass with state and rules (usage under Pipelines) |
 | `up-seo`                       | SEO pipeline with shared context (usage under Pipelines)                          |
+| `vitest-test-writer`           | Write, review and fix Vitest unit tests, including test-first red-green flow      |
 
 **Pipelines**
 

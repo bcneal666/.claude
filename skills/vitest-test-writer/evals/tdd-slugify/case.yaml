@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: tdd-slugify
+expected_outcome: |
+  The agent proposes seams/test list, then works in vertical slices: one failing test, run (red), minimal code, run (green), repeated. Final src/slugify.ts and src/slugify.test.ts pass under vitest run.
+context:
+  scaffold_script: place-files.sh
