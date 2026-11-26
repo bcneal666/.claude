@@ -27,7 +27,7 @@ Sonner：{{SONNER}}
 
 ## 診斷
 
-<!-- Ordered by priority. Per item: file, problem, source skill (incl. shadscan, static design criteria) -->
+<!-- Ordered by priority. Per item: file, problem, source (reference §, shadscan, static design criteria) -->
 
 | #   | 檔案 | 問題 | 來源 |
 | --- | ---- | ---- | ---- |
@@ -63,7 +63,7 @@ Sonner：{{SONNER}}
 
 ## 未解決
 
-<!-- Failed review, out-of-scope problems, structural fixes and items needing a new dependency / animation library, skills skipped because not installed, lint rules set to warn because of out-of-scope errors, pre-existing lint/typecheck errors -->
+<!-- Failed review, out-of-scope problems, structural fixes and items needing a new dependency / animation library, lint rules set to warn because of out-of-scope errors, pre-existing lint/typecheck errors -->
 
 ## 規則變更
 

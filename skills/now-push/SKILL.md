@@ -28,8 +28,6 @@ Commit and push current repo (cwd) in one pass, no confirmation. User typed this
 | `references/pr-merge.md`         | Steps 5, 9, 10, only with `--pr`/`--merge` | Branching, PR creation, waiting for checks, squash merge         |
 | `references/repo-description.md` | Step 11                                    | When and how to update the GitHub repo description               |
 
-Execute in order immediately, no confirmation:
-
 ## Flow
 
 1. `git status` + collect **unpushed commits** on current branch (probe commands exempt from the stop rule below):

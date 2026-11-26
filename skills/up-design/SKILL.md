@@ -51,7 +51,7 @@ Natural-language equivalents count as arguments: 「全面檢查」 = `--full`, 
    node <skill-dir>/scripts/start_run.mjs [--full|full] [--m|m]
    ```
 
-   It creates `./up-design/` (first run or directory missing), ensures the directory is not ignored by `.gitignore`, decides this run's mode and scope, and creates this run's report from the template. Output JSON: `mode`, `reason`, `files`, `mobile`, `uses_sonner`, `report_path`, `gitignore`. Do all later work under `project_root`. Files `.ts` / `.js` clearly unrelated to UI: skip.
+   It creates `./up-design/` (first run or directory missing), ensures the directory is not ignored by `.gitignore`, decides this run's mode and scope, and creates this run's report from the template. Output JSON: `project_root`, `is_git`, `head`, `mode`, `reason`, `mobile`, `uses_sonner`, `last_run`, `file_count`, `files`, `created_state_dir`, `gitignore` (`status`, `actions`, `warnings`), `report_path`. Do all later work under `project_root`. Files `.ts` / `.js` clearly unrelated to UI: skip.
 
 2. `gitignore.status` is `still_ignored` → fix `.gitignore` by hand per `warnings` and record it in the report.
 3. Tell the user in one sentence the mode, reason and file count, then start without waiting for confirmation: manual trigger already means consent.

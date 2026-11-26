@@ -34,7 +34,7 @@ Items read: check → finding → fix (priority, rubric in §14).
 - Relative, `localhost`, preview hosts (`*.vercel.app`, `*.netlify.app`, `*.pages.dev`), `http://`, or a host/slash form unlike the canonical → build from the production URL. (high)
 - Entries that redirect, 404, carry `noindex` or aren't canonical; dynamic routes missing from a hardcoded list → every 200, indexable, self-canonical URL, generated from route data. (medium)
 - Over 50,000 URLs or 50 MB uncompressed in one file → sitemap index. (high)
-- `lastmod` = build time on every URL: Google uses it only when consistently accurate → real modified date. (low) Google ignores `priority` and `changefreq`.
+- Fake `lastmod` is Stage 1's (ai-visibility.md "Sitemap misleads"), not repeated here. Google ignores `priority` and `changefreq`.
 
 **Status codes and redirects** (`next.config.*` `redirects()`, middleware, `vercel.json`, `_redirects`, `netlify.toml`, `nginx.conf`, `.htaccess`):
 

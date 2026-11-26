@@ -138,7 +138,7 @@ Personal global Claude Code configuration shared across projects: skills, slash 
 
 The built-in system prompt gives only a date snapshot at session start, so `inject-datetime` supplies the full time. Cleanup details are under Settings.
 
-`git-secret-guard` scans added lines and untracked files for private keys, common API tokens, hard-coded credentials and `.env` files (`.env.example` is allowed). Add `secret-scan:allow` to a line to skip a false positive. It fails open: any internal error lets the command through.
+`git-secret-guard` scans added lines and untracked files for private keys, common API tokens, hard-coded credentials and `.env` files (`.env.example` is allowed). Add `secret-scan:allow` to a line to skip a false positive. Skill directories (`.claude/skills/<name>/`, `.agents/skills/<name>/`) whose name is listed in the repo's `skills-lock.json` are not scanned; hand-written skills are. It fails open: any internal error lets the command through.
 
 ## 🔌 Plugins
 

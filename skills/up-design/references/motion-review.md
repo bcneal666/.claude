@@ -3,7 +3,7 @@
 This file is for VERIFICATION (step 4.1) of the animation this run added or changed, not for diagnosis or building motion.
 Each changed animation gets pass, blocked or note; blocked goes back to step 3.
 
-Default to flagging: a transition that runs but feels sluggish, lands from the wrong origin, fires too often or drops frames is a regression.
+A transition that runs but feels sluggish, lands from the wrong origin, fires too often or drops frames is a regression.
 
 ## 1. Scope
 

@@ -1,2 +1,3 @@
 - Date/time ops: Asia/Taipei (UTC+8).
+- Shell is zsh: pipeline exit code via `${pipestatus[1]}` (not `PIPESTATUS[0]`); never assign to `status` (read-only in zsh), use `rc=$?`; when exit code matters, don't pipe to tail/head, redirect to a file.
 - agent-browser: hook sets `AGENT_BROWSER_SESSION=cc-<session_id>` per Claude session and closes it on SessionEnd — don't pass `--session` (bypasses cleanup). Idle 15m → daemon exits, unsaved cookies/login/tabs lost. Login or multi-turn auth flows → always add `--restore`.

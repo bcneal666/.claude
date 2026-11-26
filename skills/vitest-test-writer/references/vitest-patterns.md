@@ -64,7 +64,7 @@ test('rejects for unknown id', async () => {
 })
 ```
 
-Without `await`, assertion runs after test ends; test passes no matter what.
+Without `await`, assertion runs after test ends: before Vitest 5 the test passes no matter what; Vitest 5 fails it.
 
 ## Fake timers
 

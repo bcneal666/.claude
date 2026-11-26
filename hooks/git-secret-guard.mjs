@@ -14,6 +14,10 @@
 // False-positive escape hatch: a line containing `secret-scan:allow`
 // anywhere is skipped.
 //
+// Vendored skills: files under .claude/skills/<name>/ and .agents/skills/<name>/
+// are skipped when <name> is a key of `skills` in the repo's skills-lock.json.
+// Skills not listed there (hand-written ones) are still scanned.
+//
 // Hard rule: fail open — on any error exit 0 and never write to stderr.
 // On a hit, print only the deny JSON to stdout, and never print the full
 // secret (first 4 characters only).
@@ -89,6 +93,22 @@ function redact(s) {
   return `${s.slice(0, 4)}****`;
 }
 
+function vendoredPrefixes(root) {
+  try {
+    const lock = JSON.parse(readFileSync(join(root, "skills-lock.json"), "utf8"));
+    const skills = lock?.skills && typeof lock.skills === "object" ? lock.skills : {};
+    return Object.keys(skills)
+      .filter((name) => !name.includes("/") && !name.includes(".."))
+      .flatMap((name) => [`.claude/skills/${name}/`, `.agents/skills/${name}/`]);
+  } catch {
+    return [];
+  }
+}
+
+function isVendored(file, prefixes) {
+  return prefixes.some((prefix) => file.startsWith(prefix));
+}
+
 function scanLine(file, lineNo, text, hits) {
   if (text.includes(ALLOW_MARKER)) return;
   for (const [name, re] of RULES) {
@@ -100,18 +120,20 @@ function scanLine(file, lineNo, text, hits) {
   }
 }
 
-function scanDiff(diff, hits, files) {
+function scanDiff(diff, hits, files, prefixes) {
   let file = null;
+  let skipped = false;
   let lineNo = 0;
   for (const line of diff.split("\n")) {
     if (line.startsWith("+++ ")) {
       file = line.startsWith("+++ b/") ? line.slice(6) : null;
       if (file) files.add(file);
+      skipped = file !== null && isVendored(file, prefixes);
     } else if (line.startsWith("@@")) {
       const m = line.match(/\+(\d+)/);
       lineNo = m ? Number(m[1]) : 0;
     } else if (line.startsWith("+") && file) {
-      scanLine(file, lineNo, line.slice(1), hits);
+      if (!skipped) scanLine(file, lineNo, line.slice(1), hits);
       lineNo++;
     } else if (!line.startsWith("-") && !line.startsWith("\\")) {
       lineNo++;
@@ -119,11 +141,12 @@ function scanDiff(diff, hits, files) {
   }
 }
 
-function scanUntracked(root, hits, files) {
+function scanUntracked(root, hits, files, prefixes) {
   const r = git(root, ["ls-files", "--others", "--exclude-standard", "-z"]);
   if (r.status !== 0) return;
   for (const rel of r.stdout.split("\0").filter(Boolean)) {
     files.add(rel);
+    if (isVendored(rel, prefixes)) continue;
     try {
       const abs = join(root, rel);
       if (statSync(abs).size > MAX_FILE_BYTES) continue;
@@ -157,10 +180,11 @@ function main() {
 
   const hits = [];
   const files = new Set();
+  const prefixes = vendoredPrefixes(root);
 
   const diff = git(root, ["diff", "--no-color", "-U0", base]);
-  if (diff.status === 0) scanDiff(diff.stdout, hits, files);
-  scanUntracked(root, hits, files);
+  if (diff.status === 0) scanDiff(diff.stdout, hits, files, prefixes);
+  scanUntracked(root, hits, files, prefixes);
 
   for (const f of files) {
     const name = basename(f);

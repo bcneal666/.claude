@@ -91,7 +91,7 @@ Per function ask: what happens with `''`, `[]`, `null`, `undefined`, `0`, a nega
 
 ## 6. Vacuous async
 
-Bad — no `await`, always passes:
+Bad — no `await`; passes vacuously before Vitest 5, fails in 5:
 
 ```ts
 test('rejects', () => {

@@ -96,7 +96,7 @@ Candidate 1: <playbook>
 - Unique value per page: what this row shows that siblings don't
 - Content gate: the isPublishable rules
 - Safeguards: canonical rule, noindex rule, sitemap file, hub and related links
-- Pilot: 20–50 slugs and why these
+- Pilot: slugs sized per "Pilot size", and why these
 - Files: route, loader, gate, hub, sitemap
 - Risks
 
