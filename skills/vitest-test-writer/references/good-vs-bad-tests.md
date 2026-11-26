@@ -84,29 +84,3 @@ test('persists normalized user and returns id', async () => {
   expect(id).toMatch(/^usr_/)
 })
 ```
-
-## 5. Missing edge cases
-
-Per function ask: what happens with `''`, `[]`, `null`, `undefined`, `0`, a negative number, a huge input, a rejected dependency? AI-generated suites usually stop after 2–3 happy-path tests.
-
-## 6. Vacuous async
-
-Bad — no `await`; passes vacuously before Vitest 5, fails in 5:
-
-```ts
-test('rejects', () => {
-  expect(load('bad')).rejects.toThrow()
-})
-```
-
-Good:
-
-```ts
-test('rejects for bad path', async () => {
-  await expect(load('bad')).rejects.toThrow('ENOENT')
-})
-```
-
-## 7. Horizontal slicing (TDD)
-
-Ten tests up front, then all implementation, encodes guesses about behavior. Write one failing test, make it pass, repeat: each test then reflects behavior actually implemented and observed.

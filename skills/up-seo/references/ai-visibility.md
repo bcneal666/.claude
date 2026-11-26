@@ -53,7 +53,7 @@ Most agents never run JavaScript, so text that appears only after hydration does
 - **Facts in media or widgets** (high for pricing, else medium). Plans in an image, calculator or "contact sales" form; the annual price only in toggle state; reviews and logos injected by a widget or baked into images. Fix: facts as HTML text; fact-bearing images get an `alt` stating the fact.
 - **Content fetched on click** (medium). Tabs or accordions that load on interaction hide their text; `<details>` or all panels in the DOM are fine.
 - **Soft 404s** (medium). A SPA catch-all (`vercel.json` `/(.*)` → `/index.html`, Netlify `/* /index.html 200`) answers 200 for dead URLs. Fix: a 404 route with a 404 status.
-- **Priority page noindexed** (high). Grep `noindex`, `index: false`, `X-Robots-Tag` in metadata exports, layouts, `next.config.*` `headers()`, `vercel.json`, `netlify.toml`, `_headers`. Finding: a page meant to be cited inherits noindex. Fix: scope it to the pages that need it.
+- **Priority page noindexed** (high). Detection and fix: technical-onpage.md §1 (noindex / X-Robots-Tag); list it here only when the page is one meant to be cited.
 - **Gated authority content** (medium). The best guide or PDF sits behind a login or email form. Fix: a public HTML version; gate a bonus asset instead.
 
 AgentReady IDs for tags: AR-FIND-01 robots.txt and bot protection let agents in, AR-READ-01 answer in initial HTML, AR-READ-02 real status codes.
@@ -109,38 +109,7 @@ Google limits FAQ rich results to government and health sites; keep `FAQPage` fo
 - **Client-injected JSON-LD** (medium). Added in `useEffect` or by `react-helmet` without SSR. Fix: emit it in server HTML.
 - **Markup without matching content** (medium). `FAQPage` with no visible Q&A, ratings with no shown reviews. Fix: remove it or add the content; mismatches break Google's structured-data policies.
 
-One `@graph` per page; in React render it via `dangerouslySetInnerHTML` with `JSON.stringify(data).replace(/</g, '\\u003c')`:
-
-```json
-{
-  "@context": "https://schema.org",
-  "@graph": [
-    {
-      "@type": "Organization",
-      "@id": "https://example.com/#org",
-      "name": "Example",
-      "url": "https://example.com/",
-      "logo": "https://example.com/logo.png",
-      "sameAs": [
-        "https://github.com/example",
-        "https://www.linkedin.com/company/example"
-      ]
-    },
-    {
-      "@type": "Article",
-      "headline": "How to deploy Example on Fly.io",
-      "author": {
-        "@type": "Person",
-        "name": "Jane Doe",
-        "url": "https://example.com/authors/jane"
-      },
-      "datePublished": "2026-03-02",
-      "dateModified": "2026-11-20",
-      "publisher": { "@id": "https://example.com/#org" }
-    }
-  ]
-}
-```
+Use one `@graph` per page with `@id` references between entities (`Article.publisher` → `Organization`); in React render it via `dangerouslySetInnerHTML` with `JSON.stringify(data).replace(/</g, '\\u003c')`.
 
 ## 5. Answerable content structure
 

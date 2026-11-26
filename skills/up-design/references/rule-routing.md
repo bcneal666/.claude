@@ -110,14 +110,7 @@ Neither file exists → create `CLAUDE.md` containing only this line. This is th
 
 ### Detection
 
-| Tool      | Config file                                                                                                        |
-| --------- | ------------------------------------------------------------------------------------------------------------------ |
-| ESLint    | `eslint.config.{js,mjs,cjs,ts,mts,cts}`, `.eslintrc{,.js,.cjs,.json,.yml,.yaml}`, `eslintConfig` in `package.json` |
-| Stylelint | `stylelint.config.{js,mjs,cjs}`, `.stylelintrc{,.js,.cjs,.json,.yml,.yaml}`, `stylelint` in `package.json`         |
-| Biome     | `biome.json`, `biome.jsonc`                                                                                        |
-| Oxlint    | `.oxlintrc.json`                                                                                                   |
-
-Find the run command in order: `package.json` scripts (`lint`, `lint:css`, `lint:style`, `lint:js`) → direct call (`npx eslint .`, `npx stylelint "**/*.{css,scss}"`, `npx biome lint .`). Package manager from lockfile: `pnpm-lock.yaml` → pnpm, `yarn.lock` → yarn, `bun.lockb` / `bun.lock` → bun, else npm.
+Find the linter config (ESLint, Stylelint, Biome, Oxlint: any config file or `package.json` key) and its run command (`package.json` scripts `lint`, `lint:css`, `lint:style`, `lint:js`, else a direct call such as `npx eslint .`), using the package manager the lockfile implies.
 
 ### Check after writing
 

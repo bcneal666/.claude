@@ -128,7 +128,7 @@ Write files directly with Edit/Write, **no** automatic git commit; leave to `/no
 
 `commands/up-skills.md` and self-made skills `skills/up-rules/` and `skills/now-push/` themselves are in compression scope:
 
-- `skills/now-push/references/commit-format.md` nearly whole file verbatim (commit format template, type table, ✅/❌ good/bad examples, `Co-Authored-By` trailer)—touch only prose around template, little room; do not force template changes for ratio.
+- `skills/now-push/references/commit-format.md` nearly whole file verbatim (commit format template, allowed-type list, ✅/❌ good/bad examples, `Co-Authored-By` trailer)—touch only prose around template, little room; do not force template changes for ratio.
 - `skills/up-rules/references/stale-audit.md` Before/After tables and signal regexes are quoted examples—verbatim.
 - When compressing itself, rewrite must still pass "Step 7: verify no loss" item by item.
 

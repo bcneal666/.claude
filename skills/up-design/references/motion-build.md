@@ -154,7 +154,8 @@ Policy is ux-rules §7. In scope: tuning an existing Drawer/sheet (e.g. Vaul) or
 
 - 1:1 with `transition: none` while dragging; any easing or spring makes it trail the finger.
 - Write `transform` on the element in `pointermove`. No framework state per move (re-renders drop frames), no inherited variable on a parent (it made Vaul lag past ~20 items).
-- `setPointerCapture` on start; ignore extra pointers while dragging so a finger switch doesn't jump.
+- `setPointerCapture` on start; ignore extra pointers while dragging so a finger switch doesn't jump. Keep the grab offset; snapping the element's center to the pointer breaks direct manipulation.
+- Commit to a direction only after ~10px of movement, so taps and scrolls aren't misread as drags.
 - `touch-action` hands JS only the drag axis: vertical drag `pan-x`, free drag `none`. Controls inside a draggable sheet don't start drags (Vaul: `data-vaul-no-drag`).
 - Linked values come from drag progress in the same handler (`overlay.style.opacity = 1 - y / height`); separate animations drift apart once interrupted.
 - Past an edge, resistance rises instead of a wall: `rubberband = (over, dim, c = 0.55) => (over * dim * c) / (dim + c * Math.abs(over))` (Motion: `dragElastic={0.2}`).
@@ -167,6 +168,7 @@ Policy is ux-rules §7. In scope: tuning an existing Drawer/sheet (e.g. Vaul) or
 - No library: settle with a transition from the current position, edge sheet 500ms on the iOS drawer curve (its steep start keeps 500ms snappy), floating drawer ~200ms; overlay opacity on the same duration and curve.
 - Installed library: spring seeded with the release velocity, bounce 0.1–0.3. Motion `dragMomentum={false}` when it should stop where the finger stops or `onDragEnd` hands off to its own spring.
 - Below threshold, snap back fast (~200ms ease-out); a slow return feels like the UI arguing.
+- On direction reversal, carry velocity through the retarget; cutting to a new animation hits a velocity "brick wall".
 
 **Catch mid-flight.** On `pointerdown`, read the live position (`new DOMMatrix(getComputedStyle(el).transform).m42` for y), set `transition: none`, write it inline and track from there.
 
@@ -175,44 +177,14 @@ Policy is ux-rules §7. In scope: tuning an existing Drawer/sheet (e.g. Vaul) or
 `var(--ease-*)` = the project token or the A5 literal. State selectors (`[data-starting-style]`, `[data-ending-style]`, `[data-closed]`) stand for whatever the project's primitive exposes. Each ships with the A8 branch.
 
 **D1. Press.** `:active` is a real press on touch, so no hover gate.
-
-```css
-.btn {
-  transition: transform 160ms var(--ease-out);
-}
-.btn:active {
-  transform: scale(0.97);
-}
-```
+`transform: scale(0.97)` on `:active`, `transition: transform 160ms var(--ease-out)`.
 
 **D2. Popover, dropdown, tooltip, modal.**
-
-```css
-.popover {
-  transform-origin: var(--transform-origin);
-  transition:
-    opacity 200ms var(--ease-out),
-    transform 200ms var(--ease-out);
-}
-.popover[data-starting-style],
-.popover[data-ending-style] {
-  opacity: 0;
-  transform: scale(0.95);
-}
-```
-
+`transform-origin: var(--transform-origin)`; `opacity` and `transform` transition 200ms `var(--ease-out)`; starting/ending state (`[data-starting-style]`, `[data-ending-style]`) is `opacity: 0` + `scale(0.95)`.
 Tooltip: 125ms and `scale(0.97)`; once one is open, neighbours open with no delay and `transition-duration: 0ms`. Modal: 250ms, `scale(0.96)`, `transform-origin: center`, backdrop opacity on the same 250ms so both read as one surface.
 
 **D3. Drawer without drag.** Floating drawer: 200ms on the floating curve, overlay included. Reduced motion: closed = `opacity: 0`, no offset.
-
-```css
-.drawer {
-  transition: transform 500ms var(--ease-drawer);
-}
-.drawer[data-closed] {
-  transform: translateY(100%);
-}
-```
+Edge sheet: `transform` 500ms `var(--ease-drawer)`, closed state `translateY(100%)` (`[data-closed]`).
 
 **D4. Toast** (no toast library only; Sonner projects tune Sonner). `ease` at 400ms suits a toast better than the UI budget. No `@starting-style` → a `data-mounted` flag set after mount. Stacked toast reflow: tune opacity against height on a recording.
 
@@ -251,19 +223,7 @@ function leave(el, onDone) {
 ```
 
 **D7. Stagger** (one-shot entrance, never a high-frequency list). Set `--delay` inline per item with shrinking gaps (B). `both` keeps delayed items hidden instead of flashing their final state.
-
-```css
-.stagger > * {
-  animation: enter 0.3s var(--ease-out) both;
-  animation-delay: var(--delay, 0ms);
-}
-@keyframes enter {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
-  }
-}
-```
+Per item `animation: enter 0.3s var(--ease-out) both`, `animation-delay: var(--delay, 0ms)` set inline; `@keyframes enter` from `opacity: 0; transform: translateY(8px)`.
 
 **D8. Hold to confirm.** `linear` because the fill is progress. Commit in JS when the fill's `transitionend` fires while still pressed.
 
@@ -290,5 +250,5 @@ function leave(el, onDone) {
 
 **Only if already installed.**
 
-- Motion: `AnimatePresence mode="popLayout"` + `layout` for leave-with-gap and view swaps; `mode="wait"` for two rich states resizing both ways; a missing `key` is why an exit doesn't play. Direction-aware steps pass `custom={direction}` on both `AnimatePresence` and the child. Non-uniform stagger: `delayChildren: stagger(0.06, { ease: "easeOut" })` (older: `staggerChildren`). Drag: `drag="y"`, `dragConstraints`, `dragElastic={0.2}`, `onDragEnd` reading `info.offset` and `info.velocity`; linked values via `useMotionValue` + `useTransform`. `x`/`y`/`scale` props are hardware-accelerated from v14.2; older needs a full `transform` string.
+- Motion: `AnimatePresence mode="popLayout"` + `layout` for leave-with-gap and view swaps; `mode="wait"` for two rich states resizing both ways; a missing `key` is why an exit doesn't play. Direction-aware steps pass `custom={direction}` on both `AnimatePresence` and the child. Non-uniform stagger: `delayChildren: stagger(0.06, { ease: "easeOut" })` (older: `staggerChildren`). Drag: `drag="y"`, `dragConstraints`, `dragElastic={0.2}`, `onDragEnd` reading `info.offset` and `info.velocity`; linked values via `useMotionValue` + `useTransform`.
 - Vaul: floating drawer override to 200ms (D3); `data-vaul-no-drag` on interactive children.

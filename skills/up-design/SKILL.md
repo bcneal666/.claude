@@ -88,7 +88,7 @@ Find problems only; edit no file. Survey everything before acting so fix order i
 8. **Performance** (`motion-audit.md` §A): measure and compare with `up-design/perf-baseline.md`.
 9. **Removal proposals** (`motion-audit.md` §B): list animations to remove; proposals only. "Kept but poorly done" items go to the next step. Skip when no animation is in scope.
 10. **Audit of existing motion** (`motion-audit.md` §C; skip when no animation is in scope): input = the "kept but poorly done" items, the animation gaps queued so far, and ux-rules §7 and §12.
-11. **Missing motion** (`motion-audit.md` §D): full mode only, because finding missing motion needs the whole app. Input = queued "missing motion" items (incl. shadscan interaction / states) and ux-rules §7 and §12: no enter/exit animation on high-frequency actions; gestures track the finger 1:1 and exit where they entered; keep tap alternatives; `prefers-reduced-motion` → fade only.
+11. **Missing motion** (`motion-audit.md` §D): full mode only, because finding missing motion needs the whole app. Input = queued "missing motion" items (incl. shadscan interaction / states) and ux-rules §7 and §12.
 12. Fill the diagnosis results into the report sections 「UX 規則」「診斷」「設計建議（未套用）」, sorted by priority into the fix list.
 
 ### 3. Fix and optimize

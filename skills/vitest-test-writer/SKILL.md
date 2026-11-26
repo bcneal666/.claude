@@ -36,14 +36,7 @@ API details for mocks, async, timers, parameterized tests: `references/vitest-pa
 
 **Seams.** Test through public interfaces (exported functions, public class methods, HTTP handlers), where behavior is observable. Not private helpers or internal call order: those tests break on correct refactors.
 
-**Cover where applicable** (AI-written tests reliably skip these):
-
-- happy path
-- validation and error paths (thrown errors, rejected promises, error return values)
-- empty input: `''`, `[]`, `{}`
-- `null` / `undefined`
-- boundaries: 0, negative, max, off-by-one
-- async failure: network error, timeout, rejected dependency
+**Cover where applicable** (AI-written tests reliably skip these): validation and error paths, empty input (`''`, `[]`, `{}`), `null` / `undefined`, boundaries (0, negative, max, off-by-one), async failure (network error, timeout, rejected dependency), plus the happy path.
 
 **Expected values from an independent source**: hand-worked example, spec, known-good literal. Never recompute expected value the way code does (`expect(add(a, b)).toBe(a + b)`): tautological, cannot fail. See `references/good-vs-bad-tests.md`.
 
@@ -56,7 +49,7 @@ API details for mocks, async, timers, parameterized tests: `references/vitest-pa
 3. **Not all tests first.** Bulk-written tests verify imagined behavior, not real. No speculative features or tests for future requirements.
 4. **Refactor after green**, separate step, tests stay green. Tests breaking on behavior-preserving refactor were coupled to implementation: fix the test, not the refactor.
 
-Step 2 coverage list and independent-expected-value rule apply to each slice.
+Step 2's coverage list applies to each slice.
 
 ## 4. Existing tests: fix, de-flake, review, migrate
 

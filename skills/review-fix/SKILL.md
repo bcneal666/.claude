@@ -23,9 +23,8 @@ Given: `$ARGUMENTS` (blank = none). Pick review level from it:
 2. **Functional test (round 1 only — before any review).** Skip when diff touches only docs, `.claude/`, or config with no runtime effect; say so.
    Helpers: `${CLAUDE_SKILL_DIR}/scripts/lib.mjs`.
    1. **Detect.** Read project `CLAUDE.md` first (wins over everything below).
-      Package manager from lockfile (`pnpm-lock.yaml`→pnpm, `yarn.lock`→yarn, `bun.lock*`→bun, else npm).
-      Dev command from `package.json` scripts (`dev`, else `start`). Expected port from script (`--port`/`-p`/`PORT`),
-      framework config, else default (Next/Nuxt 3000, Vite/SvelteKit/React Router 5173, Astro 4321).
+      Package manager from lockfile; dev command from `package.json` scripts (`dev`, else `start`);
+      expected port from the script, framework config, else the framework default.
       No dev server concept (library/CLI) → skip to sub-step 5.
    2. **Server.** Expected URL already responds → reuse only if it serves this project (page title, or a route the diff touches, matches);
       never stop a reused server. Otherwise start dev command in background and wait up to 90s; URL = the one it prints

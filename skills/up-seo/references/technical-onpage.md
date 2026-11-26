@@ -44,9 +44,8 @@ Items read: check → finding → fix (priority, rubric in §14).
 - `<meta http-equiv="refresh">` or `window.location` on load → server 301/308. (medium)
 - Soft 404, missing content answering 200: SPA catch-all to `/index.html`; dynamic route lacking `notFound()`, `{ notFound: true }`, `createError({ statusCode: 404 })`, `Astro.response.status = 404`, `error(404)`; removed pages redirected to the homepage → 404 (410 for deliberate removals) or 301 to a true equivalent. (high)
 
-**Server HTML** (client-only switches in §11):
+**Server HTML** (client-rendered main content is Stage 1's, ai-visibility.md §2):
 
-- Main copy, H1, title or links absent from server HTML (§12). Google renders JS late; most other crawlers and previewers don't → SSR/SSG for content routes; a whole-SPA migration is a user decision. (high)
 - Navigation via `onClick`/`router.push` on `div` or `button`, `href="#"`, `javascript:` → `<a href>` or the framework `Link`. (high in nav, else medium)
 - Hash routing (`/#/about`): fragments aren't URLs → path routing. (high)
 - Infinite scroll or load-more without paginated `<a href>`; tabs fetched on click → paginated links, tab content in the HTML. (medium)
@@ -77,11 +76,8 @@ Items read: check → finding → fix (priority, rubric in §14).
 - Missing or boilerplate (`React App`, `Vite + React`, `Create Next App`, `Home`, `Untitled`) → a real title. (high)
 - One string across routes (root title never overridden; dynamic route without `generateMetadata`/`useSeoMeta`) → per-page from route data. (high if most pages, else medium)
 - Far from about 50–60 characters → rewrite; Google truncates by pixel width, so key words go in the first 50. (low)
-- Shape `[Primary query] [reason to click] | [Brand]`: the reason is a number, outcome, scope, format or freshness; brand last unless well known. Next: root `title.template: '%s | Brand'` with `title.default`. (low)
 - Google rewrites titles (often to the H1) that are far over width, stuffed, repeating boilerplate (`| Brand | Brand Blog | Home`), unlike the H1, or generic → shorten, align with the H1. (medium)
 - Title, H1, slug and description on different topics, or a year, "free" or count the page doesn't deliver → align; change the title, not the slug. (medium)
-
-Patterns: product `[Category] for [Audience] | [Brand]`; pricing `[Brand] Pricing: Plans and Costs`; comparison `[A] vs [B]: [the deciding difference]`; how-to `How to [Task] Without [Obstacle]`; definition `What Is [Term]? [Short payoff]`.
 
 **Meta description**: missing, or one template default across pages → per-page from route data (medium). Outside ~150–160 characters, a keyword list, or the title repeated → one or two sentences on what the page answers and why to click (low).
 
@@ -158,13 +154,13 @@ Field thresholds (75th percentile): LCP ≤ 2.5 s, INP ≤ 200 ms, CLS ≤ 0.1. 
 
 ## 11. Framework pitfalls
 
-- **Next.js App Router**: `metadata`/`generateMetadata` in `app/**/layout|page`, `app/robots.ts`, `app/sitemap.ts`; client-only = `'use client'` page root, `dynamic(…, { ssr: false })`.
+- **Next.js App Router**: `metadata`/`generateMetadata` in `app/**/layout|page`, `app/robots.ts`, `app/sitemap.ts`.
   - Metadata works only in Server Components; a client page setting `document.title` in an effect ships no server title → metadata in the server page, client logic in a child. (high)
   - Streaming metadata (15.2+) may put tags in `<body>` for user agents outside `htmlLimitedBots`; grep the whole response before calling a tag missing.
 - **Next.js Pages Router**: `next/head` blocks without `key` duplicate tags → add `key` (medium); content fetched only in `useEffect` → `getStaticProps` (high).
-- **Nuxt**: `useSeoMeta`, `@nuxtjs/sitemap`, `@nuxtjs/robots`; `ssr: false` (global or `routeRules`) or `<ClientOnly>` around content → server-render it; unset `site.url` → set it. (high)
-- **Astro**: `<head>` in `src/layouts/`; missing `site` in `astro.config` breaks absolute canonicals and `@astrojs/sitemap` → set it (high); `client:only` content → server-render (high); `trailingSlash` unlike canonical and sitemap → align (medium).
-- **SvelteKit**: `export const ssr = false` on content routes → SSR or `prerender`. (high) **Remix / React Router 7**: a child's `meta` replaces the parent's, dropping description and `og:*` → merge parent meta. (medium)
+- **Nuxt**: `useSeoMeta`, `@nuxtjs/sitemap`, `@nuxtjs/robots`; unset `site.url` → set it. (high)
+- **Astro**: `<head>` in `src/layouts/`; missing `site` in `astro.config` breaks absolute canonicals and `@astrojs/sitemap` → set it (high); `trailingSlash` unlike canonical and sitemap → align (medium).
+- **Remix / React Router 7**: a child's `meta` replaces the parent's, dropping description and `og:*` → merge parent meta. (medium)
 - **Vite / CRA SPA**: one `index.html` title for every route, helmet only after JS → prerender, SSG or SSR, a user decision. (high for content sites)
 
 ## 12. Live-URL checks

@@ -112,11 +112,7 @@ Build the route, template, data loader, content gate, hub and sitemap entry. Ren
 
 **One source of truth.** A single `getPublishedPages()` applies the gate and the pilot list; route params, sitemap, hub and related links all read it, so the sitemap never lists a page that 404s or is noindexed. API names below are examples; check the installed version's docs.
 
-**Next.js App Router.** `app/<type>/[slug]/page.tsx`: `generateStaticParams` returns pilot slugs; `export const dynamicParams = false` so unlisted slugs 404; `notFound()` on gate failure. `generateMetadata` sets title, description, `alternates.canonical`, and `robots` for noindex variants. `app/sitemap.ts`, split with `generateSitemaps` when large; `revalidate` for freshness. Pages Router: `getStaticPaths` with `fallback: false`.
-
-**Astro.** `src/pages/<type>/[slug].astro` with `getStaticPaths()` returning pilot entries; data in a content collection with a schema so a missing field fails the build. `@astrojs/sitemap` `filter` drops unpublished and noindex URLs. In SSR mode, return 404 for slugs outside the list.
-
-**Other frameworks.** Same mechanism: prerender or server-render an explicit slug list, 404 the rest, build the sitemap from that list (SvelteKit `entries`, Nuxt prerender routes, a Remix loader throwing 404).
+**Frameworks** (Next.js App Router, Astro, SvelteKit, Nuxt, Remix: check the installed version's docs). Prerender or server-render an explicit pilot slug list (`generateStaticParams` + `dynamicParams = false`, `getStaticPaths`, `entries`, prerender routes); every other slug 404s, and a gate failure calls the framework's 404. Metadata sets title, description, absolute canonical and `robots` for noindex variants. The sitemap (split per page type when large) reads `getPublishedPages()`, with `lastmod` from real row dates; `@astrojs/sitemap` `filter` drops unpublished and noindex URLs.
 
 **CMS-backed** (WordPress, headless CMS). A collection or post type plus fields; per-item noindex and canonical via fields or the SEO plugin; check the plan's item limit against next year's page count.
 

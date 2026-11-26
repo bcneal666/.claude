@@ -15,34 +15,20 @@ Match motion to the product (work tool: crisp and fast; playful consumer app: so
 
 ## 2. Easing and duration
 
-- Easing: entering or exiting → ease-out; moving or morphing on screen → ease-in-out; hover and color → ease; constant motion (marquee, progress) → linear; unsure → ease-out.
-- Replace `ease-in` on UI: it starts slow exactly when the user is watching, so 300ms ease-in feels slower than 300ms ease-out.
-- Prefer the project's easing tokens. Without them, use these instead of the weak built-in keywords: ease-out `cubic-bezier(0.23, 1, 0.32, 1)`, ease-in-out `cubic-bezier(0.77, 0, 0.175, 1)`, drawer/sheet `cubic-bezier(0.32, 0.72, 0, 1)`.
-- Durations: press feedback 100–160ms; tooltip, small popover 125–200ms; dropdown, select 150–250ms; modal, drawer, sheet 200–500ms; toast ~400ms `ease` (the toast library's default wins); explanatory motion may run longer.
+Concrete curves and durations: `motion-audit.md` §C (diagnosis), `motion-build.md` A5 (implementation), `motion-review.md` 3.2–3.3 (verification). Principles:
+
+- Easing: entering or exiting → ease-out; moving or morphing on screen → ease-in-out; hover and color → ease; constant motion (marquee, progress) → linear; unsure → ease-out. `ease-in` on UI starts slow exactly when the user is watching, so it feels slower than ease-out at the same duration.
 - Keep UI motion under 300ms except modals, drawers, sheets and toasts; shorter motion (and a faster spinner) makes the app feel faster at identical load time.
 - Make exit faster than enter (e.g. 250ms in, 200ms out): the user has already decided to leave.
 - Be slow where the user decides, fast where the system responds: hold-to-confirm fills over 2s `linear`, release snaps back in 200ms ease-out (behavior: see ux-rules §7).
 
-## 3. Component polish (when X, do Y)
+## 3. Component polish
 
-- **Pressable element** (timing and hover gating: see ux-rules §5): `transform: scale(0.97)` on `:active` (range 0.95–0.98), transform transition 100–160ms ease-out. Scale shrinks label and icon too, which is intended.
-- **Entrance from nothing**: replace `scale(0)` with `scale(0.95)` (not below 0.9) plus `opacity: 0`; real objects don't grow from a point.
-- **Popover, dropdown, menu, tooltip**: set `transform-origin` to the trigger via the positioning library's variable (e.g. `--radix-popover-content-transform-origin`, `--transform-origin`); `center` breaks the trigger–content link. Modals keep `center`; they have no anchor.
-- **Tooltip groups**: keep the delay before the first one (prevents accidental opens), then open neighbors instantly with a 0ms transition so a toolbar feels fast. Motion: 125ms ease-out from `scale(0.97)` + `opacity: 0`.
-- **`transition: all`**: list exact properties; `all` animates layout properties by accident.
-- **Crossfade showing two overlapping objects**: once easing and duration tuning fail, add `filter: blur(2px)` during the swap so the eye sees one object. Keep blur ≤ 20px; heavy blur is expensive, especially in Safari.
-- **Off-screen positions**: use percentages (`translateY(100%)`), not pixels, so the element hides by its own size whatever its content.
-- **Reveal, fill progress, active-tab color swap**: animate `clip-path: inset(...)` rather than separate color or size transitions; it stays in sync without layout.
-- **Stagger**: only for one orchestrated, low-frequency group entrance (page first load, dialog content): 30–80ms between items, non-uniform, never blocking input. Remove it from frequent lists (ux-rules §12); every-section reveals: section 9.
+Press scale, entrance from `scale(0.95)`, trigger `transform-origin`, tooltip groups, `transition: all`, blur-masked crossfade, percentage offsets, `clip-path` reveals and stagger: see `motion-build.md` A4, B and D1–D9.
 
 ## 4. Interruptibility
 
-Motion that restarts from zero when interrupted reads as a glitch, so pick the mechanism by what can interrupt it:
-
-- One-shot, predetermined, not re-triggered mid-way (loader, first-load sequence) → CSS keyframes or WAAPI.
-- State toggled by clicks, possibly rapidly (toast stack, accordion, toggle, dropdown) → CSS transition, which retargets from the current value; keyframes restart from zero.
-- Driven by finger or pointer (drag, swipe, sheet, fling) → spring from the current on-screen value.
-- On interrupt, start from the live on-screen value, not the logical target, or the element jumps. Input stays live during transitions (ux-rules §7).
+See `motion-build.md` A6 and `motion-review.md` 3.5.
 
 ## 5. Physical feel: springs and gestures
 
@@ -50,7 +36,7 @@ Use physical-feel motion only where the user's hand drives it (drag, swipe, shee
 
 **Restraint rule:** bounce only after a gesture that carried momentum. Overshoot on a flicked card feels right; on a menu that just opened it feels wrong, and a UI where everything overshoots feels toy-like and slow. Remove bounce with no fling before it.
 
-**Scope:** up-design adds no dependency and hand-writes no gesture (ux-rules §7). Apply these values only when the project already ships a spring or gesture library, or to judge gesture code already in scope; a fix needing a library goes to 未解決.
+**Scope:** up-design adds no dependency and hand-writes no gesture (ux-rules §7). Apply these values only when the project already ships a spring or gesture library, or to judge gesture code already in scope; a fix needing a library goes to 未解決. Gesture mechanics: `motion-build.md` C.
 
 | Interaction                     | Damping ratio      | Response (s) |
 | ------------------------------- | ------------------ | ------------ |
@@ -63,17 +49,6 @@ Use physical-feel motion only where the user's hand drives it (drag, swipe, shee
 - Response is not duration; settle time emerges from the parameters. In bounce/duration APIs default to `bounce: 0, duration: 0.4`; `bounce` 0.1–0.3 only after momentum or on a deliberately playful component. A physics `damping` coefficient is not the damping ratio; don't mix their numbers.
 - Smooth decorative pointer tracking (cursor tilt, parallax) through a spring (e.g. stiffness 100, damping 10); raw 1:1 mapping feels mechanical. Functional data displays get no such motion.
 - Run 2D motion as separate X and Y springs; one spring on the distance desyncs when axis velocities differ.
-
-Gesture code checks (beyond ux-rules §7):
-
-- Keep the grab offset; snapping the element's center to the pointer breaks direct manipulation.
-- `setPointerCapture` on pointerdown so the drag survives leaving the element; ignore extra touch points once dragging, or a finger switch makes it jump.
-- Require ~10px of movement before committing to a direction, then track 1:1, so taps and scrolls aren't misread as drags. Keep a short position/time history for release velocity.
-- Dismiss on velocity as well as distance: `|distance| / elapsed_ms > 0.11` dismisses a short flick.
-- Hand release velocity to the settling spring so drag and animation have no seam (relative-velocity APIs: `velocity / (target − current)`).
-- Snap to the point nearest the projected landing, not the release point: `projected = current + (v_px_per_s / 1000) * d / (1 − d)`, `d ≈ 0.998` (0.99 snappier).
-- Past a boundary, rubber-band instead of stopping hard (reads as frozen): `offset = (over * dim * 0.55) / (dim + 0.55 * |over|)`.
-- On direction reversal, carry velocity through the retarget; cutting to a new animation hits a velocity "brick wall".
 
 ## 6. Materials and depth
 
@@ -89,14 +64,11 @@ Judge existing translucent surfaces; turning opaque chrome translucent is a rede
 
 ## 7. Motion performance
 
-- Animate `transform` and `opacity`; `width`, `height`, `padding`, `margin`, `top/left` trigger layout and paint every frame.
-- For per-frame updates (drag), write `transform` on the moving element, not a CSS variable on its container; an inherited variable restyles every child.
-- Predetermined motion → CSS or WAAPI; JS only for dynamic, interruptible motion. Compositor CSS stays smooth while the main thread loads a route or data; rAF-driven animation drops frames.
-- Motion (ex-Framer Motion) below v14.2 runs `x`/`y`/`scale` shorthands on the main thread; use a full `transform` string (upgrading → 未解決). Layout animations, `onUpdate`, drag inertia and per-frame motion values are main-thread in every version.
+See `motion-audit.md` §A and `motion-review.md` 3.7.
 
 ## 8. Reduced motion and comfort
 
-- Reduced motion: see ux-rules §12 and §7. Gentler, not none: keep opacity and color changes that aid comprehension; drop displacement, scale and overshoot.
+- Reduced motion: see ux-rules §12 and §7. Gentler, not none.
 - Avoid full-viewport moving backgrounds and slow loops near 0.2 Hz (one cycle per ~5s); both cause vestibular discomfort. Ease theme switches instead of jumping brightness.
 
 ## 9. Static design: intent over template
@@ -120,19 +92,4 @@ Fix-eligible:
 - Boldness spread everywhere: suggest one memorable element with everything around it quiet, and removing one decorative element per view.
 - Labels named after system internals instead of what users manage ("webhook config" vs "notifications").
 
-## 10. Checklist
-
-- `transition: all` → exact properties
-- `scale(0)` entrance → `scale(0.95)` + `opacity: 0`
-- `ease-in` on UI → ease-out or the custom curve
-- Popover/menu `transform-origin: center` → trigger origin (modals exempt)
-- UI motion > 300ms (not modal/drawer/sheet/toast) → 150–250ms
-- Enter and exit equally long → exit faster
-- Keyframes on re-triggerable state → CSS transition
-- Bounce with no preceding fling → `bounce: 0` / damping 1.0
-- Gesture animation from the target value → live value, hand off velocity
-- Size/position properties animated → `transform` / `opacity`
-- Stagger on a frequent list → remove
-- Translucent on translucent → solidify one layer
-
-Verify changed motion at 2–5× slower playback or frame by frame: origin, easing start/stop, two-object overlap in crossfades, properties in sync. Touch gestures need a real device; without one, mark 未驗證.
+Verify changed motion at 2–5× slower playback or frame by frame. Touch gestures need a real device; without one, mark 未驗證.

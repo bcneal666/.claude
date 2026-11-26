@@ -24,7 +24,7 @@ Commit and push current repo (cwd) in one pass, no confirmation. User typed this
 
 | File                             | Read at                                    | Purpose                                                          |
 | -------------------------------- | ------------------------------------------ | ---------------------------------------------------------------- |
-| `references/commit-format.md`    | Step 4, and step 9 for PR titles           | Fixed commit format: structure, type table, field rules, samples |
+| `references/commit-format.md`    | Step 4, and step 9 for PR titles           | Fixed commit format: structure, type list, field rules, samples  |
 | `references/pr-merge.md`         | Steps 5, 9, 10, only with `--pr`/`--merge` | Branching, PR creation, waiting for checks, squash merge         |
 | `references/repo-description.md` | Step 11                                    | When and how to update the GitHub repo description               |
 

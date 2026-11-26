@@ -22,9 +22,7 @@ Budget: 16.7ms per frame at 60Hz, 8.3ms at 120Hz (most phones); design for the s
 
 ### Properties
 
-- **Composite only**: `transform`, `opacity`. Cheapest.
-- **Paint**: `box-shadow`, `border-radius`, `color`. Redraw every frame.
-- **Layout**: `width`, `height`, `padding`, `margin`, `top`, `left`, `border-width`. Re-measure and push neighbours (a sidebar's `margin-left` re-lays out the page beside it).
+Cost order: composite (`transform`, `opacity`) < paint (`box-shadow`, `border-radius`, `color`) < layout (`width`, `height`, `padding`, `margin`, `top`, `left`, `border-width`; a sidebar's `margin-left` re-lays out the page beside it).
 
 Swap down: size → `scale()`; position → `translate()` (percentages are of the element itself); `display`/`visibility` → `opacity`, then `visibility: hidden` so it stops taking clicks; `box-shadow` → `filter: drop-shadow()` (composited in Chrome; measure elsewhere). Exceptions: `clip-path` reveals, measured-height accordions. Prefer `scale()` even over a layout animation that seems fine: it cannot regress on a slow device. `transition: all` is always a finding because it animates whatever changes next; target the exact properties.
 
@@ -121,7 +119,7 @@ Input: §B's kept-but-poorly-done list and animation gaps queued so far (ux-rule
 
 **Physicality and origin**
 
-- `scale(0)` is a finding: nothing appears from nothing. Target `scale(0.9–0.97)` + `opacity: 0`.
+- `scale(0)` is a finding: nothing appears from nothing. Target `scale(0.95–0.97)` + `opacity: 0`.
 - Popovers, dropdowns, tooltips scale from their trigger: Base UI `transform-origin: var(--transform-origin)`; other primitives: take the origin variable from the installed package. Modals are exempt; centered is correct.
 - Pressable with no press feedback (ux-rules §5): `transform: scale(0.97)` on `:active`, `transition: transform 160ms var(--ease-out)`, range 0.95–0.98.
 

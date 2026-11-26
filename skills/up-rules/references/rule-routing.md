@@ -1,6 +1,6 @@
 # Rule routing (step 5)
 
-Each instruction item from step 4 goes to the first tier that fits. Cheaper tiers cost less context and enforce more reliably: a lint rule runs on every check and costs no context, a `paths` rule loads only when matching files are read, `CLAUDE.md` loads every session.
+Each instruction item from step 4 goes to the first tier that fits.
 
 | Tier | Destination                     | Fits when                                                                      |
 | ---- | ------------------------------- | ------------------------------------------------------------------------------ |
@@ -33,15 +33,7 @@ Not eligible → fall through to tier 2.
 
 ### Detection
 
-| Tool      | Config file                                                                                                        |
-| --------- | ------------------------------------------------------------------------------------------------------------------ |
-| ESLint    | `eslint.config.{js,mjs,cjs,ts,mts,cts}`, `.eslintrc{,.js,.cjs,.json,.yml,.yaml}`, `eslintConfig` in `package.json` |
-| Stylelint | `stylelint.config.{js,mjs,cjs}`, `.stylelintrc{,.js,.cjs,.json,.yml,.yaml}`, `stylelint` in `package.json`         |
-| Biome     | `biome.json`, `biome.jsonc`                                                                                        |
-| Oxlint    | `.oxlintrc.json`                                                                                                   |
-| Ruff      | `ruff.toml`, `.ruff.toml`, `[tool.ruff]` in `pyproject.toml`                                                       |
-
-A linter counts as installed only if its package is in the project's dependencies (or the Python environment) and runs. Find the run command in order: `package.json` scripts (`lint`, `lint:css`, `lint:style`, `lint:js`) → direct call (`npx eslint .`, `npx stylelint "**/*.{css,scss}"`, `npx biome lint .`, `ruff check .`). Package manager from lockfile: `pnpm-lock.yaml` → pnpm, `yarn.lock` → yarn, `bun.lockb` / `bun.lock` → bun, else npm.
+Find the linter config (ESLint, Stylelint, Biome, Oxlint, Ruff: any config file, `package.json` key or `[tool.ruff]` in `pyproject.toml`). A linter counts as installed only if its package is in the project's dependencies (or the Python environment) and runs. Find the run command: `package.json` scripts (`lint`, `lint:css`, `lint:style`, `lint:js`), else a direct call (`npx eslint .`, `npx stylelint "**/*.{css,scss}"`, `npx biome lint .`, `ruff check .`), using the package manager the lockfile implies.
 
 Formatting rules (indent, quotes, semicolons, line width) that the project's formatter config (Prettier, EditorConfig, Biome formatter, Ruff format) already enforces are redundant: delete the sentence and report it as 「已由 formatter 執行」. Never write formatter options.
 
@@ -134,14 +126,7 @@ Everything not routed above stays in `CLAUDE.md` and goes through step 6 compres
 
 **Lint, why in message.** CLAUDE.md: 「不要 import `lodash`，改用 `es-toolkit`——lodash 讓 bundle 多 70KB。」 Project has ESLint flat config and `npm run lint` passes →
 
-```js
-// eslint.config.mjs (merged into the existing config object)
-rules: {
-  "no-restricted-imports": ["error", {
-    paths: [{ name: "lodash", message: "Use es-toolkit instead: lodash adds 70KB to the bundle." }],
-  }],
-},
-```
+→ `no-restricted-imports` in the existing ESLint config, with `paths: [{ name: "lodash", message: "Use es-toolkit instead: lodash adds 70KB to the bundle." }]` merged into any existing entry.
 
 Sentence deleted from CLAUDE.md; CLAUDE.md gains ``After editing code, run `npm run lint` and fix every error.`` if nothing ran lint before.
 

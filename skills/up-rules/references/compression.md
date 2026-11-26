@@ -1,6 +1,6 @@
 # Compression (steps 6 and 7)
 
-How to rewrite compression targets. Rewrite together: merge overlapping/duplicate rules found in step 1; keep structure that helps AI scan fast (headings, bullets, tables, code blocks).
+How to rewrite compression targets.
 
 ## Terse style rules
 

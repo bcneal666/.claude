@@ -16,16 +16,7 @@ Priority: **high** = a locale or location can drop out of the index, or customer
 
 ### 1.1 hreflang
 
-Head `<link>`, HTTP `Link` header and sitemap `<xhtml:link>` are equivalent; Google drops a pair whose URLs disagree across them, so generate all from one mapping. Above ~10 locales prefer the sitemap. Every page carries the full set, itself included:
-
-```
-<link rel="alternate" hreflang="en" href="https://example.com/en/pricing" />
-<link rel="alternate" hreflang="de" href="https://example.com/de/preise" />
-<link rel="alternate" hreflang="pt-BR" href="https://example.com/br/precos" />
-<link rel="alternate" hreflang="x-default" href="https://example.com/en/pricing" />
-```
-
-Non-HTML files (PDF): `Link: <https://example.com/en/a.pdf>; rel="alternate"; hreflang="en", <https://example.com/de/a.pdf>; rel="alternate"; hreflang="de"`.
+Head `<link rel="alternate" hreflang=… href=…>`, HTTP `Link` header and sitemap `<xhtml:link>` are equivalent; Google drops a pair whose URLs disagree across them, so generate all from one mapping. Above ~10 locales prefer the sitemap. Every page carries the full set, itself included, plus `x-default`. Non-HTML files (PDF) use the `Link` header.
 
 - Set omits the page's own locale (the most common error) → build it from the full locale list. (high)
 - A lists B, B lacks A → generate every set from one mapping. Report the broken pairs; valid pairs still work. (high)
@@ -80,18 +71,7 @@ Locale pages with untranslated main content count as duplicates, and Google's he
 
 ### 1.7 Locale sitemap
 
-```xml
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
-        xmlns:xhtml="http://www.w3.org/1999/xhtml">
-  <url>
-    <loc>https://example.com/en/pricing</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://example.com/en/pricing"/>
-    <xhtml:link rel="alternate" hreflang="de" href="https://example.com/de/preise"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://example.com/en/pricing"/>
-  </url>
-  <!-- /de/preise gets its own <url> with the same three links -->
-</urlset>
-```
+Each locale URL gets its own `<url>` carrying the same `xhtml:link` alternates (every locale plus `x-default`).
 
 - Missing `xmlns:xhtml`; a locale URL without its own `<url>`; a set missing its `<loc>`. Next.js `app/sitemap.ts`: `alternates.languages` omits the `<loc>` URL's own locale unless listed. (high)
 - Per-locale files (`sitemap-de.xml`) must all cross-reference → split by content type. (low)
@@ -114,41 +94,7 @@ Grep `tel:|LocalBusiness|Organization|openingHours|PostalAddress|areaServed|GeoC
 
 ### 2.2 LocalBusiness / Organization JSON-LD
 
-Markup may be injected by JS or a plugin, so a grep miss doesn't prove absence; check rendered HTML. Brand: one `Organization` on the home page (`@id` `https://example.com/#org`, `name`, `url`, `logo`, `sameAs`). Each real location: one block on its own page.
-
-```json
-{
-  "@context": "https://schema.org",
-  "@type": "Plumber",
-  "@id": "https://example.com/locations/austin#business",
-  "name": "Acme Plumbing",
-  "url": "https://example.com/locations/austin",
-  "telephone": "+15125550100",
-  "address": {
-    "@type": "PostalAddress",
-    "streetAddress": "100 Congress Ave",
-    "addressLocality": "Austin",
-    "addressRegion": "TX",
-    "postalCode": "78701",
-    "addressCountry": "US"
-  },
-  "geo": {
-    "@type": "GeoCoordinates",
-    "latitude": 30.26398,
-    "longitude": -97.74466
-  },
-  "openingHoursSpecification": [
-    {
-      "@type": "OpeningHoursSpecification",
-      "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
-      "opens": "08:00",
-      "closes": "17:00"
-    }
-  ],
-  "areaServed": [{ "@type": "City", "name": "Round Rock" }],
-  "parentOrganization": { "@id": "https://example.com/#org" }
-}
-```
+Markup may be injected by JS or a plugin, so a grep miss doesn't prove absence; check rendered HTML. Brand: one `Organization` on the home page (`@id` `https://example.com/#org`, `name`, `url`, `logo`, `sameAs`). Each real location: one block on its own page with an own `@id`, most specific subtype, `telephone`, `PostalAddress`, `geo`, `openingHoursSpecification`, `areaServed`, and `parentOrganization` pointing at the brand `@id`.
 
 - Hours, phone or address differ from the visible page → render both from the 2.1 source. (high)
 - Service towns marked up as branches with invented addresses → one business with `areaServed`. (high)

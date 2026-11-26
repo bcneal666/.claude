@@ -48,8 +48,6 @@ README is exempt from all terse style rules in step 6 (incl. fragment sentences 
   - items are ordered steps → numbered list
 - List item: one concept per bullet, `- **Name** — description` or ``- `code` — description``
 - Table cell ≤ one short sentence (≤ ~120 display width); move detail to bullets under the table or `<details>`
-- Active voice, concrete verbs; say what it does, not how impressive it is
-- Bold only key terms, ≤2 per paragraph
 - Code blocks carry a language tag; link repo files with relative links
 - URLs never bare: `[text](url)` preferred, `<url>` when URL itself is the text—GFM autolink runs until whitespace or `<`, so adjacent CJK chars, full-width punctuation (`。，）：`) or other text get swallowed into link, breaking click. Inside `[text](url)` URL has no spaces (encode `%20`). URLs inside code blocks / inline code untouched
 - Lively, not salesy: tagline says what the user gets, not the tech stack; features as highlight table (`Name | one sentence`), bullets `- **Name** — one sentence` only when a row would be too long, optional fitting emoji; verbs concrete ("customers file tickets, PMs reply live", not "provides ticketing")
@@ -82,7 +80,7 @@ README is exempt from all terse style rules in step 6 (incl. fragment sentences 
 
 **Markdown features**:
 
-- Callouts: `> [!NOTE]`, `> [!TIP]`, `> [!IMPORTANT]`, `> [!WARNING]`, `> [!CAUTION]`; ≤1 per section, never nested
+- GitHub callouts (`> [!NOTE]` etc.): ≤1 per section, never nested
 - Long reference (full lists, platform workarounds) → `<details><summary>…</summary>` with a blank line after `</summary>`, else inner Markdown does not render
 - Directory tree → plain `text` code block with `├──` / `└──` (allowed exception to no-ASCII-figure rule); `# comment` ≤3 words, line ≤80 cols; longer detail → bullets under tree
 - Flows of 3+ steps → numbered list; checklist → `- [ ]` task list

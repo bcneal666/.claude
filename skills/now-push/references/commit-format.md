@@ -16,21 +16,9 @@ Used at step 4 (and step 9 for a summarizing PR title). A repo's own commitlint 
 
 ## Field rules
 
-**type (required, lowercase English, pick one from table)**
+**type (required, lowercase English, pick one)**
 
-| type       | when to use                                                       |
-| ---------- | ----------------------------------------------------------------- |
-| `feat`     | new feature                                                       |
-| `fix`      | bug fix                                                           |
-| `docs`     | docs-only change (README, comments, JSDoc, etc.)                  |
-| `style`    | formatting, no logic change (whitespace, semicolons, layout)      |
-| `refactor` | restructure, external behavior unchanged                          |
-| `perf`     | performance optimization                                          |
-| `test`     | add or modify tests                                               |
-| `build`    | build system, dependency changes (package.json, Dockerfile, etc.) |
-| `ci`       | CI/CD config (GitHub Actions, GitLab CI, etc.)                    |
-| `chore`    | misc chores not touching src or tests                             |
-| `revert`   | revert earlier commit                                             |
+Allowed: `feat` `fix` `docs` `style` `refactor` `perf` `test` `build` `ci` `chore` `revert` (conventional-commit meanings; `chore` = misc not touching src or tests, `style` = formatting only).
 
 **scope (optional, lowercase English)**
 
