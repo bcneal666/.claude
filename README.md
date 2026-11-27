@@ -75,7 +75,7 @@ Personal global Claude Code configuration shared across projects: skills, slash 
 
 **Pipelines**
 
-- `/up-design [--full] [--m]`: diagnose (screenshots at 375/768/1024/1440, UX rules check over 13 sections, static design criteria, shadscan on shadcn projects, worst-case data, motion audits) → fix directly with no prompts (structural changes and new dependencies go to the report as unresolved) → verify (motion review, final screenshots, performance baseline, lint) → write the user's preferences into `DESIGN.md`/lint; quick mode (changed files since the last run) by default, `--full` forces the whole project; state lives in `./up-design/`; no git writes; self-contained, so the design, motion, rule-writing and Modern Web Guidance lookup steps ship in `skills/up-design/references/`; details: `skills/up-design/SKILL.md`
+- `/up-design [--full] [--m]`: one UI pass — diagnose (screenshots at 375/768/1024/1440, UX rules, static design criteria, motion and performance audits) → fix directly without prompts (structural changes and new dependencies go to the report as unresolved) → verify → write your preferences into `DESIGN.md`/lint; quick mode (files changed since the last run) by default, `--full` covers the whole project; state in `./up-design/`; no git writes; self-contained, guidance in `skills/up-design/references/`; details: `skills/up-design/SKILL.md`
 - `/up-seo [url] [@path ...]`: AI-search visibility → technical and on-page audit → programmatic opportunities, with one shared context and you pick fixes after each stage; self-contained, the guidance ships in `skills/up-seo/references/`; details: `skills/up-seo/SKILL.md`
 
 <details>
@@ -114,7 +114,7 @@ Personal global Claude Code configuration shared across projects: skills, slash 
 - Third-party skills are installed with `npx skills add --copy`, so each is a real directory in `skills/` that syncs across devices via git; `/up-skills` still updates them in place from upstream
 - The update source list lives in `~/.agents/.skill-lock.json`, outside this repo; on a new device, run `npx skills add <owner/repo> -s <skill> -g -y -a claude-code --copy` once per skill to register it
 - `up-design` writes the user's design corrections into `DESIGN.md` / lint itself (rule-writing guidance: `skills/up-design/references/rule-routing.md`)
-- `/review-fix [low|medium|high|xhigh|max]` auto-detects the dev command and takes the URL the server prints, runs the project's own `.claude/review-fix/` checks or throwaway scripts built on `scripts/lib.mjs` plus its `typecheck`/`lint`/`test` scripts, then `/code-review` at the given level (default `high`) and fixes until it converges; `ultra` is billed and user-triggered, so it only tells you to run `/code-review ultra` yourself
+- `/review-fix [low|medium|high|xhigh|max]` auto-detects the dev server, runs the project's `.claude/review-fix/` checks (or throwaway scripts built on `scripts/lib.mjs`) plus its `typecheck`/`lint`/`test` scripts, then `/code-review` (default `high`) and fixes until it converges; `ultra` is billed and user-triggered, so it only tells you to run `/code-review ultra` yourself
 
 ## 🤖 Subagents
 
@@ -172,20 +172,20 @@ The built-in system prompt gives only a date snapshot at session start, so `inje
 
 ## ⚙️ Settings
 
-| Item           | Details                                                                                                                                                                                                                                                                             |
-| -------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Model          | `model` is `opusplan` (Opus in plan mode, Sonnet when executing)                                                                                                                                                                                                                    |
-| Effort         | `modelSettings`: Opus `xhigh`, Sonnet `high`; `opusplan` uses Sonnet entry for both phases (plan runs `high`)                                                                                                                                                                       |
-| Subagent model | `env` sets `CLAUDE_CODE_SUBAGENT_MODEL=sonnet` as a fallback; custom agents pin their own `model`, which wins                                                                                                                                                                       |
-| Output         | `outputStyle` is `Concise`; `language` is `Traditional Chinese (Taiwan)`                                                                                                                                                                                                            |
-| Start mode     | `permissions.defaultMode` is `plan`                                                                                                                                                                                                                                                 |
-| Permissions    | `permissions.allow` whitelists low-risk commands (list below the table)                                                                                                                                                                                                             |
-| Deny           | `permissions.deny` blocks force pushes and reads of `~/.ssh`                                                                                                                                                                                                                        |
-| Skill listing  | `skillOverrides` hides claude.ai-synced skills: `off` for unused ones, `user-invocable-only` keeps `/name` without listing it; only `docx`/`pdf`/`pptx`/`xlsx` stay listed; rarely auto-needed built-ins (`init`, `security-review`, `claude-api`, …) are `user-invocable-only` too |
-| Synced plugins | `syncClaudeAiPlugins: false` stops claude.ai plugin sync (drops `logo-design`, `frontend-design`)                                                                                                                                                                                   |
-| Time zone      | `timeZone` is `Asia/Taipei`                                                                                                                                                                                                                                                         |
-| Statusline     | Node only (`statusline-command.mjs`), no shell fallback; three lines (model, location, usage)                                                                                                                                                                                       |
-| Vim indicator  | `statusLine.hideVimModeIndicator: true` turns off the built-in `-- INSERT --` indicator in favor of a custom one                                                                                                                                                                    |
+| Item           | Details                                                                                                          |
+| -------------- | ---------------------------------------------------------------------------------------------------------------- |
+| Model          | `model` is `opusplan` (Opus in plan mode, Sonnet when executing)                                                 |
+| Effort         | `modelSettings`: Opus `xhigh`, Sonnet `high`; `opusplan` uses Sonnet entry for both phases (plan runs `high`)    |
+| Subagent model | `env` sets `CLAUDE_CODE_SUBAGENT_MODEL=sonnet` as a fallback; custom agents pin their own `model`, which wins    |
+| Output         | `outputStyle` is `Concise`; `language` is `Traditional Chinese (Taiwan)`                                         |
+| Start mode     | `permissions.defaultMode` is `plan`                                                                              |
+| Permissions    | `permissions.allow` whitelists low-risk commands (list below the table)                                          |
+| Deny           | `permissions.deny` blocks force pushes and reads of `~/.ssh`                                                     |
+| Skill listing  | `skillOverrides` hides claude.ai-synced and rarely needed skills; only `docx`/`pdf`/`pptx`/`xlsx` stay listed    |
+| Synced plugins | `syncClaudeAiPlugins: false` stops claude.ai plugin sync (drops `logo-design`, `frontend-design`)                |
+| Time zone      | `timeZone` is `Asia/Taipei`                                                                                      |
+| Statusline     | Node only (`statusline-command.mjs`), no shell fallback; three lines (model, location, usage)                    |
+| Vim indicator  | `statusLine.hideVimModeIndicator: true` turns off the built-in `-- INSERT --` indicator in favor of a custom one |
 
 Allowed: `git add`, `git commit -m`, `git push`, `WebSearch`, `agent-browser snapshot` / `wait`, `Edit(~/.claude/commands/**)`, `Skill(update-config)`.
 
