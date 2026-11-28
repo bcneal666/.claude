@@ -1,70 +1,70 @@
 # README.md sync (step 8)
 
-Check project-root `./README.md` every run.
+每次執行都檢查專案根目錄 `./README.md`。
 
-**Exists** → read, compare refined rule files and actual directory structure, decide whether update needed: rule-file sections added/removed (incl. step-5 new `rules/*.md`) should reflect in README; command / skill / path / setting mentioned in README no longer exists or renamed. README language ≠ `--lng` language also counts as needs update; translate whole file to target (code blocks, paths, commands, proper nouns not translated). README violating any "Style guide" rule below also counts as needs update (paragraph length, table-vs-list choice, table alignment, emoji, bare URLs, history wording, length and depth budget, figures). Inventory mismatch (below) also counts. Restyle and trim to essentials; never add or alter facts—trimming detail is not a fact change. No update needed → state 「README 已同步，未改動」; do not change for change's sake.
+**存在** → 讀取，比對精煉後的規則檔與實際目錄結構，判斷是否需要更新：規則檔區段新增／移除（含 step 5 新增的 `rules/*.md`）應反映在 README；README 提到的 command / skill / 路徑 / 設定已不存在或已改名。README 語言 ≠ `--lng` 語言也算需要更新；整份翻成目標語言（程式碼區塊、路徑、指令、專有名詞不翻譯）。README 違反下方任一 "Style guide" 規則也算需要更新（段落長度、表格 vs 清單的選擇、表格對齊、emoji、裸 URL、歷史用語、長度與深度預算、圖表）。清單不符（見下）也算。重新整理風格並精簡至要點；絕不新增或更動事實——精簡細節不算更動事實。無需更新 → 回報 「README 已同步，未改動」；不為改而改。
 
-**Missing** → create, same judgment for content, structured per Style guide; project-specific sections: directory tree (runtime artifacts noted as gitignored), inventory sections from "Inventory sync", key settings, maintenance conventions.
+**不存在** → 建立；內容判斷標準相同，依 Style guide 組織；專案專屬區段：目錄樹（執行期產物註明已 gitignore）、"Inventory sync" 的清單區段、關鍵設定、維護慣例。
 
 ## Inventory sync
 
-Run every time, whether README exists or not. Compare what actually exists with what README lists; add missing, delete gone, order rows as actual.
+每次都執行，不論 README 是否存在。比對實際存在的項目與 README 所列；缺的補上、已不存在的刪除、列順序依實際為準。
 
-| Category  | Actual source                                                                                                                   |
-| --------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| Rules     | `./.claude/rules/**/*.md` (this repo: `./rules/**/*.md`)                                                                        |
-| Skills    | `./.claude/skills/*/SKILL.md` (incl. symlinks into `.agents/skills/`; name = directory name) (this repo: `./skills/*/SKILL.md`) |
-| Commands  | `./.claude/commands/**/*.md` (this repo: `./commands/**/*.md`)                                                                  |
-| Subagents | `./.claude/agents/**/*.md` (this repo: `./agents/**/*.md`); name = frontmatter `name`, else filename without `.md`              |
-| Hooks     | `hooks` events in `./.claude/settings.json` and the script files they call (this repo: `./settings.json`)                       |
-| MCP       | `mcpServers` in `./.mcp.json`                                                                                                   |
-| Plugins   | `enabledPlugins` entries set `true` in `./.claude/settings.json` (this repo: `./settings.json`)                                 |
+| 類別      | 實際來源                                                                                                                |
+| --------- | ----------------------------------------------------------------------------------------------------------------------- |
+| Rules     | `./.claude/rules/**/*.md`（本 repo：`./rules/**/*.md`）                                                                 |
+| Skills    | `./.claude/skills/*/SKILL.md`（含指向 `.agents/skills/` 的 symlink；名稱 = 目錄名稱）（本 repo：`./skills/*/SKILL.md`） |
+| Commands  | `./.claude/commands/**/*.md`（本 repo：`./commands/**/*.md`）                                                           |
+| Subagents | `./.claude/agents/**/*.md`（本 repo：`./agents/**/*.md`）；名稱 = frontmatter `name`，否則為不含 `.md` 的檔名           |
+| Hooks     | `./.claude/settings.json` 的 `hooks` 事件及其呼叫的腳本檔（本 repo：`./settings.json`）                                 |
+| MCP       | `./.mcp.json` 的 `mcpServers`                                                                                           |
+| Plugins   | `./.claude/settings.json` 中設為 `true` 的 `enabledPlugins` 項目（本 repo：`./settings.json`）                          |
 
-- List only items that exist in this project. Items from global `~/.claude/` not listed (exception: project root is itself `~/.claude`, e.g. this repo); never write "now provided globally" or similar.
-- Category has items but README lacks its section → add section. Category empty → no section.
-- Output one table per category, per "Tables": columns `Name | Purpose` (Rules, Skills, Commands, Subagents, MCP, Plugins) or `Script | Event | Purpose` (Hooks); same headers and column order across runs. Purpose one line (≤ ~80 display width), taken from SKILL.md / rule / subagent `description` or first paragraph; never guess.
-- Report per category what was added or removed; all matched → 「清單已同步」.
+- 僅列本專案實際存在的項目。全域 `~/.claude/` 的項目不列（例外：專案根目錄本身即 `~/.claude`，如本 repo）；絕不寫 "now provided globally" 或類似字句。
+- 類別有項目但 README 缺該區段 → 新增區段。類別為空 → 不設區段。
+- 每類別輸出一張表，依 "Tables"：欄位 `Name | Purpose`（Rules、Skills、Commands、Subagents、MCP、Plugins）或 `Script | Event | Purpose`（Hooks）；各次執行的表頭與欄位順序相同。Purpose 一行（≤ ~80 display width），取自 SKILL.md / rule / subagent 的 `description` 或首段；絕不臆測。
+- 回報每類別新增或移除了什麼；全部相符 → 「清單已同步」。
 
-README is exempt from all terse style rules in step 6 (incl. fragment sentences and emoji ban)—readers are humans: full sentences, natural tone, lively but concise. New or updated content always in `--lng` language (default English), incl. directory-tree comments and table description columns.
+README 免用 step 6 全部 terse style 規則（含片段句與 emoji 禁令）——讀者是人：完整句、自然語氣、活潑但精簡。新增或更新的內容一律用 `--lng` 語言（預設 English），含目錄樹註解與表格說明欄。
 
 ## Style guide
 
-**Structure** (top to bottom, skip what does not apply):
+**Structure**（由上而下，不適用者略過）：
 
-1. `# <emoji> <name>` + one-line tagline (≤120 chars). Badges only when they carry real signal (CI, version, license); config repos usually none
-2. Intro: ≤2 sentences, or 3–6 highlights (table or bullets per "Writing")
-3. Table of contents only when README exceeds 100 lines
-4. `🚀 Quick start`: copy-pasteable code block
-5. Project-specific sections (structure, commands, skills, subagents, settings, maintenance…)
-6. Contributing / License only when repo has them
+1. `# <emoji> <name>` + 一行 tagline（≤120 chars）。Badge 僅在帶有真實訊號時放（CI、version、license）；設定類 repo 通常不放
+2. Intro：≤2 句，或 3–6 個重點（依 "Writing" 用表格或條列）
+3. 目錄僅在 README 超過 100 行時放
+4. `🚀 Quick start`：可直接複製貼上的程式碼區塊
+5. 專案專屬區段（structure、commands、skills、subagents、settings、maintenance…）
+6. Contributing / License 僅在 repo 有時放
 
-**Writing**:
+**Writing**：
 
-- Paragraph ≤3 sentences. 3+ parallel items never one comma-chained paragraph
-- 3+ parallel items sharing a key (name, command, path, role…) → **table first**: key in first column, description in last. See "Tables"
-- Use a list instead only when:
-  - any item's description exceeds 2 lines (~120 display width; CJK/full-width chars count 2, ≈60 CJK chars)—first trim per "Depth"; still too long → whole group as list, never mix table and list in one group
-  - items have no natural key (plain sentences; table would be one column)
-  - items are ordered steps → numbered list
-- List item: one concept per bullet, `- **Name** — description` or ``- `code` — description``
-- Table cell ≤ one short sentence (≤ ~120 display width); move detail to bullets under the table or `<details>`
-- Code blocks carry a language tag; link repo files with relative links
-- URLs never bare: `[text](url)` preferred, `<url>` when URL itself is the text—GFM autolink runs until whitespace or `<`, so adjacent CJK chars, full-width punctuation (`。，）：`) or other text get swallowed into link, breaking click. Inside `[text](url)` URL has no spaces (encode `%20`). URLs inside code blocks / inline code untouched
-- Lively, not salesy: tagline says what the user gets, not the tech stack; features as highlight table (`Name | one sentence`), bullets `- **Name** — one sentence` only when a row would be too long, optional fitting emoji; verbs concrete ("customers file tickets, PMs reply live", not "provides ticketing")
+- 段落 ≤3 句。3 項以上的並列項目，絕不寫成逗號串接的一段
+- 3 項以上並列且共用 key（name、command、path、role…）→ **優先用表格**：key 放第一欄、說明放最後一欄。見 "Tables"
+- 僅在以下情形改用清單：
+  - 任一項說明超過 2 行（~120 display width；CJK／全形字元算 2，≈60 個 CJK 字）——先依 "Depth" 精簡；仍太長 → 整組改清單，絕不在同一組混用表格與清單
+  - 項目沒有自然 key（純句子；表格會變成單欄）
+  - 項目是有序步驟 → 編號清單
+- 清單項：一個 bullet 一個概念，`- **Name** — description` 或 ``- `code` — description``
+- 表格儲存格 ≤ 一個短句（≤ ~120 display width）；細節移到表格下方的 bullet 或 `<details>`
+- 程式碼區塊帶語言標籤；連結 repo 檔案用相對連結
+- URL 絕不裸放：優先 `[text](url)`，URL 本身即文字時用 `<url>`——GFM autolink 會延伸到空白或 `<` 為止，相鄰的 CJK 字元、全形標點（`。，）：`）或其他文字會被吞進連結，導致無法點擊。`[text](url)` 內的 URL 不含空格（編碼為 `%20`）。程式碼區塊／行內程式碼中的 URL 不動
+- 活潑但不推銷：tagline 說明使用者得到什麼，而非技術堆疊；功能用重點表（`Name | one sentence`），僅在一列會太長時改用 bullet `- **Name** — one sentence`，可加貼切的 emoji；動詞要具體（"customers file tickets, PMs reply live"，不要 "provides ticketing"）
 
-**Current state only**:
+**Current state only**：
 
-- README describes what is true now. No history: migration, removal, relocation, rename, "formerly / no longer / now provided by / moved to / 原本 / 不再 / 改由 / 已移除 / 新增了". Deleted things simply disappear.
-- History belongs in git log or CHANGELOG, not README.
+- README 描述現在為真的事。不寫歷史：migration、移除、搬移、改名、"formerly / no longer / now provided by / moved to / 原本 / 不再 / 改由 / 已移除 / 新增了"。刪掉的東西直接消失。
+- 歷史屬於 git log 或 CHANGELOG，不屬於 README。
 
-**Depth** (README is a guide, not a spec):
+**Depth**（README 是導覽，不是規格）：
 
-- Test: would a newcomer need this on day one? No → leave out.
-- Per feature: one-line summary plus ≤3 user-visible highlights; more → `<details>` or delete.
-- Leave out: cache durations, DB columns and SQL, algorithms and formulas, file-level implementation maps, edge cases, UI micro-interactions (animation, skeleton timing). They live in `rules/` or code; link with one line (`details: .claude/rules/xxx.md`) when needed.
-- Length budget: ≤300 lines for a typical project README (incl. `<details>` content). Over budget → cut detail first, fold second.
+- 測試：新人第一天需要這個嗎？不需要 → 不寫。
+- 每個功能：一行摘要加 ≤3 個使用者可見的重點；更多 → `<details>` 或刪除。
+- 不寫：快取時間、DB 欄位與 SQL、演算法與公式、檔案層級的實作對照、邊界案例、UI 微互動（動畫、skeleton 時序）。這些屬於 `rules/` 或程式碼；需要時用一行連結（`details: .claude/rules/xxx.md`）。
+- 長度預算：一般專案 README ≤300 行（含 `<details>` 內容）。超出 → 先刪細節，其次折疊。
 
-**Emoji**: one semantically fitting emoji at start of H1 and each H2, no repeats within a README; allowed on highlight rows / bullets and ✅ / ❌ in status columns; none inside body prose, code, or paths. Default picks for consistency across runs:
+**Emoji**：H1 與每個 H2 開頭各放一個語意貼切的 emoji，同一份 README 內不重複；重點列／bullet 可用，狀態欄可用 ✅ / ❌；內文 prose、程式碼、路徑中一律不放。預設選用，以維持各次執行一致：
 
 ```
 🚀 Quick start   ✨ Features    📁 Structure    ⚡ Commands     🧩 Skills
@@ -72,19 +72,19 @@ README is exempt from all terse style rules in step 6 (incl. fragment sentences 
 🤝 Contributing  📄 License
 ```
 
-**Tables**:
+**Tables**：
 
-- **Aligned source**: one space padding each side of cell; pad with spaces to column width so every row's `|` lines up vertically; width = display width (CJK/full-width chars and emoji count 2); separator row dashes fill column width. Result should match `prettier --write` when project uses prettier (run it to verify). Literal `|` inside cell → `\|`
-- **Consistent structure**: same-kind tables (e.g. inventory categories) share header names and column order; headers short, in `--lng` language; one format per column (all code or all plain text, never mixed); left-aligned by default, numeric columns `---:`; ≤4 columns, more → split table or move detail to bullets under it
-- **Lean cells**: one short sentence per cell; no line breaks, no `<br>`, no lists inside; descriptions in same column similar length; too long → trim text, never widen column
+- **Aligned source**：儲存格兩側各留一個空格；以空格補到欄寬，使每列的 `|` 垂直對齊；寬度 = display width（CJK／全形字元與 emoji 算 2）；分隔列的 dash 填滿欄寬。專案使用 prettier 時，結果應與 `prettier --write` 相符（執行以驗證）。儲存格內的字面 `|` → `\|`
+- **Consistent structure**：同類表格（如各 inventory 類別）共用表頭名稱與欄位順序；表頭簡短，用 `--lng` 語言；每欄一種格式（全程式碼或全純文字，不混用）；預設靠左對齊，數字欄用 `---:`；≤4 欄，更多 → 拆表或把細節移到表格下方 bullet
+- **Lean cells**：每格一個短句；不換行、不用 `<br>`、格內不放清單；同欄描述長度相近；太長 → 精簡文字，絕不加寬欄位
 
-**Markdown features**:
+**Markdown features**：
 
-- GitHub callouts (`> [!NOTE]` etc.): ≤1 per section, never nested
-- Long reference (full lists, platform workarounds) → `<details><summary>…</summary>` with a blank line after `</summary>`, else inner Markdown does not render
-- Directory tree → plain `text` code block with `├──` / `└──` (allowed exception to no-ASCII-figure rule); `# comment` ≤3 words, line ≤80 cols; longer detail → bullets under tree
-- Flows of 3+ steps → numbered list; checklist → `- [ ]` task list
-- No figures: no Mermaid, SVG or framed ASCII
-- Not translated under `--lng`: callout keywords, emoji, paths in directory tree
+- GitHub callout（`> [!NOTE]` 等）：每區段 ≤1 個，絕不巢狀
+- 長參考內容（完整清單、平台 workaround）→ `<details><summary>…</summary>`，`</summary>` 後留一空行，否則內部 Markdown 不會渲染
+- 目錄樹 → 純 `text` 程式碼區塊，用 `├──` / `└──`（「不放圖」規則的允許例外）；`# comment` ≤3 個詞，每行 ≤80 cols；更長的細節 → 樹下方的 bullet
+- 3 步以上的流程 → 編號清單；檢核表 → `- [ ]` task list
+- 不放圖：不用 Mermaid、SVG 或框線 ASCII
+- `--lng` 下不翻譯：callout 關鍵字、emoji、目錄樹中的路徑
 
-**Self-check before writing**: skim headings + first line of each section; reader must learn what it is, how to start, where things live within 30 seconds. Then mechanical checks: every table's `|` aligned (full-width = 2) with consistent same-kind headers; line count within budget; zero history-wording hits (grep the words in "Current state only"); zero `mermaid` / framed-figure hits; zero bare URLs outside code (every `http(s)://` preceded by `(` or `<`); inventory categories match actual files.
+**Self-check before writing**：瀏覽標題與各區段首行；讀者須在 30 秒內得知這是什麼、如何開始、東西在哪。再做機械檢查：每張表的 `|` 皆對齊（全形 = 2），同類表頭一致；行數在預算內；歷史用語命中數為零（grep "Current state only" 中的詞）；`mermaid` / 框線圖命中數為零；程式碼外無裸 URL（每個 `http(s)://` 前面皆為 `(` 或 `<`）；inventory 類別與實際檔案相符。

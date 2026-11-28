@@ -1,3 +1,3 @@
-- Date/time ops: Asia/Taipei (UTC+8).
-- Shell is zsh: pipeline exit code via `${pipestatus[1]}` (not `PIPESTATUS[0]`); never assign to `status` (read-only in zsh), use `rc=$?`; when exit code matters, don't pipe to tail/head, redirect to a file.
-- agent-browser: hook sets `AGENT_BROWSER_SESSION=cc-<session_id>` per Claude session and closes it on SessionEnd — don't pass `--session` (bypasses cleanup). Idle 15m → daemon exits, unsaved cookies/login/tabs lost. Login or multi-turn auth flows → always add `--restore`.
+- 日期/時間運算：Asia/Taipei (UTC+8)。
+- Shell 為 zsh：pipeline 結束碼用 `${pipestatus[1]}`（非 `PIPESTATUS[0]`）；勿賦值給 `status`（zsh 唯讀），改用 `rc=$?`；結束碼重要時勿 pipe 到 tail/head，改導向檔案。
+- agent-browser：hook 為每個 Claude session 設 `AGENT_BROWSER_SESSION=cc-<session_id>`，並於 SessionEnd 關閉——勿傳 `--session`（會繞過清理）。閒置 15 分鐘 → daemon 結束，未存的 cookie/登入/分頁全失。登入或多輪驗證流程 → 一律加 `--restore`。

@@ -1,21 +1,21 @@
-# Vitest patterns and Jest → Vitest mapping
+# Vitest patterns 與 Jest → Vitest 對照
 
-For mocks, async tests, timers, parameterized tests, Jest migration. Version notes = Vitest major (3, 4, 5).
+用於 mocks、async 測試、timers、參數化測試、Jest 遷移。版本註記 = Vitest major（3、4、5）。
 
 ## Jest → Vitest
 
-Same names under `vi.*` (`jest.fn`, `spyOn`, `useFakeTimers`, `advanceTimersByTime`, `resetAllMocks`). Differences:
+名稱相同，改放在 `vi.*` 下（`jest.fn`、`spyOn`、`useFakeTimers`、`advanceTimersByTime`、`resetAllMocks`）。差異：
 
-| Jest                        | Vitest                                                                                        |
-| --------------------------- | --------------------------------------------------------------------------------------------- |
-| `require('./m')`            | `import { x } from './m.js'` (ESM)                                                            |
-| `jest.mock('./m')`          | `vi.mock(import('./m.js'))`, top level only; a factory must return every export the test uses |
-| `jest.requireActual('./m')` | `await vi.importActual('./m.js')` / `importOriginal` in factory                               |
-| `test.each` table           | `test.for` (args not spread) or `test.each`                                                   |
+| Jest                        | Vitest                                                                       |
+| --------------------------- | ---------------------------------------------------------------------------- |
+| `require('./m')`            | `import { x } from './m.js'` (ESM)                                           |
+| `jest.mock('./m')`          | `vi.mock(import('./m.js'))`，僅限頂層；factory 必須回傳測試用到的每個 export |
+| `jest.requireActual('./m')` | `await vi.importActual('./m.js')` / factory 內的 `importOriginal`            |
+| `test.each` table           | `test.for`（args 不展開）或 `test.each`                                      |
 
 ## Module mocking
 
-Partial mock, real implementation for everything else:
+Partial mock，其餘一律用真實實作：
 
 ```ts
 vi.mock(import("./api.js"), async (importOriginal) => {
@@ -24,16 +24,16 @@ vi.mock(import("./api.js"), async (importOriginal) => {
 });
 ```
 
-`vi.mock` hoists above imports. Variables used in the factory → declare with `vi.hoisted`:
+`vi.mock` 會 hoist 到 imports 之上。factory 內用到的變數 → 以 `vi.hoisted` 宣告：
 
 ```ts
 const { fetchUser } = vi.hoisted(() => ({ fetchUser: vi.fn() }));
 vi.mock(import("./api.js"), () => ({ fetchUser }));
 ```
 
-## Spies and restoring
+## Spies 與還原
 
-Recommended config, safe on every major (per-version behavior: SKILL.md step 5):
+建議設定，在每個 major 都安全（各版本行為：SKILL.md step 5）：
 
 ```ts
 // vitest.config.ts
@@ -42,7 +42,7 @@ export default defineConfig({
 });
 ```
 
-Mocks called with `new` (Vitest 4+) need `function` or `class` implementation:
+以 `new` 呼叫的 mocks（Vitest 4+）需要 `function` 或 `class` 實作：
 
 ```ts
 const Client = vi.fn(function () {
@@ -50,12 +50,12 @@ const Client = vi.fn(function () {
 });
 ```
 
-## Async and timers
+## Async 與 timers
 
-- Without `await` on `.rejects` / `.resolves`, the assertion runs after the test ends: before Vitest 5 the test passes no matter what; Vitest 5 fails it.
-- Fake timers fake `Date` and `performance.now()` (not `process.nextTick` or `queueMicrotask`). Date logic: pin the clock after `vi.useFakeTimers()` with `vi.setSystemTime(new Date('2026-01-01T00:00:00Z'))`. Pair `vi.useFakeTimers()` with `vi.useRealTimers()` in `afterEach`; await timer-driven promises via `vi.advanceTimersByTimeAsync`.
+- `.rejects` / `.resolves` 沒有 `await`，assertion 會在測試結束後才執行：Vitest 5 之前測試無論如何都會通過；Vitest 5 則使其失敗。
+- Fake timers 會偽造 `Date` 與 `performance.now()`（不含 `process.nextTick` 或 `queueMicrotask`）。Date 邏輯：在 `vi.useFakeTimers()` 之後用 `vi.setSystemTime(new Date('2026-01-01T00:00:00Z'))` 固定時鐘。`vi.useFakeTimers()` 要在 `afterEach` 搭配 `vi.useRealTimers()`；由 timer 驅動的 promises 用 `vi.advanceTimersByTimeAsync` 來 await。
 
-## Fixtures and environment
+## Fixtures 與環境
 
-- Prefer `test.extend` fixtures over `beforeEach` when only some tests need the setup or it needs teardown (`await use(value)`, then teardown).
-- Per-file environment override when the config default is `node` but the test needs DOM: `// @vitest-environment jsdom`.
+- 當只有部分測試需要該設置，或設置需要 teardown（`await use(value)`，之後做 teardown）時，優先用 `test.extend` fixtures 而非 `beforeEach`。
+- 設定預設為 `node` 但測試需要 DOM 時，以檔案為單位覆寫環境：`// @vitest-environment jsdom`。

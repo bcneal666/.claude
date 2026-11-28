@@ -1,107 +1,107 @@
 # Motion review
 
-This file is for VERIFICATION (step 4.1) of the animation this run added or changed, not for diagnosis or building motion.
-Each changed animation gets pass, blocked or note; blocked goes back to step 3.
+本檔用於 VERIFICATION（step 4.1）：驗證本輪新增或更動的動畫；不用於診斷或建構動效。
+每個更動的動畫判定為 pass、blocked 或 note；blocked 回 step 3。
 
-A transition that runs but feels sluggish, lands from the wrong origin, fires too often or drops frames is a regression.
+會執行但感覺遲滯、從錯誤原點出發、觸發過於頻繁或掉幀的 transition，屬於退步（regression）。
 
 ## 1. Scope
 
-- Review only step 3's edits. List the files from this run's 「移除」「效能」「動畫」 entries, read `git diff -U0 -- <those files>`, keep the hunks you wrote. A bare `git diff HEAD` or a diff against the last-run head pulls in the user's own work.
-- Untracked new files are not in the diff: read them whole.
-- Motion hunks touch: CSS `transition*`, `animation*`, `@keyframes`, `@starting-style`, `transform*`, `clip-path`, `filter: blur`, state-driven `opacity`, `prefers-reduced-motion`, `(hover: hover)`; Tailwind `transition-*`, `duration-*`, `ease-*`, `delay-*`, `animate-*`, `motion-safe:`/`motion-reduce:`; Motion `initial`/`animate`/`exit`/`transition`, `AnimatePresence`, `layout`/`layoutId`, `useSpring`; WAAPI `element.animate()`.
-- Read surrounding code for context (trigger, frequency); give verdicts only on changed lines. Untouched animation in the same file was handled at diagnosis.
-- Pure deletions pass unless they leave half an animation (enter without exit, orphan `@keyframes`, reduced-motion block for motion that no longer exists); then the remainder counts as changed.
-- Nothing in scope → write 「本輪無動畫變更，略過」 and skip 4.1.
-- Judge code only: frame timing is 4.2, layout regressions 4.3.
+- 只審 step 3 的編輯。列出本輪「移除」「效能」「動畫」條目中的檔案，讀 `git diff -U0 -- <those files>`，保留你寫的 hunk。單純的 `git diff HEAD` 或與 last-run head 的 diff 會把使用者自己的工作也帶進來。
+- 未追蹤的新檔案不在 diff 中：整份讀。
+- 動效 hunk 涉及：CSS `transition*`、`animation*`、`@keyframes`、`@starting-style`、`transform*`、`clip-path`、`filter: blur`、由狀態驅動的 `opacity`、`prefers-reduced-motion`、`(hover: hover)`；Tailwind `transition-*`、`duration-*`、`ease-*`、`delay-*`、`animate-*`、`motion-safe:`/`motion-reduce:`；Motion `initial`/`animate`/`exit`/`transition`、`AnimatePresence`、`layout`/`layoutId`、`useSpring`；WAAPI `element.animate()`。
+- 讀周邊程式碼以掌握脈絡（觸發、頻率）；只對更動的行下判定。同檔案中未更動的動畫已在診斷時處理。
+- 純刪除視為 pass，除非留下殘缺的動畫（有進場無退場、孤立的 `@keyframes`、為已不存在的動效而留的 reduced-motion 區塊）；那就把剩下的部分算作更動。
+- 範圍內沒有任何項目 → 寫「本輪無動畫變更，略過」並跳過 4.1。
+- 只判斷程式碼：幀時間屬 4.2，版面退步屬 4.3。
 
 ## 2. Precedence
 
-Project rules (lint, DESIGN.md, tokens, CLAUDE.md) > ux-rules > this file. A changed value that follows a written project rule or token passes; cite it and list the conflict in the report. Only a written rule moves a threshold; "feels fine", a reason you supply yourself, or exhausted retries never do.
+專案規則（lint、DESIGN.md、tokens、CLAUDE.md）> ux-rules > 本檔。更動的值若遵循已寫下的專案規則或 token 即 pass；引用該規則並把衝突列入報告。只有寫下的規則能移動門檻；「感覺還好」、你自己提供的理由、或重試次數用盡，都不行。
 
 ## 3. Checklist
 
 ### 3.1 Purpose and frequency
 
-- Purpose must be one of: spatial consistency, state indication, feedback, explanation, preventing a jarring change. "Looks cool" on something seen often → blocked; fix: delete.
-- Frequency and page transitions: see ux-rules §12. Beyond it: keyboard-initiated or 100+/day actions get no animation (repetition makes them feel slow); hover seen dozens of times a day stays minimal; rare or first-time moments (onboarding, celebration) may add delight.
+- 目的必須是下列之一：空間一致性、狀態指示、回饋、說明、避免突兀的變化。常見事物上的「看起來很酷」→ blocked；修法：刪除。
+- 頻率與頁面轉場：見 ux-rules §12。此外：鍵盤觸發或每天 100 次以上的動作不加動畫（重複使它們感覺慢）；一天看數十次的 hover 保持極簡；罕見或首次的時刻（onboarding、慶祝）可加入愉悅感。
 
 ### 3.2 Easing
 
-Project easing tokens first. Otherwise:
+先用專案的 easing tokens。否則：
 
-- Enter / exit (default): `cubic-bezier(0.23, 1, 0.32, 1)`
-- Move / morph on screen: `cubic-bezier(0.77, 0, 0.175, 1)`
-- Drawer / sheet: `cubic-bezier(0.32, 0.72, 0, 1)`
-- Hover, color: `ease`. Constant motion (marquee, progress): `linear`. Sonner-style toast: `400ms ease`.
+- 進場 / 退場（預設）：`cubic-bezier(0.23, 1, 0.32, 1)`
+- 螢幕上移動 / morph：`cubic-bezier(0.77, 0, 0.175, 1)`
+- Drawer / sheet：`cubic-bezier(0.32, 0.72, 0, 1)`
+- Hover、顏色：`ease`。等速動效（跑馬燈、進度）：`linear`。Sonner 風格 toast：`400ms ease`。
 
-Blocked:
+Blocked：
 
-- `ease-in` on any UI: it delays the moment the user watches; ease-out at 200ms feels faster than ease-in at 200ms.
-- Bare keyword `ease-out` / `ease-in-out` on a deliberate enter, exit or move: built-in curves are too weak (project token exempt).
-- Spring bounce > 0.3. Reference spring: `{ type: "spring", duration: 0.5, bounce: 0.2 }`; bounce 0.1–0.3 belongs to drag-to-dismiss or playful UI, so bounce on crisp UI (dashboards, forms) → note.
+- 任何 UI 上的 `ease-in`：它延遲了使用者注視的那一刻；200ms 的 ease-out 感覺比 200ms 的 ease-in 快。
+- 刻意設計的進場、退場或移動使用裸關鍵字 `ease-out` / `ease-in-out`：內建曲線太弱（專案 token 豁免）。
+- Spring bounce > 0.3。參考 spring：`{ type: "spring", duration: 0.5, bounce: 0.2 }`；bounce 0.1–0.3 屬於拖曳關閉或玩味的 UI，所以俐落的 UI（dashboard、表單）上的 bounce → note。
 
 ### 3.3 Duration
 
-Press feedback 100–160ms · tooltip, small popover 125–200ms · dropdown, select 150–250ms · modal, drawer, sheet 200–500ms · toast ≤ 400ms · marketing / explanatory may be longer.
+按壓回饋 100–160ms · tooltip、小 popover 125–200ms · dropdown、select 150–250ms · modal、drawer、sheet 200–500ms · toast ≤ 400ms · 行銷 / 說明性可更長。
 
-- Above its upper bound → blocked (shorter is fine). Any other UI over 300ms without a written reason → blocked; a 180ms dropdown feels more responsive than a 400ms one.
-- Stagger: 30–80ms between items, non-uniform (e.g. 0 / 50 / 90ms), one entrance per container, never blocks interaction. A group entrance added this run whose items all animate at once, or a stagger outside these bounds → blocked. Where ux-rules §12 forbids the entrance (list rows, tab-switched content), the fix is deleting it.
+- 超過其上限 → blocked（更短沒問題）。其他 UI 超過 300ms 而無書面理由 → blocked；180ms 的 dropdown 比 400ms 的感覺更靈敏。
+- Stagger：項目間 30–80ms、不均勻（例：0 / 50 / 90ms）、每個容器一次進場、絕不阻擋互動。本輪新增的群組進場若所有項目同時動畫，或 stagger 超出這些範圍 → blocked。ux-rules §12 禁止該進場之處（列表列、分頁切換內容），修法是刪除它。
 
 ### 3.4 Origin and physicality
 
-- `scale(0)` → blocked; nothing appears from nothing. Start at `scale(0.9–0.97)` + `opacity: 0` (default 0.95).
-- Pure-fade entrance with no initial transform → blocked, except the reduced-motion variant, backdrops/scrims, and fade-only page transitions per ux-rules §12.
-- Popover, dropdown, tooltip at `transform-origin: center` → blocked; scale from the trigger: `var(--transform-origin)` (Base UI), `var(--radix-<component>-content-transform-origin)` (Radix/shadcn). Modals stay centered.
-- Press feedback: `:active { transform: scale(0.97) }` (0.95–0.98), `transition: transform 160ms cubic-bezier(0.23, 1, 0.32, 1)`.
-- Exit direction: see ux-rules §7.
+- `scale(0)` → blocked；沒有東西從無到有。從 `scale(0.9–0.97)` + `opacity: 0` 開始（預設 0.95）。
+- 沒有初始 transform 的純淡入進場 → blocked，例外：reduced-motion 變體、backdrop/scrim，以及依 ux-rules §12 的純淡入頁面轉場。
+- Popover、dropdown、tooltip 使用 `transform-origin: center` → blocked；要從觸發器縮放：`var(--transform-origin)`（Base UI）、`var(--radix-<component>-content-transform-origin)`（Radix/shadcn）。Modal 保持置中。
+- 按壓回饋：`:active { transform: scale(0.97) }`（0.95–0.98）、`transition: transform 160ms cubic-bezier(0.23, 1, 0.32, 1)`。
+- 退場方向：見 ux-rules §7。
 
 ### 3.5 Interruptibility
 
-- Rapid triggers (toasts, toggles, items added repeatedly) use `transition` or a spring, which retarget from the current state. `@keyframes` there → blocked: they restart from zero.
-- Entry without JS: `@starting-style`.
-- Drag, swipe, sheets, gesture code: see ux-rules §7.
+- 快速連續觸發（toast、toggle、反覆新增項目）使用 `transition` 或 spring，它們會從當前狀態重新定向。此處用 `@keyframes` → blocked：它們會從零重來。
+- 無 JS 的進場：`@starting-style`。
+- 拖曳、滑動、sheet、手勢程式碼：見 ux-rules §7。
 
 ### 3.6 Asymmetric timing
 
-Deliberate phase (press, hold, destructive confirm) slow, system response snaps: hold `clip-path 2s linear`, release `200ms cubic-bezier(0.23, 1, 0.32, 1)`. Symmetric press/release or hold timing → blocked. Hold-to-confirm behavior: see ux-rules §7.
+刻意的階段（按壓、長按、破壞性確認）放慢，系統回應則快速到位：長按 `clip-path 2s linear`，放開 `200ms cubic-bezier(0.23, 1, 0.32, 1)`。按壓/放開或長按時序對稱 → blocked。長按確認的行為：見 ux-rules §7。
 
 ### 3.7 Performance (code level)
 
-- Animate `transform` and `opacity`; `clip-path` and a measured-height accordion are the exceptions. `width`/`height`/`margin`/`padding`/`top`/`left` → blocked (layout + paint + composite every frame); fix with `transform` (`translateY(100%)` moves by the element's own height).
-- `transition: all` → blocked; name the properties.
-- Motion `x`/`y`/`scale` on `motion` < 14.2 while the page is busy → blocked; fix with the full string, `animate={{ transform: "translateX(100px)" }}`.
-- `layout`/`layoutId` runs on the main thread in every version: while the page is busy → blocked, otherwise note.
-- Parent CSS variable driving child transforms (`setProperty('--swipe-amount', …)`) → blocked: it recalculates every child. Set `element.style.transform` directly.
-- `filter: blur` ≥ 20px → blocked: expensive, worst in Safari.
-- Predetermined motion in JS/rAF instead of CSS → note: it stutters under load.
+- 動畫用 `transform` 與 `opacity`；`clip-path` 與量測高度的 accordion 為例外。`width`/`height`/`margin`/`padding`/`top`/`left` → blocked（每幀 layout + paint + composite）；以 `transform` 修正（`translateY(100%)` 依元素自身高度移動）。
+- `transition: all` → blocked；要寫明屬性。
+- `motion` < 14.2 的 Motion `x`/`y`/`scale`，且頁面繁忙時 → blocked；用完整字串修正，`animate={{ transform: "translateX(100px)" }}`。
+- `layout`/`layoutId` 在所有版本都跑在主執行緒：頁面繁忙時 → blocked，否則 note。
+- 以父層 CSS variable 驅動子層 transform（`setProperty('--swipe-amount', …)`）→ blocked：它會重算每個子層。直接設 `element.style.transform`。
+- `filter: blur` ≥ 20px → blocked：昂貴，在 Safari 最糟。
+- 預先決定的動效用 JS/rAF 而非 CSS → note：負載下會卡頓。
 
 ### 3.8 Accessibility
 
-- Movement needs a `prefers-reduced-motion: reduce` variant (`motion-reduce:`, `useReducedMotion()`) that keeps opacity/color and drops transforms (fade only, ux-rules §12). Missing → blocked. Removing a transition that aids comprehension → note: reduced means gentler, not zero.
-- Hover motion sits inside `@media (hover: hover) and (pointer: fine)`; ungated → blocked, since touch fires hover on tap.
+- 位移類動效需要 `prefers-reduced-motion: reduce` 變體（`motion-reduce:`、`useReducedMotion()`），保留 opacity/color、去掉 transform（僅淡入，ux-rules §12）。缺少 → blocked。移除有助理解的 transition → note：reduced 的意思是更溫和，不是零。
+- Hover 動效置於 `@media (hover: hover) and (pointer: fine)` 內；未設閘 → blocked，因為觸控點擊時會觸發 hover。
 
 ### 3.9 Cohesion
 
-- Motion matches the component and product personality: playful may bounce, a dashboard stays crisp. Mismatch → note; clashing with a project token or rule → blocked.
-- Crossfade showing two overlapping states → note: add `filter: blur(2px)` during the transition.
-- Unsure of feel → note suggesting a 2–5× slow-down in the DevTools Animations panel. Gesture feel needs a real device → 「未驗證（需實機）」, never pass.
+- 動效符合元件與產品個性：玩味的可以彈跳，dashboard 保持俐落。不符 → note；與專案 token 或規則衝突 → blocked。
+- Crossfade 顯示兩個重疊狀態 → note：轉場期間加 `filter: blur(2px)`。
+- 對手感不確定 → note，建議在 DevTools Animations 面板放慢 2–5 倍。手勢手感需要真機 → 「未驗證（需實機）」，絕不 pass。
 
 ## 4. Severity
 
-- **blocked**: every item marked blocked above. Moving any of them to note lowers the standard.
-- **note**: only items without a threshold (cohesion, blur masking, spring preference, debugging advice). Notes go in the report and never loop back.
-- Unsure? If the rule has a number and the changed value is outside it, it is blocked.
+- **blocked**：上面每一項標為 blocked 者。把其中任何一項降為 note 都是降低標準。
+- **note**：僅限沒有門檻的項目（cohesion、blur 遮罩、spring 偏好、除錯建議）。note 寫進報告，絕不回圈。
+- 不確定？若規則有數字而更動的值超出該數字，就是 blocked。
 
 ## 5. Fixes
 
-- Take values from section 3 or project tokens; never approximate.
-- Prefer, in order: delete → reduce (shorter, smaller, fewer properties) → fix easing → fix origin → make interruptible → move to transform/opacity → asymmetric timing → polish → reduced-motion, hover gating, cohesion. Deleting this run's own addition is a valid fix.
-- A fix needing a library, new dependency or new component is not a retry: list it in 「未解決」 at once.
+- 數值取自 section 3 或專案 tokens；絕不近似。
+- 依序優先：刪除 → 縮減（更短、更小、更少屬性）→ 修 easing → 修原點 → 做成可中斷 → 移到 transform/opacity → 非對稱時序 → 修飾 → reduced-motion、hover 設閘、cohesion。刪除本輪自己新增的內容是有效的修法。
+- 修法需要函式庫、新依賴或新元件的不算重試：立刻列入「未解決」。
 
 ## 6. Output
 
-One row per changed animation that passes; one row per violated rule otherwise.
+通過的每個更動動畫一列；否則每條違反的規則一列。
 
 | file:line       | Changed value                         | Verdict | Rule                      | Fix                                                          |
 | --------------- | ------------------------------------- | ------- | ------------------------- | ------------------------------------------------------------ |
@@ -109,11 +109,11 @@ One row per changed animation that passes; one row per violated rule otherwise.
 | `Toast.css:12`  | `animation: slideIn 400ms`            | blocked | 3.5 keyframes on toast    | `transition: transform 400ms ease` + `@starting-style`       |
 | `Dialog.tsx:31` | `zoom-in-95 duration-200`             | pass    | 3.3 modal; 3.4 centered   | —                                                            |
 
-- A blocked verdict quotes the literal changed token from the diff (CSS value, utility class, Motion prop) and gives the exact replacement. For an omission (e.g. no reduced-motion guard), quote the added declaration that lacks it. "Easing feels off" gives step 3 nothing to change and the retry nothing to check. No changed value to name → the problem predates this run: out of scope (section 1).
-- Rule names the checklist item, "ux-rules §7/§12 …", or the project rule that decided it.
+- blocked 判定要引用 diff 中實際更動的 token（CSS 值、utility class、Motion prop），並給出確切的替代內容。若是遺漏（例：沒有 reduced-motion 防護），引用缺少它的那段新增宣告。「Easing 感覺不對」讓 step 3 無從更動、讓重試無從檢查。無法點名任何更動的值 → 問題早於本輪：超出範圍（section 1）。
+- Rule 欄寫明決定該判定的 checklist 項目、「ux-rules §7/§12 …」或專案規則。
 
 ## 7. Retry loop
 
-- Blocked → step 3 applies the fix as written; re-review those rows plus any motion the fix added. At most 2 retry rounds in total; motion a fix introduces shares its item's count.
-- Still blocked → 「未解決」 with file:line, current value, rule, fix, and why it didn't land. Block reasons may go to 「建議規則（未寫入）」, never into rules (step 5).
-- Not a pass: downgrading to note, widening a threshold, inventing a reason for > 300ms, dropping the row. An honest 「未解決」 beats a fake pass; the user reads the report to decide what to commit.
+- Blocked → step 3 照寫好的修法套用；重審那些列，加上修法新增的任何動效。總共最多 2 輪重試；修法引入的動效與其項目共用次數。
+- 仍 blocked → 列入「未解決」，附 file:line、目前值、規則、修法，以及為何沒成功。blocked 的原因可列入「建議規則（未寫入）」，絕不寫進規則（step 5）。
+- 以下不算 pass：降為 note、放寬門檻、為 > 300ms 編造理由、刪掉該列。誠實的「未解決」勝過假通過；使用者讀報告來決定 commit 什麼。

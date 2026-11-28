@@ -1,26 +1,24 @@
 #!/usr/bin/env node
-// PreToolUse hook (Bash / PowerShell): before git commit / git push, scan
-// the content about to enter history and deny on common secret formats.
+// PreToolUse hook（Bash / PowerShell）：git commit / git push 之前，掃描
+// 即將進入歷史的內容，遇到常見的秘密格式就拒絕。
 //
-// Why it exists: settings.json puts git add / commit / push in allow, and
-// /now-push pushes without confirmation, so the only guard was the model
-// reading the diff itself. This adds a mechanical safeguard.
+// 存在原因：settings.json 把 git add / commit / push 放進 allow，而且
+// /now-push 不經確認就 push，原本唯一的防線只有模型自己讀 diff。
+// 這裡補上一道機械式的防護。
 //
-// Scan scope (`git add` may not have run yet at PreToolUse, so --cached alone
-// is not enough):
-//   - added lines in the diff against upstream (HEAD if there is none)
-//   - untracked, non-ignored files (`git add .` would include them)
+// 掃描範圍（PreToolUse 時 `git add` 可能尚未執行，所以只看 --cached 不夠）：
+//   - 與 upstream 比對的 diff 中新增的行（沒有 upstream 就比對 HEAD）
+//   - 未追蹤且未被忽略的檔案（`git add .` 會把它們加進去）
 //
-// False-positive escape hatch: a line containing `secret-scan:allow`
-// anywhere is skipped.
+// 誤判的逃生口：任何位置含有 `secret-scan:allow` 的行會被略過。
 //
-// Vendored skills: files under .claude/skills/<name>/ and .agents/skills/<name>/
-// are skipped when <name> is a key of `skills` in the repo's skills-lock.json.
-// Skills not listed there (hand-written ones) are still scanned.
+// 外部引入的 skill：<name> 是 repo 的 skills-lock.json 中 `skills` 的 key 時，
+// .claude/skills/<name>/ 與 .agents/skills/<name>/ 底下的檔案會被略過。
+// 沒列在裡面的 skill（手寫的）仍會掃描。
 //
-// Hard rule: fail open — on any error exit 0 and never write to stderr.
-// On a hit, print only the deny JSON to stdout, and never print the full
-// secret (first 4 characters only).
+// 硬性規則：fail open——任何錯誤都 exit 0，且絕不寫入 stderr。
+// 命中時只往 stdout 印出 deny JSON，且絕不印出完整的
+// 秘密（只印前 4 個字元）。
 
 import { readFileSync, statSync } from "node:fs";
 import { spawnSync } from "node:child_process";
@@ -75,9 +73,9 @@ function stripQuotes(s) {
   return s.replace(/^(["'])(.*)\1$/, "$2");
 }
 
-// Directory the commit/push will run in. `git -C X` wins; otherwise apply every
-// `cd X` that precedes the git commit/push (anywhere in the command, not only
-// at the start), resolving relative paths in order.
+// commit/push 實際執行的目錄。`git -C X` 優先；否則套用 git commit/push
+// 之前的每一個 `cd X`（指令中任何位置，不只開頭），
+// 相對路徑依序解析。
 function resolveDir(command, cwd, gitIndex) {
   const c = command.match(/\bgit\s+-C\s+("[^"]+"|'[^']+'|\S+)/);
   if (c) return resolve(cwd, expandHome(stripQuotes(c[1])));
@@ -157,7 +155,7 @@ function scanUntracked(root, hits, files, prefixes) {
         .split("\n")
         .forEach((text, i) => scanLine(rel, i + 1, text, hits));
     } catch {
-      // unreadable: skip
+      // 無法讀取：略過
     }
   }
 }
@@ -211,6 +209,6 @@ function main() {
 try {
   main();
 } catch {
-  // fail open
+  // fail open（出錯時放行）
 }
 process.exit(0);

@@ -1,72 +1,71 @@
 ---
 name: review-fix
-description: Functionally test the current project's uncommitted change set on its local dev server, then run /code-review, fix what it finds, and re-review until it converges (max 3 rounds). Works in any project (auto-detects dev command, port and URL). Optional effort level for /code-review (default high).
+description: 在本機 dev server 上對目前專案未提交的變更集做功能測試，再執行 /code-review、修正其發現，並重複審查直到收斂（最多 3 輪）。適用於任何專案（自動偵測 dev 指令、port 與 URL）。可選擇 /code-review 的 effort 等級（預設 high）。
 argument-hint: "[low|medium|high|xhigh|max]"
 disable-model-invocation: true
 ---
 
-Functionally test current change set (cwd project), then run through review until it converges.
-Stay in main conversation, do not fork—you hold intent behind change; fresh subagent does not, fixes need that context.
+對目前變更集（cwd 專案）做功能測試，再進入審查直到收斂。
+留在主對話，勿 fork——你持有變更背後的意圖，全新 subagent 沒有，修正需要該脈絡。
 
-## Arguments
+## 參數
 
-Given: `$ARGUMENTS` (blank = none). Pick review level from it:
+收到：`$ARGUMENTS`（空白 = 無）。據此決定審查等級：
 
-- `low` / `medium` / `high` / `xhigh` / `max` → that level; none → `high`. Always pass level explicitly: `/code-review` without one reuses whatever level was typed last.
-- `ultra` → do not launch: cloud review is user-triggered and billed, you cannot start it. Tell user to type `/code-review ultra` themselves, stop.
-- Other tokens → one-line notice, ignore.
+- `low` / `medium` / `high` / `xhigh` / `max` → 該等級；無 → `high`。一律明確傳入等級：未帶等級的 `/code-review` 會沿用上次輸入的等級。
+- `ultra` → 勿啟動：雲端審查由使用者觸發且計費，你無法啟動。請使用者自行輸入 `/code-review ultra`，然後停止。
+- 其他 token → 一行提示，忽略。
 
-## Steps
+## 步驟
 
-1. `git status --short` + `git diff --stat`. Nothing modified, staged or untracked → say so, stop. Unmerged paths or merge/rebase in progress → say so, stop.
+1. `git status --short` + `git diff --stat`。無任何修改、暫存或未追蹤檔案 → 告知後停止。有 unmerged paths 或 merge/rebase 進行中 → 告知後停止。
 
-2. **Functional test (round 1 only — before any review).** Skip when diff touches only docs, `.claude/`, or config with no runtime effect; say so.
-   Helpers: `${CLAUDE_SKILL_DIR}/scripts/lib.mjs`.
-   1. **Detect.** Read project `CLAUDE.md` first (wins over everything below).
-      Package manager from lockfile; dev command from `package.json` scripts (`dev`, else `start`);
-      expected port from the script, framework config, else the framework default.
-      No dev server concept (library/CLI) → skip to sub-step 5.
-   2. **Server.** Expected URL already responds → reuse only if it serves this project (page title, or a route the diff touches, matches);
-      never stop a reused server. Otherwise start dev command in background and wait up to 90s; URL = the one it prints
-      (`Local: http://…`), since a busy port makes it move. No response in time → BAD with log tail, skip to sub-step 5.
-      Keep it running across rounds; stop it (background task stop or its PID, then confirm URL no longer responds) before step 6 summary, also on early stop.
-      Never `pkill -f` with pattern matching your own shell.
-      Migrations, seed data, env or typegen steps: follow CLAUDE.md; local resources only.
-   3. **Project checks.** Run every script with `BASE=<url>`; `lib.mjs` falls back to `:3000` otherwise.
-      `.claude/review-fix/` exists in project → `status.mjs` first (exit 2 = server or local data not ready; fix per CLAUDE.md),
-      then `smoke.mjs`. Otherwise write throwaway script in scratchpad, copy `lib.mjs` beside it,
-      `import { check, get, json, html, meta, report } from "./lib.mjs"` (absolute-path imports break on Windows).
-   4. **Test what diff changed:** home page and every route/API diff touches
-      (find from changed files): happy path, invalid-input case, auth gates
-      if present. UI changes → add browser check (`agent-browser` CLI; `agent-browser skills get core` first for usage) at 375 and 1440 width.
-      Never touch production databases, storage or deploys from here.
-   5. **Static checks.** Run the `typecheck` / `lint` / `test` package scripts that exist (plus `build` when there is no dev server), non-watch (e.g. `vitest run`).
-   6. Report each check OK/BAD. Triage every BAD before step 3: reproduce by hand (curl or browser) first.
-      Check itself wrong → fix check. Caused by diff → **real problem**, fix it, re-run check.
-      Fails only in code diff does not touch → pre-existing, report only.
+2. **功能測試（僅第 1 輪——在任何審查之前）。** diff 僅涉及文件、`.claude/`，或無 runtime 影響的設定 → 跳過，並說明。
+   輔助：`${CLAUDE_SKILL_DIR}/scripts/lib.mjs`。
+   1. **偵測。** 先讀專案 `CLAUDE.md`（優先於以下一切）。
+      套件管理器依 lockfile；dev 指令取自 `package.json` scripts（`dev`，否則 `start`）；預期 port 取自該 script、framework 設定，否則用 framework 預設值。
+      無 dev server 概念（library/CLI）→ 跳到 sub-step 5。
+   2. **Server。** 預期 URL 已有回應 → 僅當它服務的是本專案（頁面標題，或 diff 觸及的 route 相符）才重用；
+      絕不停止被重用的 server。否則在背景啟動 dev 指令並等待最多 90s；URL = 它印出的那個
+      （`Local: http://…`），因 port 被占用時會移動。時限內無回應 → BAD 並附 log 尾段，跳到 sub-step 5。
+      跨輪保持執行；在 step 6 摘要之前停止它（background task stop 或其 PID，然後確認 URL 不再回應），提早停止時亦同。
+      絕不使用 pattern 會比對到自己 shell 的 `pkill -f`。
+      Migration、seed data、env 或 typegen 步驟：依 CLAUDE.md；僅限本機資源。
+   3. **專案檢查。** 每個 script 都以 `BASE=<url>` 執行；否則 `lib.mjs` fallback 為 `:3000`。
+      專案內存在 `.claude/review-fix/` → 先 `status.mjs`（exit 2 = server 或本機資料未就緒；依 CLAUDE.md 修正），
+      再 `smoke.mjs`。否則在 scratchpad 寫一次性 script，把 `lib.mjs` 複製到旁邊，
+      `import { check, get, json, html, meta, report } from "./lib.mjs"`（絕對路徑 import 在 Windows 會壞）。
+   4. **測 diff 改動的部分：** 首頁及 diff 觸及的每個 route/API
+      （從變更檔案找出）：happy path、無效輸入案例、auth gate
+      （若存在）。UI 變更 → 加瀏覽器檢查（`agent-browser` CLI；先 `agent-browser skills get core` 查用法），寬度 375 與 1440。
+      絕不從這裡動 production 資料庫、storage 或 deploy。
+   5. **靜態檢查。** 執行存在的 `typecheck` / `lint` / `test` package scripts（無 dev server 時另加 `build`），non-watch（如 `vitest run`）。
+   6. 各檢查回報 OK/BAD。step 3 之前先分流每個 BAD：先手動重現（curl 或瀏覽器）。
+      檢查本身有誤 → 修檢查。由 diff 造成 → **真問題**，修正並重跑該檢查。
+      僅在 diff 未觸及的程式碼失敗 → pre-existing，僅回報。
 
-3. Invoke `code-review` skill with args = level only. No `--fix` (read findings yourself first), no `--max-findings` (sticks for later runs).
+3. 以 `code-review` skill 執行，args = 僅等級。勿加 `--fix`（先自己讀 findings），勿加 `--max-findings`（會沿用到之後的執行）。
 
-4. Sort every finding into one pile:
-   - **Real problem** (`important`; verdict `PLAUSIBLE` → confirm by reading code first) → fix yourself. You know why code was written this way; `--fix` does not.
-   - **Pre-existing** (`pre_existing`) → outside change set: report, don't fix.
-   - **Real but trivial** (`nit`) → note in summary, move on.
-   - **Can't verify / looks like false positive** → don't fix, don't block loop; collect for step 6. Never silently comply with a finding you don't believe.
+4. 每個 finding 歸入一類：
+   - **真問題**（`important`；verdict `PLAUSIBLE` → 先讀程式碼確認）→ 自行修正。你知道程式碼為何如此寫；`--fix` 不知道。
+   - **既存問題**（`pre_existing`）→ 在變更集之外：回報，不修。
+   - **真但瑣碎**（`nit`）→ 記入摘要，繼續。
+   - **無法驗證／疑似誤報** → 不修，不阻擋迴圈；收集到 step 6。絕不默默順從你不相信的 finding。
 
-5. Changed anything in step 4 → re-run checks those fixes touch (at least project status/smoke checks when server code changed, static checks for touched files), then back to step 3.
-   Converged = round with no new real problem. Cap 3 rounds. Blockers remain after third round → stop, report what is unresolved. Do not guess at a fix.
+5. step 4 有任何改動 → 重跑這些修正所觸及的檢查（server 程式碼有改時至少專案 status/smoke 檢查，觸及檔案的靜態檢查），然後回到 step 3。
+   收斂 = 一輪內無新的真問題。上限 3 輪。第三輪後仍有 blocker → 停止，回報未解決項目。勿猜測修法。
 
-6. Disputed findings from step 4 → ask user in one question first; approved fixes get one more round within cap.
-   Then stop server you started, print summary, hand control back:
-   - review level; server URL, started or reused
-   - functional and static checks run (OK/BAD), whether test data was seeded
-   - rounds taken
-   - what was fixed
-   - findings deliberately skipped (pre-existing, trivial, disputed), and why
+6. step 4 中有爭議的 finding → 先以一個問題詢問使用者；核准的修正在上限內再跑一輪。
+   然後停止你啟動的 server，印出摘要，交還控制權：
+   - 審查等級；server URL，是自行啟動或重用
+   - 執行的功能與靜態檢查（OK/BAD），是否植入 test data
+   - 所花輪數
+   - 修正了什麼
+   - 刻意略過的 findings（pre-existing、瑣碎、有爭議）及原因
 
-## Rules
+## 規則
 
-- Never `git commit` or `git push`. Skill ends by handing control back.
-- Never weaken a test or delete an assertion to make a finding go away.
-- Local only: never run remote database/storage writes or deploy commands. Test data goes only into local resources.
-- Same finding survives two rounds of fixes → stop looping, escalate to user — you are misreading the problem.
+- 絕不 `git commit` 或 `git push`。skill 以交還控制權結束。
+- 絕不為了讓 finding 消失而弱化測試或刪除 assertion。
+- 僅限本機：絕不執行遠端資料庫/storage 寫入或 deploy 指令。Test data 只進本機資源。
+- 同一 finding 撐過兩輪修正 → 停止迴圈，升級給使用者——你誤讀了問題。

@@ -1,12 +1,12 @@
 # Good vs bad tests
 
-For self-review, or when unsure a test is worth keeping.
+用於自審，或不確定測試是否值得保留時。
 
-Keep a test only if it (a) fails when behavior breaks and (b) keeps passing when internals are refactored without behavior change.
+測試必須同時符合 (a) 行為壞掉時會失敗、(b) 內部在行為不變下被 refactor 後仍通過，才保留。
 
-## 1. Existence-only assertions
+## 1. 僅存在性的 assertions
 
-Bad — passes for almost any output:
+Bad — 幾乎任何輸出都會通過：
 
 ```ts
 test('returns user', async () => {
@@ -15,7 +15,7 @@ test('returns user', async () => {
 })
 ```
 
-Good — pins the actual behavior:
+Good — 釘住實際行為：
 
 ```ts
 test('returns user by id', async () => {
@@ -23,9 +23,9 @@ test('returns user by id', async () => {
 })
 ```
 
-## 2. Tautological (recomputes the code's logic)
+## 2. 同義反覆（重算程式碼的邏輯）
 
-Bad — the expected value is computed the same way as the implementation; if the formula is wrong, the test is wrong the same way:
+Bad — 預期值的算法與實作相同；若公式錯了，測試也同樣錯：
 
 ```ts
 test('applies discount', () => {
@@ -34,7 +34,7 @@ test('applies discount', () => {
 })
 ```
 
-Good — expected value from an independent source (hand-worked, spec, known-good literal):
+Good — 預期值取自獨立來源（手算、規格、已知正確的 literal）：
 
 ```ts
 test('applies 15% discount', () => {
@@ -42,9 +42,9 @@ test('applies 15% discount', () => {
 })
 ```
 
-## 3. Implementation-coupled
+## 3. 與實作耦合
 
-Bad — asserts internal call order and mocks an internal collaborator; breaks if `checkout` is refactored to compute tax differently, even if totals stay correct:
+Bad — assert 內部呼叫順序並 mock 內部協作者；即使總額仍正確，只要 `checkout` 改用不同方式計算稅，測試就會壞：
 
 ```ts
 vi.mock(import('./tax.js'))
@@ -54,7 +54,7 @@ test('checkout', () => {
 })
 ```
 
-Good — asserts the observable result through the public interface:
+Good — 透過公開介面 assert 可觀察的結果：
 
 ```ts
 test('total includes tax and shipping', () => {
@@ -62,11 +62,11 @@ test('total includes tax and shipping', () => {
 })
 ```
 
-Other implementation-coupling signs: testing private methods, reading state through a side channel (querying DB directly, not via public API), asserting on intermediate variables.
+其他與實作耦合的徵兆：測 private methods、經由旁路讀取狀態（直接查詢 DB，而非經由公開 API）、assert 中間變數。
 
-## 4. Asserting on mocks instead of behavior
+## 4. assert mocks 而非行為
 
-Bad:
+Bad：
 
 ```ts
 test('saves', async () => {
@@ -75,7 +75,7 @@ test('saves', async () => {
 })
 ```
 
-Better — when the side effect *is* the behavior (an I/O boundary), assert on the arguments that matter, and also the return value:
+Better — 當副作用*就是*行為（I/O 邊界）時，assert 重要的參數，並同時 assert 回傳值：
 
 ```ts
 test('persists normalized user and returns id', async () => {

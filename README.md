@@ -1,213 +1,213 @@
 # 🗂️ ~/.claude
 
-Personal global Claude Code configuration shared across projects: skills, slash commands, statusline and settings.
+跨專案共用的個人全域 Claude Code 設定：skills、斜線指令、statusline 與 settings。
 
-| Highlight   | Details                                                                       |
-| ----------- | ----------------------------------------------------------------------------- |
-| 🧩 Skills   | Custom and third-party **skills**, including self-contained `/up-*` workflows |
-| ⚡ Commands | A manual-only **slash command** for skill updates                             |
-| ⚙️ Settings | Version-controlled **settings**, hooks and a single-process Node statusline   |
+| 亮點        | 內容                                                               |
+| ----------- | ------------------------------------------------------------------ |
+| 🧩 Skills   | 自製與第三方 **skills**，包含自成一體的 `/up-*` 工作流程           |
+| ⚡ Commands | 一個僅能手動觸發、用來更新 skills 的**斜線指令**                   |
+| ⚙️ Settings | 納入版本控制的 **settings**、hooks，以及單一行程的 Node statusline |
 
 ## 🚀 Quick start
 
 ```text
-/up-rules --audit            # route rules to lint/rules/CLAUDE.md, compress, sync this README
-/up-skills                   # batch-update skills
-/now-push --pr --merge       # commit, push, open a PR and squash merge
+/up-rules --audit            # 將規則分流到 lint/rules/CLAUDE.md、壓縮、同步本 README
+/up-skills                   # 批次更新 skills
+/now-push --pr --merge       # commit、push、開 PR 並 squash merge
 ```
 
 ## 📁 Structure
 
 ```text
 ~/.claude
-├── CLAUDE.md                 # global rules
-├── README.md                 # this file
-├── settings.json             # global settings
-├── settings.local.json       # local overrides
+├── CLAUDE.md                 # 全域規則
+├── README.md                 # 本檔
+├── settings.json             # 全域設定
+├── settings.local.json       # 本機覆寫
 ├── statusline-command.mjs    # statusline
-├── hooks/                    # hook scripts
-├── commands/                 # slash commands
-├── agents/                   # subagents
+├── hooks/                    # hook 腳本
+├── commands/                 # 斜線指令
+├── agents/                   # 子代理
 ├── skills/                   # skills
-└── notes/                    # scratch notes
+└── notes/                    # 暫存筆記
 ```
 
-- `skills/synced/` holds skills synced down from the Claude account cloud; the set differs per account and device. The platform manages it, so do not edit it by hand; it is gitignored.
-- `settings.local.json` is **not** auto-loaded. Pass it with `claude --settings`, for example to disable a plugin on one OS.
+- `skills/synced/` 存放從 Claude 帳號雲端同步下來的 skills；各帳號與裝置的內容不同。由平台管理，請勿手動編輯；已加入 gitignore。
+- `settings.local.json` **不會**自動載入。以 `claude --settings` 帶入，例如在特定 OS 停用某個 plugin。
 
 <details>
-<summary>Runtime directories (gitignored, not version-controlled)</summary>
+<summary>執行期目錄（gitignored，不納入版本控制）</summary>
 
-`sessions/`, `session-env/`, `shell-snapshots/`, `projects/`, `file-history/`, `cache/`, `paste-cache/`, `plugins/`, `backups/`, `daemon/`, `jobs/`, `tasks/`, `plans/`, `uploads/`, `feedback/`, `state/`, `telemetry/`, `ide/`, `chrome/`, and similar.
+`sessions/`、`session-env/`、`shell-snapshots/`、`projects/`、`file-history/`、`cache/`、`paste-cache/`、`plugins/`、`backups/`、`daemon/`、`jobs/`、`tasks/`、`plans/`、`uploads/`、`feedback/`、`state/`、`telemetry/`、`ide/`、`chrome/` 等。
 
 </details>
 
 ## ⚡ Commands
 
-| Name                           | Purpose             |
-| ------------------------------ | ------------------- |
-| `/up-skills [global\|project]` | Batch-update skills |
+| 名稱                           | 用途            |
+| ------------------------------ | --------------- |
+| `/up-skills [global\|project]` | 批次更新 skills |
 
 > [!NOTE]
-> It sets `disable-model-invocation: true` because reinstalling skills is a side effect. Claude cannot call it on its own; it runs only when you type it. The self-written skills (`now-push`, `review-fix`, `up-design`, `up-rules`, `up-seo`, `vitest-test-writer`) do the same (see Skills).
+> 它設有 `disable-model-invocation: true`，因為重新安裝 skills 會產生副作用。Claude 無法自行呼叫，只有你輸入時才會執行。自寫的 skills（`now-push`、`review-fix`、`up-design`、`up-rules`、`up-seo`、`vitest-test-writer`）同樣如此（見 Skills）。
 
 <details>
-<summary><code>/up-skills</code> details</summary>
+<summary><code>/up-skills</code> 細節</summary>
 
-- Managed skills (global reads `~/.agents/.skill-lock.json`; project reads `<project root>/skills-lock.json`) are updated one by one with `npx skills update`
-- Unmanaged skills have their upstream inferred and are reinstalled after confirmation
-- Self-made skills listed in `skills/.up-skills-ignore` are skipped, and so are skills whose own directory has uncommitted changes (legacy symlinked skills are not checked, since their content lives outside git)
-- Global mode also reports plugin, cloud-synced skills and CLI version status
+- 受管理的 skills（global 讀 `~/.agents/.skill-lock.json`；project 讀 `<專案根目錄>/skills-lock.json`）以 `npx skills update` 逐一更新
+- 未受管理的 skills 會推斷上游，經確認後重新安裝
+- 列在 `skills/.up-skills-ignore` 的自製 skills 會略過；自身目錄有未 commit 變更的 skills 也會略過（舊式 symlink 的 skills 不檢查，因為內容在 git 之外）
+- global 模式另外回報 plugin、雲端同步 skills 與 CLI 版本狀態
 
 </details>
 
 ## 🧩 Skills
 
-| Name                 | Purpose                                                                                        |
-| -------------------- | ---------------------------------------------------------------------------------------------- |
-| `design-md`          | Distill a Stitch project into a `DESIGN.md` design-system document                             |
-| `now-push`           | Commit and push in a fixed format, no confirmation; manual-only (usage below)                  |
-| `review-fix`         | Functional test + review loop for the current project, max 3 rounds; manual-only               |
-| `up-design`          | Incremental UI diagnose-and-fix pass with state and rules; manual-only (usage under Pipelines) |
-| `up-rules`           | Route rules to lint, `rules/` or `CLAUDE.md`, compress them, sync this README                  |
-| `up-seo`             | SEO pipeline with shared context; manual-only (usage under Pipelines)                          |
-| `vitest-test-writer` | Write, review, fix, de-flake or migrate Vitest tests, incl. TDD red-green; manual-only         |
+| 名稱                 | 用途                                                                         |
+| -------------------- | ---------------------------------------------------------------------------- |
+| `design-md`          | 把 Stitch 專案整理成 `DESIGN.md` 設計系統文件                                |
+| `now-push`           | 以固定格式 commit 並 push，不需確認；僅手動觸發（用法見下）                  |
+| `review-fix`         | 對目前專案做功能測試加審查迴圈，最多 3 輪；僅手動觸發                        |
+| `up-design`          | 帶狀態與規則的增量式 UI 診斷與修正；僅手動觸發（用法見 Pipelines）           |
+| `up-rules`           | 將規則分流到 lint、`rules/` 或 `CLAUDE.md`、壓縮，並同步本 README            |
+| `up-seo`             | 共用脈絡的 SEO 流程；僅手動觸發（用法見 Pipelines）                          |
+| `vitest-test-writer` | 撰寫、審查、修復、去除不穩定或遷移 Vitest 測試，含 TDD red-green；僅手動觸發 |
 
 **Pipelines**
 
-- `/up-design [--full] [--m]`: one UI pass — diagnose (screenshots at 375/768/1024/1440, UX rules, static design criteria, motion and performance audits) → fix directly without prompts (structural changes and new dependencies go to the report as unresolved) → verify → write your preferences into `DESIGN.md`/lint; quick mode (files changed since the last run) by default, `--full` covers the whole project; state in `./up-design/`; no git writes; self-contained, guidance in `skills/up-design/references/`; details: `skills/up-design/SKILL.md`
-- `/up-seo [url] [@path ...]`: AI-search visibility → technical and on-page audit → programmatic opportunities, with one shared context and you pick fixes after each stage; self-contained, the guidance ships in `skills/up-seo/references/`; details: `skills/up-seo/SKILL.md`
+- `/up-design [--full] [--m]`：一輪 UI 流程——診斷（375/768/1024/1440 截圖、UX 規則、靜態設計準則、動態與效能審計）→ 不經詢問直接修正（結構性變更與新增相依套件寫入報告為未解決）→ 驗證 → 把你的偏好寫入 `DESIGN.md`/lint；預設為快速模式（只處理自上次執行後變更的檔案），`--full` 涵蓋整個專案；狀態存於 `./up-design/`；不寫入 git；自成一體，指引在 `skills/up-design/references/`；細節：`skills/up-design/SKILL.md`
+- `/up-seo [url] [@path ...]`：AI 搜尋可見度 → 技術與頁面 SEO 審計 → 程式化機會，共用同一份脈絡，每個階段後由你挑選要修的項目；自成一體，指引隨附於 `skills/up-seo/references/`；細節：`skills/up-seo/SKILL.md`
 
 <details>
-<summary><code>/now-push</code> details</summary>
+<summary><code>/now-push</code> 細節</summary>
 
-- Runs `git add` + `commit` + `push` without asking for confirmation; `disable-model-invocation: true`, so it runs only when you type `/now-push [--lng <code>] [--pr] [--merge]`
-- Stops without committing when a merge, rebase, cherry-pick or revert is in progress or files are unmerged, and when the diff contains a secret
-- Pushes every unpushed local commit on the current branch as-is, not just this run's; a clean tree with unpushed commits still pushes
-- Commit message is **English** by default and carries a `Co-Authored-By` trailer
-- `--lng <code>` switches the message language (`zh` = Traditional Chinese, `ja`, …)
-- `--pr` also opens a PR, auto-creating a new branch when on the default branch
-- `--merge` implies `--pr`, waits for required checks, squash-merges, deletes the branch locally and remotely, then returns to the default branch
-- Every run checks the GitHub repo description and updates it to match the language
-- Self-contained: the commit format and the PR/merge steps ship in `skills/now-push/references/`
+- 不經確認直接執行 `git add` + `commit` + `push`；設有 `disable-model-invocation: true`，只有你輸入 `/now-push [--lng <code>] [--pr] [--merge]` 時才會執行
+- 進行中有 merge、rebase、cherry-pick 或 revert、或有未合併檔案時，以及 diff 含秘密時，會停止且不 commit
+- 照原樣 push 目前分支上所有尚未 push 的本機 commit，不只本次的；乾淨的工作樹若有未 push 的 commit 也會 push
+- commit 訊息預設為**英文**，並附 `Co-Authored-By` trailer
+- `--lng <code>` 切換訊息語言（`zh` = 繁體中文、`ja` 等）
+- `--pr` 同時開 PR；位於預設分支時自動建立新分支
+- `--merge` 隱含 `--pr`，等待必要檢查通過後 squash merge，刪除本機與遠端分支，再回到預設分支
+- 每次執行都會檢查 GitHub repo 描述，並依語言更新使其一致
+- 自成一體：commit 格式與 PR/merge 步驟隨附於 `skills/now-push/references/`
 
 </details>
 
 <details>
-<summary><code>/up-rules</code> details</summary>
+<summary><code>/up-rules</code> 細節</summary>
 
-- Runs only when you type `/up-rules [--audit] [--lng <code>]` (`disable-model-invocation: true`)
-- `--lng <code>` sets the language of everything written, including `agents/` prose, `hooks/` comments, command descriptions and lint messages (`zh` = Traditional Chinese, `ja`; absent = English); content in a different language is translated
-- Flow, in order:
-  1. Fact-check `CLAUDE.md`
-  2. With `--audit`: audit for stale instructions, then pick findings to apply
-  3. Route each rule to the cheapest place that still enforces it: a lint rule in the project's existing linter (the reason goes in the lint message), then `rules/<topic>.md` loaded on demand via `paths`, then `CLAUDE.md`
-  4. Compress `CLAUDE.md`, `.claude/rules/**/*.md`, `.claude/commands/**/*.md` and the `.md` files of self-made skills listed in `skills/.up-skills-ignore` (plus, when `./up-design/` exists, its `.md` files, `DESIGN.md` and `.claude/skills/design-*/`; never translated) in terse style (drops filler only, never semantics, except hunks applied via `--audit`)
-  5. Check and sync this README
-- Never installs a linter or edits source code; a new lint rule stays an error, and only files that already break it are downgraded to warn and counted in the report
-- The README is written for humans, so it is exempt from terse compression and follows a style guide (structure, emoji, callouts, folding)
+- 只有你輸入 `/up-rules [--audit] [--lng <code>]` 時才會執行（`disable-model-invocation: true`）
+- `--lng <code>` 設定所有寫入內容的語言，包含 `agents/` 內文、`hooks/` 註解、指令描述與 lint 訊息（`zh` = 繁體中文、`ja`；未指定 = 英文）；不同語言的內容會被翻譯
+- 流程依序為：
+  1. 事實查核 `CLAUDE.md`
+  2. 加 `--audit` 時：審計過時指令，再挑選要套用的發現
+  3. 把每條規則分流到仍能確實執行的最低成本位置：專案既有 linter 的 lint 規則（理由寫在 lint 訊息）、經 `paths` 按需載入的 `rules/<topic>.md`、最後才是 `CLAUDE.md`
+  4. 以精簡風格壓縮 `CLAUDE.md`、`.claude/rules/**/*.md`、`.claude/commands/**/*.md`，以及列在 `skills/.up-skills-ignore` 的自製 skills 的 `.md` 檔（另外，`./up-design/` 存在時，也包含其 `.md` 檔、`DESIGN.md` 與 `.claude/skills/design-*/`；這些不翻譯）（只刪贅詞，不刪語意，經 `--audit` 套用的 hunk 除外）
+  5. 檢查並同步本 README
+- 不會安裝 linter，也不會修改原始碼；新的 lint 規則維持 error，只有已違規的檔案降為 warn，並計入報告
+- README 是寫給人看的，因此不適用精簡壓縮，而是遵循風格指南（結構、emoji、callout、摺疊）
 
 </details>
 
 **Notes**
 
-- Third-party skills are installed with `npx skills add --copy`, so each is a real directory in `skills/` that syncs across devices via git; `/up-skills` still updates them in place from upstream
-- The update source list lives in `~/.agents/.skill-lock.json`, outside this repo; on a new device, run `npx skills add <owner/repo> -s <skill> -g -y -a claude-code --copy` once per skill to register it
-- `up-design` writes the user's design corrections into `DESIGN.md` / lint itself (rule-writing guidance: `skills/up-design/references/rule-routing.md`)
-- `/review-fix [low|medium|high|xhigh|max]` auto-detects the dev server, runs the project's `.claude/review-fix/` checks (or throwaway scripts built on `scripts/lib.mjs`) plus its `typecheck`/`lint`/`test` scripts, then `/code-review` (default `high`) and fixes until it converges; `ultra` is billed and user-triggered, so it only tells you to run `/code-review ultra` yourself
+- 第三方 skills 以 `npx skills add --copy` 安裝，因此每個都是 `skills/` 中的實體目錄，可透過 git 跨裝置同步；`/up-skills` 仍會就地從上游更新
+- 更新來源清單在 repo 之外的 `~/.agents/.skill-lock.json`；新裝置上，每個 skill 執行一次 `npx skills add <owner/repo> -s <skill> -g -y -a claude-code --copy` 來登記
+- `up-design` 會自行把使用者的設計修正寫入 `DESIGN.md` / lint（寫規則的指引：`skills/up-design/references/rule-routing.md`）
+- `/review-fix [low|medium|high|xhigh|max]` 自動偵測 dev server，執行專案的 `.claude/review-fix/` 檢查（或以 `scripts/lib.mjs` 為基礎的用完即丟腳本）加上其 `typecheck`/`lint`/`test` scripts，再跑 `/code-review`（預設 `high`）並修正直到收斂；`ultra` 會計費且須由使用者觸發，所以只會提示你自己執行 `/code-review ultra`
 
 ## 🤖 Subagents
 
-| Name           | Purpose                                                                       |
-| -------------- | ----------------------------------------------------------------------------- |
-| `researcher`   | Look up docs, APIs and error messages; return a short cited answer            |
-| `ui-ux-tester` | Test a running web app with agent-browser; report flow, visual and UX defects |
+| 名稱           | 用途                                                            |
+| -------------- | --------------------------------------------------------------- |
+| `researcher`   | 查詢文件、API 與錯誤訊息；回傳附出處的簡短答案                  |
+| `ui-ux-tester` | 以 agent-browser 測試執行中的網頁應用；回報流程、視覺與 UX 瑕疵 |
 
 > [!NOTE]
-> Both subagents are read-only (no `Edit` / `Write` granted) and have "Use proactively" in their description, so the main agent delegates to them automatically. Both pin `model: sonnet`. `ui-ux-tester` loads the `agent-browser` usage guide from the CLI itself (`agent-browser skills get core`).
+> 兩個 subagent 都是唯讀（未授予 `Edit` / `Write`），描述中都寫有「主動使用」，所以主 agent 會自動委派給它們。兩者都固定 `model: sonnet`。`ui-ux-tester` 從 CLI 本身載入 `agent-browser` 使用指南（`agent-browser skills get core`）。
 
 ## 🪝 Hooks
 
-| Script                            | Event              | Purpose                                                                     |
-| --------------------------------- | ------------------ | --------------------------------------------------------------------------- |
-| `hooks/inject-datetime.mjs`       | `UserPromptSubmit` | Add an `Asia/Taipei` timestamp with time of day and weekday to every prompt |
-| `hooks/agent-browser-session.mjs` | `SessionStart`     | Give each Claude session its own `agent-browser` session name               |
-| `hooks/agent-browser-session.mjs` | `SessionEnd`       | Close that session's browser so no Chrome process is left behind            |
-| `hooks/git-secret-guard.mjs`      | `PreToolUse`       | Block `git commit` / `git push` when the change contains secrets            |
-| `settings.json` (inline command)  | `PostToolUse`      | Run `prettier --write` on every file Claude writes or edits                 |
+| 腳本                              | 事件               | 用途                                                          |
+| --------------------------------- | ------------------ | ------------------------------------------------------------- |
+| `hooks/inject-datetime.mjs`       | `UserPromptSubmit` | 在每個 prompt 加入含時刻與星期的 `Asia/Taipei` 時間戳         |
+| `hooks/agent-browser-session.mjs` | `SessionStart`     | 為每個 Claude session 指定專屬的 `agent-browser` session 名稱 |
+| `hooks/agent-browser-session.mjs` | `SessionEnd`       | 關閉該 session 的瀏覽器，不留下 Chrome 行程                   |
+| `hooks/git-secret-guard.mjs`      | `PreToolUse`       | 變更內含秘密時，阻擋 `git commit` / `git push`                |
+| `settings.json`（內嵌指令）       | `PostToolUse`      | 對 Claude 寫入或編輯的每個檔案執行 `prettier --write`         |
 
-The built-in system prompt gives only a date snapshot at session start, so `inject-datetime` supplies the full time. Cleanup details are under Settings.
+內建 system prompt 只在 session 開始時給一次日期快照，所以由 `inject-datetime` 補上完整時間。清理細節見 Settings。
 
-`git-secret-guard` scans added lines and untracked files for private keys, common API tokens, hard-coded credentials and `.env` files (`.env.example` is allowed). Add `secret-scan:allow` to a line to skip a false positive. Skill directories (`.claude/skills/<name>/`, `.agents/skills/<name>/`) whose name is listed in the repo's `skills-lock.json` are not scanned; hand-written skills are. It fails open: any internal error lets the command through.
+`git-secret-guard` 會掃描新增的行與未追蹤的檔案，找私鑰、常見 API token、寫死的憑證與 `.env` 檔（允許 `.env.example`）。在該行加上 `secret-scan:allow` 可略過誤判。名稱列在 repo 的 `skills-lock.json` 的 skill 目錄（`.claude/skills/<name>/`、`.agents/skills/<name>/`）不掃描；手寫的 skills 會掃描。它 fail open：任何內部錯誤都會放行指令。
 
 ## 🔌 Plugins
 
-| Name                                | Purpose                                                                 |
-| ----------------------------------- | ----------------------------------------------------------------------- |
-| `watch@claude-video`                | Add the `/watch` video analysis command                                 |
-| `mindful-claude@mindful-claude`     | Show a breathing animation while Claude works; toggle with `/breathe`   |
-| `image-view@claude-image-view`      | Show pasted-image thumbnails instead of bare `[Image #n]` tags          |
-| `cc-plugin-you-should-know@builtin` | From Claude Code's built-in marketplace, enabled under `enabledPlugins` |
+| 名稱                                | 用途                                                        |
+| ----------------------------------- | ----------------------------------------------------------- |
+| `watch@claude-video`                | 加入 `/watch` 影片分析指令                                  |
+| `mindful-claude@mindful-claude`     | Claude 工作時顯示呼吸動畫；以 `/breathe` 切換               |
+| `image-view@claude-image-view`      | 顯示貼上圖片的縮圖，取代單純的 `[Image #n]` 標籤            |
+| `cc-plugin-you-should-know@builtin` | 來自 Claude Code 內建 marketplace，在 `enabledPlugins` 啟用 |
 
-`cc-plugin-you-should-know` has no `extraKnownMarketplaces` entry because its marketplace ships with the CLI.
+`cc-plugin-you-should-know` 沒有 `extraKnownMarketplaces` 項目，因為它的 marketplace 隨 CLI 一起提供。
 
 > [!IMPORTANT]
-> `mindful-claude` is a function-hooks plugin. It needs `CLAUDE_CODE_ENABLE_FUNCTION_HOOKS=1` (already set under `env` in `settings.json`) and Claude Code 2.1.269 or later.
+> `mindful-claude` 是 function-hooks plugin。它需要 `CLAUDE_CODE_ENABLE_FUNCTION_HOOKS=1`（已設在 `settings.json` 的 `env`）與 Claude Code 2.1.269 以上。
 
 <details>
-<summary><code>image-view</code> on terminals and Windows</summary>
+<summary><code>image-view</code> 在終端機與 Windows 上的行為</summary>
 
-- Only kitty and Ghostty draw real pictures. Other terminals, including Windows Terminal and PowerShell, fall back to low-resolution colored half blocks (`▀`) that look like mosaics. This is expected, not a bug.
-- It stays enabled in the synced `settings.json`. On Windows, disable it in the gitignored `settings.local.json`:
+- 只有 kitty 與 Ghostty 能畫出真正的圖片。其他終端機，包括 Windows Terminal 與 PowerShell，會退回低解析度的彩色半方塊（`▀`），看起來像馬賽克。這是預期行為，不是 bug。
+- 在同步的 `settings.json` 中維持啟用。在 Windows 上，請於 gitignored 的 `settings.local.json` 停用：
 
   ```json
   "enabledPlugins": { "image-view@claude-image-view": false }
   ```
 
-- Claude Code does not read `~/.claude/settings.local.json` on its own. The PowerShell profile defines a `claude` function that launches `claude.exe --settings ~/.claude/settings.local.json` (`--settings` outranks user scope).
-- That function only applies to `claude` started from PowerShell, not IDE or desktop launches.
-- It only applies to shells opened after the profile change: run `. $PROFILE` or open a new tab, because an already-open pwsh keeps resolving `claude` to `claude.exe`.
+- Claude Code 不會自己讀取 `~/.claude/settings.local.json`。PowerShell profile 定義了一個 `claude` 函式，以 `claude.exe --settings ~/.claude/settings.local.json` 啟動（`--settings` 優先於 user 層級）。
+- 該函式只對從 PowerShell 啟動的 `claude` 有效，IDE 或桌面版啟動不適用。
+- 只對 profile 修改之後開啟的 shell 有效：執行 `. $PROFILE` 或開新分頁，因為已開啟的 pwsh 仍會把 `claude` 解析為 `claude.exe`。
 
 </details>
 
 ## ⚙️ Settings
 
-| Item           | Details                                                                                                          |
-| -------------- | ---------------------------------------------------------------------------------------------------------------- |
-| Model          | `model` is `opusplan` (Opus in plan mode, Sonnet when executing)                                                 |
-| Effort         | `modelSettings`: Opus `xhigh`, Sonnet `high`; `opusplan` uses Sonnet entry for both phases (plan runs `high`)    |
-| Subagent model | `env` sets `CLAUDE_CODE_SUBAGENT_MODEL=sonnet` as a fallback; custom agents pin their own `model`, which wins    |
-| Output         | `outputStyle` is `Concise`; `language` is `Traditional Chinese (Taiwan)`                                         |
-| Start mode     | `permissions.defaultMode` is `plan`                                                                              |
-| Permissions    | `permissions.allow` whitelists low-risk commands (list below the table)                                          |
-| Deny           | `permissions.deny` blocks force pushes and reads of `~/.ssh`                                                     |
-| Skill listing  | `skillOverrides` hides claude.ai-synced and rarely needed skills; only `docx`/`pdf`/`pptx`/`xlsx` stay listed    |
-| Synced plugins | `syncClaudeAiPlugins: false` stops claude.ai plugin sync (drops `logo-design`, `frontend-design`)                |
-| Time zone      | `timeZone` is `Asia/Taipei`                                                                                      |
-| Statusline     | Node only (`statusline-command.mjs`), no shell fallback; three lines (model, location, usage)                    |
-| Vim indicator  | `statusLine.hideVimModeIndicator: true` turns off the built-in `-- INSERT --` indicator in favor of a custom one |
+| 項目           | 內容                                                                                                     |
+| -------------- | -------------------------------------------------------------------------------------------------------- |
+| Model          | `model` 為 `opusplan`（plan mode 用 Opus，執行時用 Sonnet）                                              |
+| Effort         | `modelSettings`：Opus `xhigh`、Sonnet `high`；`opusplan` 兩個階段都用 Sonnet 項目（plan 以 `high` 執行） |
+| Subagent model | `env` 設定 `CLAUDE_CODE_SUBAGENT_MODEL=sonnet` 作為後備；自訂 agent 固定自己的 `model`，以其為準         |
+| Output         | `outputStyle` 為 `Concise`；`language` 為 `Traditional Chinese (Taiwan)`                                 |
+| 啟動模式       | `permissions.defaultMode` 為 `plan`                                                                      |
+| Permissions    | `permissions.allow` 白名單列出低風險指令（清單在表格下方）                                               |
+| Deny           | `permissions.deny` 阻擋 force push 與讀取 `~/.ssh`                                                       |
+| Skill 清單     | `skillOverrides` 隱藏 claude.ai 同步與少用的 skills；只保留 `docx`/`pdf`/`pptx`/`xlsx` 列出              |
+| 同步 plugins   | `syncClaudeAiPlugins: false` 停止 claude.ai plugin 同步（捨棄 `logo-design`、`frontend-design`）         |
+| 時區           | `timeZone` 為 `Asia/Taipei`                                                                              |
+| Statusline     | 僅用 Node（`statusline-command.mjs`），無 shell 後備；三行（model、位置、用量）                          |
+| Vim 指示器     | `statusLine.hideVimModeIndicator: true` 關閉內建的 `-- INSERT --` 指示器，改用自訂指示器                 |
 
-Allowed: `git add`, `git commit -m`, `git push`, `WebSearch`, `agent-browser snapshot` / `wait`, `Edit(~/.claude/commands/**)`, `Skill(update-config)`.
+允許：`git add`、`git commit -m`、`git push`、`WebSearch`、`agent-browser snapshot` / `wait`、`Edit(~/.claude/commands/**)`、`Skill(update-config)`。
 
 > [!TIP]
-> `git add` / `commit` / `push` are listed with both `Bash(...)` and `PowerShell(...)` prefixes. On Windows, PowerShell is a separate permission namespace and does not inherit `Bash(...)` rules.
+> `git add` / `commit` / `push` 同時以 `Bash(...)` 與 `PowerShell(...)` 前綴列出。在 Windows 上，PowerShell 是獨立的權限命名空間，不會繼承 `Bash(...)` 規則。
 
 <details>
-<summary>agent-browser cleanup via <code>env</code></summary>
+<summary>透過 <code>env</code> 清理 agent-browser</summary>
 
-- `AGENT_BROWSER_IDLE_TIMEOUT_MS=900000` shuts the browser and daemon down after 15 minutes of inactivity
-- `AGENT_BROWSER_SCREENSHOT_DIR` / `AGENT_BROWSER_DOWNLOAD_PATH` send screenshots and downloads to `/tmp/agent-browser/`, where the system's tmp cleanup removes them
-- `hooks/agent-browser-session.mjs` runs on `SessionStart` / `SessionEnd`: start writes `AGENT_BROWSER_SESSION=cc-<session_id>` into `CLAUDE_ENV_FILE` so each Claude session gets its own browser; end runs `agent-browser close --session cc-<session_id>` (other concurrent sessions are untouched). `SessionEnd` has `timeout: 10` because the default is 1.5s
-- On Windows, `CLAUDE_ENV_FILE` is only available to hooks run through Git Bash; without it the session variable is not set and cleanup falls back to the idle timeout
-- An idle shutdown discards cookies, logins and open tabs, so `CLAUDE.md` tells Claude to add `--restore` for login or multi-turn authenticated flows
+- `AGENT_BROWSER_IDLE_TIMEOUT_MS=900000` 在閒置 15 分鐘後關閉瀏覽器與 daemon
+- `AGENT_BROWSER_SCREENSHOT_DIR` / `AGENT_BROWSER_DOWNLOAD_PATH` 把截圖與下載送到 `/tmp/agent-browser/`，由系統的 tmp 清理機制移除
+- `hooks/agent-browser-session.mjs` 在 `SessionStart` / `SessionEnd` 執行：開始時把 `AGENT_BROWSER_SESSION=cc-<session_id>` 寫入 `CLAUDE_ENV_FILE`，讓每個 Claude session 有自己的瀏覽器；結束時執行 `agent-browser close --session cc-<session_id>`（不影響其他同時執行的 session）。`SessionEnd` 設有 `timeout: 10`，因為預設值是 1.5 秒
+- 在 Windows 上，`CLAUDE_ENV_FILE` 只提供給透過 Git Bash 執行的 hooks；沒有它就不會設定 session 變數，清理退回閒置逾時
+- 閒置關閉會丟失 cookie、登入狀態與已開分頁，所以 `CLAUDE.md` 要求 Claude 在登入或多輪驗證流程加上 `--restore`
 
 </details>
 
 ## 🛠️ Maintenance
 
-| Situation             | What to do                                                                                       |
-| --------------------- | ------------------------------------------------------------------------------------------------ |
-| Settings placement    | Shared in `settings.json`; machine- or OS-specific overrides in gitignored `settings.local.json` |
-| After editing rules   | Run `/up-rules` after changing `CLAUDE.md`, `commands/*.md` or a self-made skill                 |
-| Suspect stale wording | Add `--audit` to audit first (for example emphatic tone aimed at older models)                   |
-| Ship it               | Push with `/now-push` once changes are done and confirmed                                        |
+| 情況         | 做法                                                                                 |
+| ------------ | ------------------------------------------------------------------------------------ |
+| 設定放哪裡   | 共用的放 `settings.json`；特定機器或 OS 的覆寫放 gitignored 的 `settings.local.json` |
+| 編輯規則之後 | 修改 `CLAUDE.md`、`commands/*.md` 或自製 skill 後執行 `/up-rules`                    |
+| 懷疑措辭過時 | 加 `--audit` 先審計（例如針對舊模型的強調語氣）                                      |
+| 發佈         | 變更完成並確認後，以 `/now-push` push                                                |

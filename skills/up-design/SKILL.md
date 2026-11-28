@@ -1,143 +1,143 @@
 ---
 name: up-design
-description: "Run one UI diagnosis-and-polish pass on the current front-end project: find layout, mobile, performance and animation problems and write them into a report, fix them directly, then record the user's rules in lint, DESIGN.md or a project skill."
+description: "對目前的前端專案執行一輪 UI 診斷與修整：找出版面、行動端、效能與動畫問題並寫入報告，直接修正，再把使用者的規則記錄到 lint、DESIGN.md 或專案 skill。"
 argument-hint: "[--full] [--m]"
 disable-model-invocation: true
 ---
 
 # up-design
 
-One repeatable UI pass on the current project: diagnose → write report → fix directly → verify → distill rules. User triggers it manually at irregular times; every run builds on the previous run's state, so work incrementally and accumulate perf baseline and rules.
+對目前專案執行一輪可重複的 UI 流程：診斷 → 寫報告 → 直接修正 → 驗證 → 沉澱規則。使用者不定時手動觸發；每輪都承接上一輪狀態，故增量作業，並累積效能基準與規則。
 
-Order rationale: tuning animation on an unstable layout is wasted work, so **fix what is broken first**; redundant animation disturbs audit and perf measurement, so **then remove excess**; only then **add motion that is truly needed**. Rule distillation goes last so the next agent knows the project's preferences from the start and does not repeat mistakes.
+順序理由：版面不穩時調動畫是白工，故**先修壞掉的**；多餘動畫會干擾稽核與效能量測，故**再移除多餘的**；最後才**補真正需要的動效**。規則沉澱放最後，讓下一個 agent 一開始就知道專案偏好，不重蹈覆轍。
 
 ## Files
 
-`<skill-dir>` = directory of this SKILL.md. Everything the run needs ships in this skill; read each file at the step that names it.
+`<skill-dir>` = 本 SKILL.md 所在目錄。執行所需檔案皆隨本 skill 附帶；讀取時機為名稱該檔的步驟。
 
-| File                                | Read at                               | Purpose                                                              |
-| ----------------------------------- | ------------------------------------- | -------------------------------------------------------------------- |
-| `references/design-judgment.md`     | step 1.4                              | Judgment baseline for the whole run                                  |
-| `references/ux-rules.md`            | step 1.6                              | 13-section UX checklist (diagnostic baseline)                        |
-| `references/criteria.md`            | step 1.6                              | Static design criteria                                               |
-| `references/stress-mobile.md`       | step 2.5–2.7                          | Worst-case data, mobile fixes (`--m`), Sonner checks                 |
-| `references/motion-audit.md`        | step 2.8–2.11, 4.2                    | Performance, removal, audit of existing motion, missing motion       |
-| `references/motion-build.md`        | step 3.3                              | Implementing animation                                               |
-| `references/motion-review.md`       | step 4.1                              | Reviewing this run's animation                                       |
-| `references/rule-routing.md`        | step 5                                | Turning the user's corrections into lint / DESIGN.md / project skill |
-| `references/modern-web-guidance.md` | step 3, before platform-feature fixes | Search and retrieve current platform guides, report format           |
-| `assets/*-template.md`              | as named                              | Report, perf baseline, DESIGN.md, project skill skeletons            |
+| 檔案                                | 讀取時機                 | 用途                                             |
+| ----------------------------------- | ------------------------ | ------------------------------------------------ |
+| `references/design-judgment.md`     | step 1.4                 | 整輪的判斷基準                                   |
+| `references/ux-rules.md`            | step 1.6                 | 13 節 UX 檢查清單（診斷基準）                    |
+| `references/criteria.md`            | step 1.6                 | 靜態設計標準                                     |
+| `references/stress-mobile.md`       | step 2.5–2.7             | 最壞情況資料、行動端修正（`--m`）、Sonner 檢查   |
+| `references/motion-audit.md`        | step 2.8–2.11, 4.2       | 效能、移除、既有動效稽核、缺少的動效             |
+| `references/motion-build.md`        | step 3.3                 | 實作動畫                                         |
+| `references/motion-review.md`       | step 4.1                 | 審查本輪動畫                                     |
+| `references/rule-routing.md`        | step 5                   | 把使用者的修正轉成 lint / DESIGN.md / 專案 skill |
+| `references/modern-web-guidance.md` | step 3，修正平台功能之前 | 搜尋並取得最新平台指南、報告格式                 |
+| `assets/*-template.md`              | 依名稱                   | 報告、效能基準、DESIGN.md、專案 skill 骨架       |
 
-Scripts use only Node.js 18+ built-ins; run on Windows and Linux from any directory inside the project. `scripts/scope.mjs` previews scope without creating files (`start_run.mjs` already includes its logic).
+腳本僅用 Node.js 18+ 內建模組；Windows 與 Linux 皆可，專案內任何目錄皆可執行。`scripts/scope.mjs` 只預覽範圍、不建立檔案（`start_run.mjs` 已含其邏輯）。
 
 ## Arguments
 
-Any order, space-separated, e.g. `/up-design m`, `/up-design --full --m`. Pass them to the scripts as given; the scripts accept these forms.
+順序不拘、以空格分隔，例：`/up-design m`、`/up-design --full --m`。依使用者所給原樣傳給腳本；腳本接受這些形式。
 
-| Argument | Meaning                                                                                                                        | Alias  |
-| -------- | ------------------------------------------------------------------------------------------------------------------------------ | ------ |
-| `--full` | Force whole-project check, no incremental                                                                                      | `full` |
-| `--m`    | Project has mobile needs: apply the mobile section of `stress-mobile.md`, consider touch and small screens in every other step | `m`    |
+| 參數     | 意義                                                                                     | 別名   |
+| -------- | ---------------------------------------------------------------------------------------- | ------ |
+| `--full` | 強制全專案檢查，不做增量                                                                 | `full` |
+| `--m`    | 專案有行動端需求：套用 `stress-mobile.md` 的行動端章節，其餘每個步驟也要顧及觸控與小螢幕 | `m`    |
 
-Natural-language equivalents count as arguments: 「全面檢查」 = `--full`, 「要顧手機版」 = `--m`. Without `--m`/`m`, assume no mobile need; do not guess: a wrong guess wastes work on a desktop project or silently misses mobile problems.
+自然語言等價者視同參數：「全面檢查」 = `--full`，「要顧手機版」 = `--m`。未帶 `--m`/`m` 時，假設無行動端需求；不要猜：猜錯會在桌面專案白做工，或悄悄漏掉行動端問題。
 
 ## Flow
 
 ### 1. Prepare
 
-1. Run inside the project (script finds the git root; non-git → current directory), passing the user's arguments:
+1. 在專案內執行（腳本會找 git root；非 git → 目前目錄），並帶入使用者的參數：
 
    ```bash
    node <skill-dir>/scripts/start_run.mjs [--full|full] [--m|m]
    ```
 
-   It creates `./up-design/` (first run or directory missing), ensures the directory is not ignored by `.gitignore`, decides this run's mode and scope, and creates this run's report from the template. Output JSON: `project_root`, `is_git`, `head`, `mode`, `reason`, `mobile`, `uses_sonner`, `last_run`, `file_count`, `files`, `created_state_dir`, `gitignore` (`status`, `actions`, `warnings`), `report_path`. Do all later work under `project_root`. Files `.ts` / `.js` clearly unrelated to UI: skip.
+   它會建立 `./up-design/`（首次執行或目錄不存在時），確保該目錄未被 `.gitignore` 忽略，決定本輪的模式與範圍，並用模板建立本輪報告。輸出 JSON：`project_root`, `is_git`, `head`, `mode`, `reason`, `mobile`, `uses_sonner`, `last_run`, `file_count`, `files`, `created_state_dir`, `gitignore`（`status`, `actions`, `warnings`）, `report_path`。之後的工作都在 `project_root` 下進行。明顯與 UI 無關的 `.ts` / `.js` 檔：略過。
 
-2. `gitignore.status` is `still_ignored` → fix `.gitignore` by hand per `warnings` and record it in the report.
-3. Tell the user in one sentence the mode, reason and file count, then start without waiting for confirmation: manual trigger already means consent.
-4. Read `references/design-judgment.md` as the judgment baseline for the whole run.
-5. Read existing project rules: lint config, `DESIGN.md`, `.claude/skills/design-*/`, `CLAUDE.md` / `AGENTS.md`, `.claude/rules/*.md`, design tokens (CSS variables, tailwind config). Follow them all run; on conflict with the references' defaults, project rules win because they are the user's explicit preference for this project.
-6. Read `references/ux-rules.md` and `references/criteria.md`. They are diagnostic baselines, not project rules (see Boundaries). Priority: project rules > ux-rules > modern-web-guidance > criteria and the other references; list conflicts in the report.
+2. `gitignore.status` 為 `still_ignored` → 依 `warnings` 手動修正 `.gitignore`，並記入報告。
+3. 用一句話告知使用者模式、原因與檔案數，然後直接開始，不等確認：手動觸發即代表同意。
+4. 讀 `references/design-judgment.md`，作為整輪的判斷基準。
+5. 讀專案既有規則：lint 設定、`DESIGN.md`、`.claude/skills/design-*/`、`CLAUDE.md` / `AGENTS.md`、`.claude/rules/*.md`、design tokens（CSS variables、tailwind config）。整輪遵守；與 references 的預設衝突時，專案規則優先，因為那是使用者對本專案的明確偏好。
+6. 讀 `references/ux-rules.md` 與 `references/criteria.md`。它們是診斷基準，不是專案規則（見 Boundaries）。優先順序：專案規則 > ux-rules > modern-web-guidance > criteria 與其他 references；衝突列入報告。
 
-**Screen verification** (step 2 baseline, step 4 final; same method so they compare): use the `agent-browser` CLI; run `agent-browser skills get core` once first for its current usage. Detect dev command and port (`package.json` scripts), start in background, open. Capture full-page at 375 / 768 / 1024 / 1440px with `prefers-reduced-motion: reduce` emulated (or wait for animation to stop) to avoid mid-animation shots. Also check 320px has no horizontal scroll (screenshot only on failure). At 375px open each overlay type the project has (Select, DropdownMenu, Dialog/AlertDialog, date, Popover, filter, notification, sidebar) and capture one each. Save screenshots to the scratchpad. Cannot start or overlay won't open → fall back to code only and mark affected items 「未驗證（無畫面）」. A "looks better" without screenshots is not a verified fix.
+**Screen verification**（step 2 為基準、step 4 為最終；用同一方法才能比較）：用 `agent-browser` CLI；先執行一次 `agent-browser skills get core` 取得其最新用法。偵測 dev 指令與 port（`package.json` scripts），背景啟動並開啟。在 375 / 768 / 1024 / 1440px 擷取整頁，並模擬 `prefers-reduced-motion: reduce`（或等動畫停止），避免拍到動畫中途。另檢查 320px 無水平捲動（僅失敗時截圖）。在 375px 開啟專案有的每種 overlay（Select、DropdownMenu、Dialog/AlertDialog、日期、Popover、篩選、通知、側邊欄），各擷取一張。截圖存到 scratchpad。無法啟動或 overlay 打不開 → 退回只看程式碼，並將受影響項目標為「未驗證（無畫面）」。沒有截圖的「看起來更好」不算已驗證的修正。
 
-**modern-web-guidance**: fixes writing HTML / CSS / client JS that uses a platform feature → first look up guides per `references/modern-web-guidance.md` (scope, skip cases, report section live there); carry key points into step 3 animation work.
+**modern-web-guidance**：修正涉及撰寫使用平台功能的 HTML / CSS / client JS → 先依 `references/modern-web-guidance.md` 查指南（範圍、略過情形、報告區段都在該檔）；把重點帶進 step 3 的動畫工作。
 
-`file_count` is 0 → skip steps 2–4, go to step 5 rules check, then wrap up.
+`file_count` 為 0 → 略過 step 2–4，進 step 5 規則檢查，再收尾。
 
 ### 2. Diagnose
 
-Find problems only; edit no file. Survey everything before acting so fix order is sensible and nothing is edited just before proving deletable. References named below are diagnosis-only: they list findings and fixes, never apply them.
+只找問題；不編輯任何檔案。先通盤盤點再動手，修正順序才合理，也不會在證明可刪之前就先改它。下列 references 僅供診斷：只列出發現與修法，絕不套用。
 
-1. Screen baseline: capture per "Screen verification", the baseline for step 4.
-2. **UX rules check**: per the 13 sections of `references/ux-rules.md`, check **in-scope files only**; one verdict per section:
-   - `pass` — one line of evidence
-   - `gap` — `file:line` or screenshot region, violated rule, fix with numbers, impact high/medium/low
-   - `N/A` — no such situation, or out of scope
-   - `未驗證` — needs real device or live traffic (soft-keyboard occlusion, sticky hover, tap delay, CWV p75); never claim pass
+1. 畫面基準：依「Screen verification」擷取，作為 step 4 的基準。
+2. **UX rules check**：依 `references/ux-rules.md` 的 13 節，**僅檢查範圍內檔案**；每節一個判定：
+   - `pass` — 一行證據
+   - `gap` — `file:line` 或截圖區域、違反的規則、含數值的修法、影響高/中/低（high/medium/low）
+   - `N/A` — 無此情境，或超出範圍
+   - `未驗證` — 需真機或線上流量（軟鍵盤遮擋、sticky hover、tap delay、CWV p75）；絕不可宣稱 pass
 
-   Method: grep/read code (`100vh` / `h-screen`, `user-scalable=no`, Enter-submit without `isComposing` guard, `onClick` + `router.push` instead of `<a>`, clickable `div`, icon buttons without `aria-label`, missing `inputmode` / `autocomplete`, floating Select / Menu / Popover without a mobile Drawer branch, confirm dialog on an undoable action, 「確定」「OK」 button text, `target="_blank"` without `rel`, actions shown only on hover, missing `viewport-fit=cover` / safe-area) plus the screen-verification screenshots. Out-of-scope problems go in the report only.
-   - §7 (gestures) and §12 (motion) gaps merge into animation fixes; the rest into 「穩定性」. Items overlapping the mobile section of `stress-mobile.md` are listed once.
-   - **Structural fixes** (new route, Dialog/Drawer wrapper, new component, new dependency) are not applied; list in 「未解決」 with a suggested approach.
+   方法：grep/讀程式碼（`100vh` / `h-screen`、`user-scalable=no`、無 `isComposing` 防護的 Enter 送出、用 `onClick` + `router.push` 而非 `<a>`、可點擊的 `div`、無 `aria-label` 的圖示按鈕、缺少 `inputmode` / `autocomplete`、浮動 Select / Menu / Popover 無行動端 Drawer 分支、對可復原的操作用確認 dialog、「確定」「OK」按鈕文字、`target="_blank"` 無 `rel`、動作只在 hover 時顯示、缺少 `viewport-fit=cover` / safe-area），加上 screen-verification 的截圖。範圍外的問題只寫進報告。
+   - §7（手勢）與 §12（動效）的 gap 併入動畫修正；其餘併入「穩定性」。與 `stress-mobile.md` 行動端章節重疊的項目只列一次。
+   - **結構性修正**（新路由、Dialog/Drawer 包裝、新元件、新依賴）不套用；列入「未解決」並附建議做法。
 
-3. **Static design**: score per `references/criteria.md`. "Auto-fix" items merge into 「穩定性」; "report-only" items (originality, visual hierarchy, color ratio, layout) go in the report's 「設計建議（未套用）」. A criterion conflicting with a project rule is not a gap; list it as a conflict in the report.
-4. **shadcn audit** (conditional): run only if the project root has `components.json` and `package.json` dependencies include `react`; otherwise note 「非 shadcn 專案，略過」. Run `npx -y @shadscan/cli --json` in the project root (do not `cd`), save output to the scratchpad, parse JSON regardless of exit code; command failure (offline, unsupported structure) → record reason and continue. Categories: foundation, interaction, states, accessibility, forms, production-polish. Do not use `--apply`, `setup`, `mcp`, and do not install its hook, skill or MCP: this step is read-only. Each item = one gap with rule id and `file:line`; critical/high → high priority, medium → medium, low → low; list duplicates of other diagnoses once; animation items merge into animation fixes.
-5. **Worst-case data** (`stress-mobile.md` §1): overflow, truncation, empty states, extreme data. Skip when no data-rendering component is in scope.
-6. **Mobile** (`stress-mobile.md` §2): only when `mobile` is true.
-7. **Sonner** (`stress-mobile.md` §3): only when `uses_sonner` is true. shadcn/ui's toast component wraps Sonner, so shadcn projects usually qualify.
-8. **Performance** (`motion-audit.md` §A): measure and compare with `up-design/perf-baseline.md`.
-9. **Removal proposals** (`motion-audit.md` §B): list animations to remove; proposals only. "Kept but poorly done" items go to the next step. Skip when no animation is in scope.
-10. **Audit of existing motion** (`motion-audit.md` §C; skip when no animation is in scope): input = the "kept but poorly done" items, the animation gaps queued so far, and ux-rules §7 and §12.
-11. **Missing motion** (`motion-audit.md` §D): full mode only, because finding missing motion needs the whole app. Input = queued "missing motion" items (incl. shadscan interaction / states) and ux-rules §7 and §12.
-12. Fill the diagnosis results into the report sections 「UX 規則」「診斷」「設計建議（未套用）」, sorted by priority into the fix list.
+3. **Static design**：依 `references/criteria.md` 評分。「Auto-fix」項併入「穩定性」；「report-only」項（原創性、視覺層級、色彩比例、版面）寫進報告的「設計建議（未套用）」。與專案規則衝突的標準不算 gap；在報告中列為衝突。
+4. **shadcn audit**（有條件）：僅當專案根目錄有 `components.json` 且 `package.json` 的 dependencies 含 `react` 才執行；否則註記「非 shadcn 專案，略過」。在專案根目錄執行 `npx -y @shadscan/cli --json`（勿 `cd`），輸出存到 scratchpad，不論 exit code 都解析 JSON；指令失敗（離線、結構不支援）→ 記錄原因後繼續。類別：foundation, interaction, states, accessibility, forms, production-polish。不得使用 `--apply`、`setup`、`mcp`，也不得安裝其 hook、skill 或 MCP：本步驟唯讀。每項 = 一個 gap，含規則 id 與 `file:line`；critical/high → 高優先，medium → 中，low → 低；與其他診斷重複者只列一次；動畫項併入動畫修正。
+5. **Worst-case data**（`stress-mobile.md` §1）：溢出、截斷、空狀態、極端資料。範圍內沒有渲染資料的元件時略過。
+6. **Mobile**（`stress-mobile.md` §2）：僅當 `mobile` 為 true。
+7. **Sonner**（`stress-mobile.md` §3）：僅當 `uses_sonner` 為 true。shadcn/ui 的 toast 元件包裝 Sonner，故 shadcn 專案通常符合。
+8. **Performance**（`motion-audit.md` §A）：量測並與 `up-design/perf-baseline.md` 比較。
+9. **Removal proposals**（`motion-audit.md` §B）：列出要移除的動畫；僅提案。「保留但做得不好」的項目交給下一步。範圍內無動畫時略過。
+10. **Audit of existing motion**（`motion-audit.md` §C；範圍內無動畫時略過）：輸入 =「保留但做得不好」的項目、目前已排入的動畫 gap，以及 ux-rules §7 與 §12。
+11. **Missing motion**（`motion-audit.md` §D）：僅 full 模式，因為找出缺少的動效需要整個 app。輸入 = 已排入的「缺少動效」項目（含 shadscan 的 interaction / states）與 ux-rules §7 與 §12。
+12. 把診斷結果填入報告區段「UX 規則」「診斷」「設計建議（未套用）」，依優先順序排成修正清單。
 
 ### 3. Fix and optimize
 
-Run right after the diagnosis sections are written; do not ask the user: they want a one-shot flow, and the report is a record for later inspection, not an approval request.
+診斷區段寫完後立刻執行；不詢問使用者：他們要的是一次到位的流程，報告是供事後檢視的紀錄，不是請求核准。
 
-1. Execute in list order: stability (UX rule gaps, static-design auto-fix items, non-animation shadscan items) → remove animations → performance → adjust and add animations. Edit in-scope files only; use the project's existing tokens (project uses tokens → no hard-coded colors). Fixes involving platform features first consult "modern-web-guidance".
-2. Stability fixes do not touch animation or transition code; removal only subtracts and does not add or retune motion, so each phase stays inspectable on its own. Items needing an animation library, new dependency, new route or new component are not done; list in 「未解決」. Follow AdSense policy for ad slots: do not move or disguise ad blocks as content or bait clicks.
-3. Implement animation per `references/motion-build.md`. Use springs and physical-feel motion only where truly needed, so the whole UI does not overbounce. Toast fixes follow `stress-mobile.md` §3. When CSS is insufficient and a library would be needed, do not install; list in 「未解決」.
-4. Many independent list items → may delegate to sub-agents in parallel.
+1. 依清單順序執行：穩定性（UX 規則 gap、靜態設計 auto-fix 項、非動畫的 shadscan 項）→ 移除動畫 → 效能 → 調整並新增動畫。只編輯範圍內檔案；使用專案既有 tokens（專案用 tokens → 不寫死顏色）。涉及平台功能的修正先查「modern-web-guidance」。
+2. 穩定性修正不碰動畫或 transition 程式碼；移除只做減法，不新增或重調動效，讓每個階段都能單獨檢視。需要動畫函式庫、新依賴、新路由或新元件的項目不做；列入「未解決」。廣告版位遵守 AdSense 政策：不得移動廣告區塊，或把它偽裝成內容、誘導點擊。
+3. 依 `references/motion-build.md` 實作動畫。彈簧與物理感動效只用在真正需要處，避免整個 UI 過度彈跳。Toast 修正依 `stress-mobile.md` §3。CSS 不足而需要函式庫時，不安裝；列入「未解決」。
+4. 獨立的清單項目很多 → 可平行委派給 sub-agent。
 
 ### 4. Verify
 
-1. Review this run's animation per `references/motion-review.md` (skip when this run added or changed no animation): only animation added or changed this run, against ux-rules §7 and §12. Blocked → back to step 3, max 2 retries; still failing → list as unresolved. Do not lower the standard to pass: an honest 「未解決」 in the report beats a fake pass.
-2. Re-measure performance per `motion-audit.md` §A. Regression → list in report; no overall regression → update `up-design/perf-baseline.md` per `assets/perf-baseline-template.md` (first write creates it from the template), so the next run's baseline only improves.
-3. Screen acceptance: recapture per "Screen verification", compare with the step 2 baseline for layout regressions from this run. Regression → fix once and recapture; still regressing → unresolved, no further loop. shadscan items fixed → rerun the same command and compare score and remaining items. No screenshot capability → mark 「未驗證（無畫面）」.
-4. Project has lint or typecheck command → run each once. Fix errors caused by this run; pre-existing errors are not handled, only recorded in the report.
+1. 依 `references/motion-review.md` 審查本輪動畫（本輪未新增或更動動畫則略過）：只審本輪新增或更動的動畫，對照 ux-rules §7 與 §12。被擋下 → 回 step 3，最多重試 2 次；仍不過 → 列為未解決。不得為過關而降低標準：報告裡誠實的「未解決」勝過假通過。
+2. 依 `motion-audit.md` §A 重新量測效能。退步 → 列入報告；整體無退步 → 依 `assets/perf-baseline-template.md` 更新 `up-design/perf-baseline.md`（首次寫入由模板建立），讓下一輪的基準只會進步。
+3. 畫面驗收：依「Screen verification」重新擷取，與 step 2 基準比較本輪造成的版面退步。退步 → 修一次並重新擷取；仍退步 → 列為未解決，不再繼續迴圈。shadscan 項已修 → 重跑同一指令，比較分數與剩餘項目。沒有截圖能力 → 標為「未驗證（無畫面）」。
+4. 專案有 lint 或 typecheck 指令 → 各執行一次。修正本輪造成的錯誤；既有錯誤不處理，只記入報告。
 
 ### 5. Distill rules
 
-Every run may expose preferences the project has not written down. Write them as rules so the next run and everyday agents obey automatically.
+每輪都可能暴露專案尚未寫下的偏好。把它們寫成規則，讓下一輪與日常 agent 自動遵守。
 
-1. Follow `references/rule-routing.md` to collect, filter, generalize and choose the location. Write directly without stopping for approval: the user wants a one-shot flow, and every rule change is listed in the report for later inspection and revert.
-2. Rule sources are the user only: this run's corrections, edits, confirmed choices, and preferences attached to the trigger. Reasons `motion-review` blocked and recurring problems are the agent's judgment; do not write them, list only in 「建議規則（未寫入）」. A run where the user expressed no preference writing no rule is normal.
-3. Location: anything violations of which can be caught by matching code → **lint**, plus a one-line record of why in **DESIGN.md**; everything else → matching **DESIGN.md** section; section too long and relevant only to some tasks → move to a **project skill**. Lint first because machine checks run every time and do not depend on an agent remembering.
-4. Only when this run wrote to DESIGN.md: ensure `CLAUDE.md` or `AGENTS.md` points to it (see `references/rule-routing.md` section 6); add the pointer if missing, or no agent reads these rules. No rule written → create no DESIGN.md, CLAUDE.md or AGENTS.md.
-5. Rules must be concrete and executable. "Animation should feel natural" changes nothing for the next agent; "modal enter uses ease-out, duration ≤200ms" does.
+1. 依 `references/rule-routing.md` 蒐集、過濾、泛化並選定位置。直接寫入、不停下來等核准：使用者要的是一次到位的流程，每項規則變更都列在報告中供事後檢視與還原。
+2. 規則來源僅限使用者：本輪的修正、編輯、確認過的選擇，以及附在觸發上的偏好。`motion-review` 擋下的原因與反覆出現的問題是 agent 的判斷；不得寫入，只列在「建議規則（未寫入）」。使用者未表達偏好而沒寫任何規則的一輪是正常的。
+3. 位置：違規可由比對程式碼抓到的 → **lint**，並在 **DESIGN.md** 加一行記錄原因；其餘 → 對應的 **DESIGN.md** 區段；區段太長且只與部分任務相關 → 移到**專案 skill**。lint 優先，因為機器檢查每次都會跑，不靠 agent 記得。
+4. 僅當本輪寫入了 DESIGN.md：確保 `CLAUDE.md` 或 `AGENTS.md` 指向它（見 `references/rule-routing.md` section 6）；缺少就補上指標，否則沒有 agent 會讀這些規則。沒寫任何規則 → 不建立 DESIGN.md、CLAUDE.md 或 AGENTS.md。
+5. 規則必須具體可執行。「動畫要自然」不會改變下一個 agent 的行為；「modal 進場用 ease-out、duration ≤200ms」才會。
 
 ### 6. Wrap up
 
-1. Complete the remaining report sections.
-2. Run:
+1. 完成報告其餘區段。
+2. 執行：
 
    ```bash
    node <skill-dir>/scripts/finish_run.mjs --mode <quick|full>
    ```
 
-   It writes the current HEAD hash and time to `up-design/last-run.json`.
+   它會把目前 HEAD hash 與時間寫入 `up-design/last-run.json`。
 
-3. Reply to the user: report path, fix count, unresolved items, which rules were added or fixed and where.
+3. 回覆使用者：報告路徑、修正數量、未解決項目、新增或修正了哪些規則及位置。
 
 ## Boundaries
 
-Each boundary exists so the user can inspect and trust what a one-shot run did.
+每項邊界都是為了讓使用者能檢視並信任一次到位的流程做了什麼。
 
-- **No git write operations** (commit, branch, stash, merge, push): the user inspects the working tree and commits themselves; the report lists changed files per phase to make split commits easy.
-- **Edit in-scope files only.** Exceptions are files this skill maintains: lint config, `DESIGN.md`, `.claude/skills/design-*/`, `CLAUDE.md` / `AGENTS.md` (only the one pointer line to DESIGN.md), `.gitignore`, `./up-design/`. Out-of-scope problems go in the report only — in quick mode, touching files the user did not expect makes this run's changes hard to inspect.
-- **Keep `./up-design/` under version control** so rules and baselines are shared across machines and members; do not add it to `.gitignore`. `last-run.json` is written only by `finish_run.mjs`, not by hand, because a hand edit breaks the quick/full decision; old reports are history, do not delete.
-- **No new dependencies**: no animation library, lint tool, bottom-sheet or gesture package; shadscan runs read-only via `npx -y @shadscan/cli`. Items needing these go in 「未解決」.
-- **ux-rules and criteria are diagnostic baselines, not user preferences**: do not write them to DESIGN.md or lint; only preferences the user expressed go through step 5.
-- **Screen verification is not a precondition for passing**: no dev server or screenshot capability → fall back to code only and mark 「未驗證（無畫面）」; do not claim verified.
-- Time always Asia/Taipei (UTC+8).
+- **不做 git 寫入操作**（commit、branch、stash、merge、push）：使用者自行檢視 working tree 並 commit；報告依階段列出變更檔案，方便拆分 commit。
+- **只編輯範圍內檔案。** 例外為本 skill 維護的檔案：lint 設定、`DESIGN.md`、`.claude/skills/design-*/`、`CLAUDE.md` / `AGENTS.md`（僅指向 DESIGN.md 的那一行指標）、`.gitignore`、`./up-design/`。範圍外的問題只寫進報告 — quick 模式下動到使用者沒預期的檔案，會讓本輪變更難以檢視。
+- **`./up-design/` 保持納入版控**，規則與基準才能跨機器、跨成員共享；不得加進 `.gitignore`。`last-run.json` 只由 `finish_run.mjs` 寫入，不得手改，因為手改會破壞 quick/full 的判斷；舊報告是歷史，不得刪除。
+- **不新增依賴**：不加動畫函式庫、lint 工具、bottom-sheet 或手勢套件；shadscan 以 `npx -y @shadscan/cli` 唯讀執行。需要這些的項目列入「未解決」。
+- **ux-rules 與 criteria 是診斷基準，不是使用者偏好**：不得寫入 DESIGN.md 或 lint；只有使用者表達過的偏好才走 step 5。
+- **畫面驗證不是通過的前提**：沒有 dev server 或截圖能力 → 退回只看程式碼並標為「未驗證（無畫面）」；不得宣稱已驗證。
+- 時間一律 Asia/Taipei (UTC+8)。

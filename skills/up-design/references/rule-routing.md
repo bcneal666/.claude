@@ -1,6 +1,6 @@
 # Rule writing
 
-Turn the user's design corrections into rules the next agent will read: a **lint check, DESIGN.md, or a project skill**. up-design writes them directly without stopping for approval; every change is listed in the report so the user can inspect or revert it.
+把使用者的設計修正轉成下一個 agent 會讀的規則：**lint 檢查、DESIGN.md 或專案 skill**。up-design 直接寫入、不停下來等核准；每項變更都列在報告中，使用者可檢視或還原。
 
 ## Contents
 
@@ -15,48 +15,49 @@ Turn the user's design corrections into rules the next agent will read: a **lint
 
 ## 1. Principles
 
-Every correction the user makes is taste the agent lacked. Unwritten, the next session repeats the mistake. This step only writes rules; it never changes component code (lint fixes of in-scope files are the exception, see the table).
+使用者做的每次修正，都是 agent 缺少的品味。不寫下來，下個 session 會重蹈覆轍。本步驟只寫規則；絕不更動元件程式碼（範圍內檔案的 lint 修正例外，見表）。
 
-1. **Write only the user's taste.** A rule must trace to something the user said, edited or confirmed. A rule the agent thinks is "good practice" is not written, even when it comes from a review block or a problem that recurred this run: that is the agent's taste, and the user is the one correcting it. List such candidates in 「建議規則（未寫入）」 with suggested location and content; the user adopts them later.
-2. **Never invent a why.** The user's reason goes in their words. With none, write your best candidate marked `*推論*` and list it in the report for later confirmation. A wrong why is worse than none: the next agent extends the reasoning to cases it does not fit.
-3. **A check beats a sentence.** A violation that matching code can catch (a banned value, a raw hex instead of a token, a forbidden property) becomes a lint rule, because machine checks run every time while a sentence in a long file is skipped when context is full. Keep a one-line rule in DESIGN.md too, so the why is recorded.
-4. **Write for an agent that was not here.** No "like we discussed" or "the card from earlier"; name the component class, the value, the token, the file.
-5. **No preference expressed → no rule.** A run where the user expressed no design preference writes nothing; that is a normal result, not a failure.
+1. **只寫使用者的品味。** 規則必須能追溯到使用者說過、改過或確認過的東西。agent 自認為「良好實務」的規則不寫，即使它來自 review 的阻擋，或本輪反覆出現的問題：那是 agent 的品味，而使用者才是糾正者。這類候選列入「建議規則（未寫入）」，附建議位置與內容；使用者之後再採用。
+2. **絕不捏造 why。** 使用者的理由以其原話記錄。沒有理由時，寫你最合理的候選並標 `*推論*`，列入報告待日後確認。錯誤的 why 比沒有更糟：下一個 agent 會把該推理延伸到不適用的情況。
+3. **檢查勝過一句話。** 比對程式碼就能抓到的違規（禁用的值、該用 token 卻寫 raw hex、禁用的屬性）要變成 lint 規則，因為機器檢查每次都會跑，而長檔案中的一句話在 context 滿時會被跳過。DESIGN.md 也留一行規則，記錄 why。
+4. **為不在場的 agent 而寫。** 不寫「如我們討論的」或「先前那張卡片」；要點名元件 class、數值、token、檔案。
+5. **沒表達偏好 → 沒有規則。** 使用者沒表達設計偏好的一輪什麼都不寫；這是正常結果，不是失敗。
 
-Handling when a lint rule finds violations in existing code: in-scope files → fix them; out-of-scope → set the rule to warn and record the count in the report. The CLAUDE.md / AGENTS.md pointer to DESIGN.md is added directly (section 6).
+lint 規則在既有程式碼中發現違規時的處理：範圍內檔案 → 修正；範圍外 → 把規則設為 warn，並在報告記錄數量。CLAUDE.md / AGENTS.md 指向 DESIGN.md 的指標直接加入（section 6）。
 
 ## 2. Collect, filter, generalize
 
-**Collect.** Read this conversation from the first turn. Explicit corrections are the minority; look for all five signals:
+**Collect.** 從第一輪起讀本次對話。明確修正是少數；五種訊號都要找：
 
-| Signal                       | Example                                                                                                                        | Tells you                                                       |
-| ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------- |
-| Explicit correction          | "No, semi-transparent shadow, not a border"                                                                                    | The rule, often with the why                                    |
-| Silent edit                  | User changed `duration: 400` to `200` in a file you wrote (notice of an outside change, or a diff against what you last wrote) | Your default was wrong; their value is the rule                 |
-| Repeated nudge               | "Smaller." → "Still too big." → "Ok"                                                                                           | Record where they landed, not the steps                         |
-| Revert or rejection          | "Undo that", picking variant B over A                                                                                          | What not to do; the why is usually missing, so mark it `*推論*` |
-| Confirmed non-obvious choice | "Yes, keep the icon outside the button"                                                                                        | Record only if a fresh agent would plausibly do otherwise       |
+| 訊號                   | 範例                                                                                         | 告訴你什麼                                |
+| ---------------------- | -------------------------------------------------------------------------------------------- | ----------------------------------------- |
+| 明確修正               | "No, semi-transparent shadow, not a border"                                                  | 規則，常附 why                            |
+| 無聲編輯               | 使用者把你寫的檔案中的 `duration: 400` 改成 `200`（外部變更通知，或與你上次寫入內容的 diff） | 你的預設錯了；他們的值就是規則            |
+| 反覆微調               | "Smaller." → "Still too big." → "Ok"                                                         | 記錄他們最後落在哪，不記步驟              |
+| 還原或拒絕             | "Undo that"，選 B 方案而非 A                                                                 | 不該做什麼；通常缺 why，所以標 `*推論*`   |
+| 確認過的非顯而易見選擇 | "Yes, keep the icon outside the button"                                                      | 僅當全新的 agent 可能會做不同選擇時才記錄 |
 
-Preferences attached to the up-design trigger count too (e.g. 「跑 up-design，另外 hover 不要用 transform」). Capture the exact words or the diff, what you did, what they wanted, and any reason given. Skip what is not taste: functional bugs, one-screen content ("the headline should say Pricing"), corrections to your understanding of the task.
+附在 up-design 觸發上的偏好也算（例：「跑 up-design，另外 hover 不要用 transform」）。擷取原話或 diff、你做了什麼、他們要什麼，以及給過的理由。非品味的略過：功能 bug、單一畫面的內容（"the headline should say Pricing"）、對任務理解的更正。
 
-**Filter.** Would a fresh agent building a _different_ component in this repo make the same mistake?
+**Filter.** 在本 repo 建構一個_不同_元件的全新 agent，會犯同樣的錯嗎？
 
-- No (one-off: this campaign's color, this page's layout) → skip.
-- An existing rule (DESIGN.md, CLAUDE.md / AGENTS.md, project skills) says the same thing but was still violated → the rule is too weak; rewrite it stricter (a number, a token, 「一律」) instead of adding a duplicate.
-- It contradicts an existing rule → rewrite the old rule to this run's conclusion and list it in the report as 「衝突」.
-- Otherwise it becomes a rule; if matching code can catch it, also a lint check.
+- 不會（一次性：這次活動的顏色、這個頁面的版面）→ 略過。
+- 既有規則（DESIGN.md、CLAUDE.md / AGENTS.md、專案 skill）說了同樣的事卻仍被違反 → 規則太弱；改寫得更嚴（數值、token、「一律」），不要加重複條目。
+- 與既有規則矛盾 → 把舊規則改寫成本輪的結論，並在報告列為「衝突」。
+- 其他情況成為規則；若比對程式碼能抓到，也加 lint 檢查。
 
-**Generalize.** Pick the narrowest level that would have prevented the mistake on the next, different component:
+**Generalize.** 選最窄、但能在下一個不同元件上防止該錯誤的層級：
 
-| Level     | Example                                                                           | Verdict                                    |
-| --------- | --------------------------------------------------------------------------------- | ------------------------------------------ |
-| Instance  | "The pricing card gets a shadow, not a border"                                    | Too narrow: protects one card              |
-| Class     | "Raised surfaces (card, popover, menu) use `shadow-raised`, never a solid border" | Write this                                 |
-| Universal | "Never use borders"                                                               | Too broad: breaks inputs, dividers, tables |
+| 層級      | 範例                                                                              | 判定                             |
+| --------- | --------------------------------------------------------------------------------- | -------------------------------- |
+| Instance  | "The pricing card gets a shadow, not a border"                                    | 太窄：只保護一張卡片             |
+| Class     | "Raised surfaces (card, popover, menu) use `shadow-raised`, never a solid border" | 寫這個                           |
+| Universal | "Never use borders"                                                               | 太廣：會破壞 input、分隔線、表格 |
 
-The same correction on two or more different components is evidence for the class level. Use this codebase's actual values and token names; use 「一律」「不要」, not 「盡量」「建議」 (softer wording only when the user framed it as a preference).
+同一個修正發生在兩個以上不同元件，是 class 層級的證據。用本 codebase 實際的值與 token 名稱；用「一律」「不要」，不用「盡量」「建議」（僅當使用者把它框成偏好時才用較軟的措辭）。
 
-**Self-test before writing:** read only the rule and its why and picture the original task. If an agent that knows nothing else could still produce the wrong version, the rule is too vague; add the value, the token or the exception.
+**寫入前自我測試：** 只讀規則與其 why，想像原本的任務。若一個不知道其他背景的 agent 仍可能做出錯誤版本，規則就太模糊；補上數值、token 或例外。
+
 ## 3. Choose the write location
 
 ```
@@ -69,11 +70,11 @@ The same correction on two or more different components is evidence for the clas
     └── 預設 → 寫入 repo 根目錄的 DESIGN.md 對應段落
 ```
 
-DESIGN.md sections are fixed: **Surfaces · Color · Typography · Spacing & layout · Motion · Interaction · Copy**. DESIGN.md or the section missing → create it; skeleton in `assets/design-md-template.md`.
+DESIGN.md 的區段固定：**Surfaces · Color · Typography · Spacing & layout · Motion · Interaction · Copy**。DESIGN.md 或該區段不存在 → 建立；骨架在 `assets/design-md-template.md`。
 
 ## 4. DESIGN.md format
 
-Each rule: the rule in bold, a `Why:` line, a comment with date and source.
+每條規則：粗體規則、一行 `Why:`、一則含日期與來源的註解。
 
 ```md
 ## Motion
@@ -83,67 +84,67 @@ Each rule: the rule in bold, a `Why:` line, a comment with date and source.
   <!-- 2026-11-23：「modal 開太慢了」 -->
 ```
 
-- Why given by the user → use their words; otherwise write the most plausible guess and start it with `*推論*`
-- The comment records date and the user's exact words (or the edit made), so a later conflict shows which rule is newer and what the user actually said
+- why 由使用者提供 → 用其原話；否則寫最合理的推測，並以 `*推論*` 開頭
+- 註解記錄日期與使用者原話（或所做的編輯），日後衝突時才能看出哪條規則較新、使用者實際說了什麼
 
 ## 5. Project skill format
 
-Path: `.claude/skills/design-<section>/SKILL.md`, e.g. `.claude/skills/design-motion/SKILL.md`. Skeleton in `assets/project-skill-template.md`.
+路徑：`.claude/skills/design-<section>/SKILL.md`，例：`.claude/skills/design-motion/SKILL.md`。骨架在 `assets/project-skill-template.md`。
 
-- description states when to read it (e.g. 「在這個專案建立或修改動畫、transition、gesture 時讀取」) so the agent loads it only for relevant tasks
-- Move the section verbatim, keeping every rule's Why and comment
-- DESIGN.md keeps one line in the old section: `動態規則見 .claude/skills/design-motion/SKILL.md`
+- description 寫明何時讀取（例：「在這個專案建立或修改動畫、transition、gesture 時讀取」），agent 才只在相關任務載入
+- 區段原文照搬，保留每條規則的 Why 與註解
+- DESIGN.md 在舊區段留一行：`動態規則見 .claude/skills/design-motion/SKILL.md`
 
 ## 6. Make sure the rules get read
 
-A DESIGN.md no agent reads is the same as unwritten. After writing DESIGN.md, check whether the project's `CLAUDE.md` or `AGENTS.md` (both, if both exist) points to it. If not, append this line to the end of the file:
+沒有 agent 會讀的 DESIGN.md 等於沒寫。寫完 DESIGN.md 後，檢查專案的 `CLAUDE.md` 或 `AGENTS.md`（兩者都有則都查）是否指向它。若否，把這行附加到檔案結尾：
 
 ```md
 Before building or changing UI, read DESIGN.md.
 ```
 
-Neither file exists → create `CLAUDE.md` containing only this line. This is the only case where up-design edits CLAUDE.md / AGENTS.md.
+兩個檔案都不存在 → 建立 `CLAUDE.md`，內容僅此一行。這是 up-design 唯一會編輯 CLAUDE.md / AGENTS.md 的情況。
 
 ## 7. Lint detection, writing and checking
 
-**Never install new lint tools or plugins.** That changes project dependencies, beyond this skill's duty. No matching lint tool in the project → write DESIGN.md only, and attach the suggested lint config in the report's 「規則變更」.
+**絕不安裝新的 lint 工具或外掛。** 那會改動專案依賴，超出本 skill 的職責。專案中沒有合適的 lint 工具 → 只寫 DESIGN.md，並把建議的 lint 設定附在報告的「規則變更」。
 
 ### Detection
 
-Find the linter config (ESLint, Stylelint, Biome, Oxlint: any config file or `package.json` key) and its run command (`package.json` scripts `lint`, `lint:css`, `lint:style`, `lint:js`, else a direct call such as `npx eslint .`), using the package manager the lockfile implies.
+找出 linter 設定（ESLint、Stylelint、Biome、Oxlint：任何設定檔或 `package.json` key）及其執行指令（`package.json` scripts 的 `lint`、`lint:css`、`lint:style`、`lint:js`，否則直接呼叫如 `npx eslint .`），套件管理器依 lockfile 判斷。
 
 ### Check after writing
 
-| Result                                             | Action                                                                                           |
-| -------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
-| Config invalid (parse failure, unknown rule)       | Revert; keep only the DESIGN.md rule; attach suggested config in the report                      |
-| In-scope code errors                               | Fix the code                                                                                     |
-| Out-of-scope old code errors                       | Set the rule to warn; record in 「未解決」 with violation count                                  |
-| Lint cannot run (dependencies missing, no command) | Do not write lint; write DESIGN.md only; attach suggested config in the report marked 「未驗證」 |
+| 結果                            | 動作                                                        |
+| ------------------------------- | ----------------------------------------------------------- |
+| 設定無效（解析失敗、未知規則）  | 還原；只保留 DESIGN.md 規則；把建議設定附在報告             |
+| 範圍內程式碼有錯誤              | 修程式碼                                                    |
+| 範圍外的舊程式碼有錯誤          | 把規則設為 warn；記入「未解決」並附違規數量                 |
+| Lint 無法執行（缺依賴、無指令） | 不寫 lint；只寫 DESIGN.md；把建議設定附在報告並標「未驗證」 |
 
-Cannot run → do not write, because the config cannot be confirmed valid and a wrong lint config can fail CI outright. Out-of-scope errors drop to warn so one new rule does not fail the whole project's lint. When editing an existing config, keep its original format and comment style.
+無法執行 → 不寫，因為無法確認設定有效，錯誤的 lint 設定可能直接讓 CI 失敗。範圍外的錯誤降為 warn，免得一條新規則讓整個專案的 lint 失敗。編輯既有設定時，維持其原有格式與註解風格。
 
 ### Common built-in rules
 
-Unsure of a rule name or option format → confirm with the tool itself (`npx stylelint --print-config <file>`, `npx biome explain <rule>`) or the official docs; never write from memory.
+不確定規則名稱或選項格式 → 用工具本身（`npx stylelint --print-config <file>`、`npx biome explain <rule>`）或官方文件確認；絕不憑記憶寫。
 
-| Tool      | Rule                                         | Good for                                                                                   |
-| --------- | -------------------------------------------- | ------------------------------------------------------------------------------------------ |
-| Stylelint | `declaration-property-value-disallowed-list` | Ban `transition: all`, ban specific easing                                                 |
-| Stylelint | `property-disallowed-list`                   | Ban certain properties                                                                     |
-| Stylelint | `declaration-property-unit-allowed-list`     | Restrict duration units                                                                    |
-| Stylelint | `declaration-property-value-allowed-list`    | Allow only specific values or CSS variables                                                |
-| ESLint    | `no-restricted-imports`                      | Unify libraries (e.g. ban `framer-motion`, use `motion/react`)                             |
-| ESLint    | `no-restricted-syntax`                       | Ban specific patterns via AST selector                                                     |
-| Biome     | `noRestrictedImports`                        | Library restriction; its rule group changes between versions, confirm with `biome explain` |
+| Tool      | Rule                                         | 適用                                                        |
+| --------- | -------------------------------------------- | ----------------------------------------------------------- |
+| Stylelint | `declaration-property-value-disallowed-list` | 禁用 `transition: all`、禁用特定 easing                     |
+| Stylelint | `property-disallowed-list`                   | 禁用某些屬性                                                |
+| Stylelint | `declaration-property-unit-allowed-list`     | 限制 duration 單位                                          |
+| Stylelint | `declaration-property-value-allowed-list`    | 只允許特定值或 CSS 變數                                     |
+| ESLint    | `no-restricted-imports`                      | 統一函式庫（例：禁用 `framer-motion`，改用 `motion/react`） |
+| ESLint    | `no-restricted-syntax`                       | 以 AST selector 禁用特定寫法                                |
+| Biome     | `noRestrictedImports`                        | 限制函式庫；其規則群組隨版本變動，用 `biome explain` 確認   |
 
-Tailwind projects put many styles in className, which CSS lint cannot see. Such rules (e.g. ban `transition-all`) usually go only in DESIGN.md; consider an ESLint Tailwind plugin only if the project already has a usable one.
+Tailwind 專案把許多樣式放在 className，CSS lint 看不到。這類規則（例：禁用 `transition-all`）通常只寫在 DESIGN.md；僅當專案已有可用的 ESLint Tailwind 外掛時才考慮使用。
 
 ## 8. Examples
 
-**Example 1: mechanically checkable, lint runs**
-User says: 「不要再用 transition: all 了」
-→ Write Stylelint config (merge with existing `rules`):
+**範例 1：可機械檢查，lint 可執行**
+使用者說：「不要再用 transition: all 了」
+→ 寫 Stylelint 設定（與既有 `rules` 合併）：
 
 ```json
 {
@@ -155,7 +156,7 @@ User says: 「不要再用 transition: all 了」
 }
 ```
 
-→ Add one line under DESIGN.md › Motion:
+→ 在 DESIGN.md › Motion 下加一行：
 
 ```md
 - **不要使用 `transition: all`，列出實際要動的屬性。**（由 Stylelint 檢查）
@@ -163,12 +164,12 @@ User says: 「不要再用 transition: all 了」
   <!-- 2026-11-23：「不要再用 transition: all 了」 -->
 ```
 
-**Example 2: mechanically checkable, lint cannot run**
-Same rule, project has no dependencies installed → write only DESIGN.md › Motion; attach example 1's Stylelint config in the report marked 「未驗證」.
+**範例 2：可機械檢查，lint 無法執行**
+同一條規則，專案沒裝依賴 → 只寫 DESIGN.md › Motion；把範例 1 的 Stylelint 設定附在報告並標「未驗證」。
 
-**Example 3: not mechanically checkable**
-User says: 「hover 不要用 transform，手機點完會卡住」
-→ DESIGN.md › Interaction:
+**範例 3：不可機械檢查**
+使用者說：「hover 不要用 transform，手機點完會卡住」
+→ DESIGN.md › Interaction：
 
 ```md
 - **hover 狀態不使用 transform（位移、縮放）。**
@@ -176,11 +177,11 @@ User says: 「hover 不要用 transform，手機點完會卡住」
   <!-- 2026-11-23：「hover 不要用 transform，手機點完會卡住」 -->
 ```
 
-→ CLAUDE.md has no pointer to DESIGN.md → add `Before building or changing UI, read DESIGN.md.`
+→ CLAUDE.md 沒有指向 DESIGN.md 的指標 → 加上 `Before building or changing UI, read DESIGN.md.`
 
-**Example 4: problem the agent found itself**
-motion-review blocked a modal's `ease-in` three times, but the user said nothing related
-→ Fix the code; write no rule. List in 「建議規則（未寫入）」: 「Modal 進場使用 ease-out」, suggested location DESIGN.md › Motion
+**範例 4：agent 自己發現的問題**
+motion-review 擋下某 modal 的 `ease-in` 三次，但使用者沒說任何相關的話
+→ 修程式碼；不寫規則。列入「建議規則（未寫入）」：「Modal 進場使用 ease-out」，建議位置 DESIGN.md › Motion
 
-**Example 5: section too long**
-DESIGN.md › Motion is already 45 lines and relevant only to animation tasks → move the whole section to `.claude/skills/design-motion/SKILL.md`; DESIGN.md › Motion keeps one line pointing to it; write the new rule into that skill.
+**範例 5：區段太長**
+DESIGN.md › Motion 已有 45 行，且只與動畫任務有關 → 把整個區段搬到 `.claude/skills/design-motion/SKILL.md`；DESIGN.md › Motion 留一行指向它；新規則寫進該 skill。

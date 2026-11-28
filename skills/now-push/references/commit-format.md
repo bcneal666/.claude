@@ -1,8 +1,8 @@
-# Commit Message Fixed Format
+# Commit Message 固定格式
 
-Used at step 4 (and step 9 for a summarizing PR title). A repo's own commitlint / CONTRIBUTING rules override the matching field (SKILL.md step 3).
+用於 step 4（及 step 9 的彙總式 PR 標題）。repo 自有的 commitlint / CONTRIBUTING 規則覆蓋對應欄位（SKILL.md step 3）。
 
-## Structure
+## 結構
 
 ```
 <type>(<scope>): <subject>
@@ -14,45 +14,45 @@ Used at step 4 (and step 9 for a summarizing PR title). A repo's own commitlint 
 [Refs: #issue 或 BREAKING CHANGE: 說明]（選填）
 ```
 
-## Field rules
+## 欄位規則
 
-**type (required, lowercase English, pick one)**
+**type（必填，小寫 English，擇一）**
 
-Allowed: `feat` `fix` `docs` `style` `refactor` `perf` `test` `build` `ci` `chore` `revert` (conventional-commit meanings; `chore` = misc not touching src or tests, `style` = formatting only).
+允許：`feat` `fix` `docs` `style` `refactor` `perf` `test` `build` `ci` `chore` `revert`（沿用 conventional-commit 語意；`chore` = 不動 src 或測試的雜項，`style` = 僅格式調整）。
 
-**scope (optional, lowercase English)**
+**scope（選填，小寫 English）**
 
-Module/file area/feature affected, e.g. `auth`, `api`, `ui`, `db`, `config`.
-Spans several modules with no common scope → omit scope; header becomes `<type>: <subject>`.
+受影響的模組/檔案區域/功能，如 `auth`、`api`、`ui`、`db`、`config`。
+跨多個模組且無共同 scope → 省略 scope；header 變為 `<type>: <subject>`。
 
-**subject (required, default English; other language when `--lng` given)**
+**subject（必填，預設 English；給 `--lng` 時用其他語言）**
 
-- Start with verb; say concretely what changed—log readers cannot see the diff, every word must carry information
-- English: imperative mood (`add`, not `adds`/`added`), lowercase first letter, ≤50 chars
-- Non-English (CJK etc.): ≤50 characters
-- **No trailing period**
-- Do not repeat type meaning (type is `fix` → subject does not say `fix`)
+- 以動詞開頭；具體說明改了什麼——log 讀者看不到 diff，每個字都要有資訊量
+- English：祈使語氣（`add`，不是 `adds`/`added`），首字母小寫，≤50 chars
+- 非 English（CJK 等）：≤50 字元
+- **結尾不加句號**
+- 不重複 type 語意（type 為 `fix` → subject 不寫 `fix`）
 
 ✅ 正確：`feat(auth): add automatic JWT token refresh`
 ✅ 正確：`fix(api): handle null user.email crash`
 ❌ 錯誤：`feat: update some stuff.`（無資訊量、結尾有句號）
 ❌ 錯誤：`fix(api): fix API bug`（重複 type 語意）
 
-**body (required, default English; other language when `--lng` given; bullets)**
+**body（必填，預設 English；給 `--lng` 時用其他語言；bullets）**
 
-- **Blank line required** between header and body
-- Each point starts with `- `
-- One concrete change per point: what was done, add why when needed
-- ≤72 chars per line (CJK: 72 characters); wrap longer lines
-- Many changes → merge like items per module so body scans at a glance; already executed at this point → write truthfully, **do not split the commit afterwards**
+- header 與 body 之間**必須空一行**
+- 每點以 `- ` 開頭
+- 每點一項具體變更：做了什麼，必要時補上原因
+- 每行 ≤72 chars（CJK：72 字元）；較長則換行
+- 變更很多 → 依模組合併同類項，讓 body 一眼可掃；此時變更已執行完畢 → 如實撰寫，**事後不得拆分 commit**
 
 **footer**
 
-- **Required trailer**: `Co-Authored-By: <當前模型全名> <noreply@anthropic.com>` (every commit; passed as third `-m`; never omit; full model name from this session's system info)
-- Related issue (optional): `Refs: #123` or `Closes: #123`
-- Breaking change (optional): `BREAKING CHANGE: <說明影響與遷移方式>`
+- **必要 trailer**：`Co-Authored-By: <當前模型全名> <noreply@anthropic.com>`（每個 commit；以第三個 `-m` 傳入；絕不省略；完整模型名稱取自本 session 的系統資訊）
+- 相關 issue（選填）：`Refs: #123` 或 `Closes: #123`
+- Breaking change（選填）：`BREAKING CHANGE: <說明影響與遷移方式>`
 
-## Examples
+## 範例
 
 ```
 feat(auth): add automatic JWT token refresh
